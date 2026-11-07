@@ -226,6 +226,7 @@
     document.body.classList.remove("auth-out"); $("#login").hidden = true;
     addAccountButtons();
     await loadLocal();
+    try{ if(navigator.storage?.persist && !(await navigator.storage.persisted())) await navigator.storage.persist(); }catch{}
     resolveReady();
     if(online()){ subscribeRealtime(); flush(); }
     updateSyncUi();
