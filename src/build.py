@@ -1,17 +1,46 @@
-import re, os, shutil, sys
-S = sys.argv[1]
+"""بناء الموقع: python3 src/build.py .
+بيطلع site/ فيه: index.html (البرنامج + شاشة الدخول + طبقة الأوفلاين) و sw.js و manifest و الأيقونات.
+"""
+import re, os, sys, json, hashlib, base64, io
+S = sys.argv[1] if len(sys.argv) > 1 else "."
 app = open(f"{S}/src/app.html", encoding="utf-8").read()
 shim = open(f"{S}/src/shim.js", encoding="utf-8").read()
-logo = re.search(r'LOGO_NAVY *= *"(data:image/[a-z]+;base64,[A-Za-z0-9+/=]+)"', app).group(1)
+sw = open(f"{S}/src/sw.js", encoding="utf-8").read()
+logo_uri = re.search(r'LOGO_NAVY *= *"(data:image/[a-z]+;base64,[A-Za-z0-9+/=]+)"', app).group(1)
+out = f"{S}/site"; os.makedirs(out, exist_ok=True)
 
-# page title/links/style come first in the artifact; keep them in <head>
+# ---------- الأيقونات من لوجو الشركة ----------
+try:
+    from PIL import Image
+    logo = Image.open(io.BytesIO(base64.b64decode(logo_uri.split(",", 1)[1]))).convert("RGBA")
+    for size, pad in ((192, .16), (512, .16), (512, .26)):
+        bg = Image.new("RGBA", (size, size), (255, 255, 255, 255))
+        box = int(size * (1 - 2 * pad)); lg = logo.copy(); lg.thumbnail((box, box), Image.LANCZOS)
+        bg.paste(lg, ((size - lg.width) // 2, (size - lg.height) // 2), lg)
+        name = f"icon-{size}.png" if pad == .16 else "icon-maskable.png"
+        bg.convert("RGB").save(f"{out}/{name}", optimize=True)
+except ImportError:
+    print("PIL مش متسطب: الأيقونات القديمة هتفضل زي ما هي")
+
+manifest = {
+  "name": "متابعة المستخلصات — الدمام", "short_name": "المستخلصات",
+  "description": "متابعة مستخلصات شركة الدمام للمقاولات العامة",
+  "lang": "ar", "dir": "rtl", "start_url": "./", "scope": "./", "display": "standalone",
+  "background_color": "#0b1550", "theme_color": "#0b1550",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}]
+}
+open(f"{out}/manifest.webmanifest", "w", encoding="utf-8").write(json.dumps(manifest, ensure_ascii=False, indent=1))
+
 i = app.index("</style>") + len("</style>")
 head_part, body_part = app[:i], app[i:]
 
 login = f'''
 <section class="login" id="login" hidden>
   <form class="lg-card" id="lgForm" autocomplete="on">
-    <img src="{logo}" alt="" class="lg-logo">
+    <img src="{logo_uri}" alt="" class="lg-logo">
     <h1>متابعة المستخلصات</h1>
     <p class="lg-sub">شركة الدمام للمقاولات العامة</p>
     <label for="lgEmail">الإيميل</label>
@@ -31,7 +60,8 @@ login = f'''
     <div class="lg-err" id="pwErr" hidden></div>
     <div style="display:flex;gap:8px"><button type="submit">حفظ</button><button type="button" id="pwCancel" class="lg-ghost">إلغاء</button></div>
   </form>
-</div>'''
+</div>
+<div class="updbar" id="updBar" hidden>نسخة جديدة من البرنامج جاهزة <button type="button" onclick="window.__applyUpdate()">تحديث الآن</button></div>'''
 
 css = '''<style>
 [hidden]{display:none!important}
@@ -51,6 +81,13 @@ body.auth-out .app,body.auth-out .fab,body.auth-out .bulk,body.auth-out .toast{d
 .lg-err{background:var(--bad-soft,#fbe4e1);color:var(--bad,#c0392b);border-radius:8px;padding:8px 10px;font-size:.85rem;font-weight:600}
 .side .ficons{flex-wrap:wrap;row-gap:4px}
 .lg-note{font-size:.76rem;color:var(--faint,#8a99a1);text-align:center;margin:6px 0 0}
+.syncpill{display:flex;align-items:center;gap:7px;font-size:.74rem;font-weight:600;border-radius:999px;padding:4px 10px;background:rgba(255,255,255,.08);color:var(--side-fg,#dde3f5)}
+.syncpill::before{content:"";width:8px;height:8px;border-radius:50%;flex:none;background:#3fbf7f}
+.syncpill.busy::before{background:#e8b74a}
+.syncpill.off::before{background:#9aa6c4}
+.syncpill.warn::before{background:#e5655b}
+.updbar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:90;background:#0b1550;color:#fff;border-radius:12px;padding:10px 14px;display:flex;gap:12px;align-items:center;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.updbar button{border:0;border-radius:8px;background:#fff;color:#0b1550;font:inherit;font-weight:700;padding:6px 12px;cursor:pointer}
 </style>'''
 
 html = f'''<!doctype html>
@@ -59,6 +96,10 @@ html = f'''<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0b1550">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 {head_part}
 {css}
 <script src="supabase.js"></script>
@@ -69,9 +110,8 @@ html = f'''<!doctype html>
 {body_part}
 </body>
 </html>'''
-out = f"{S}/site"
-os.makedirs(out, exist_ok=True)
 open(f"{out}/index.html", "w", encoding="utf-8").write(html)
-pass  # supabase.js (v2.45.4) محفوظ جاهز في site/
-open(f"{out}/_headers", "w").write("/*\n  X-Frame-Options: DENY\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: same-origin\n  X-Robots-Tag: noindex\n")
-print("built", len(html))
+ver = hashlib.sha256((html + shim + sw).encode()).hexdigest()[:12]
+open(f"{out}/sw.js", "w", encoding="utf-8").write(sw.replace("__VERSION__", ver))
+open(f"{out}/.nojekyll", "w").write("")
+print("built", len(html), "version", ver)

@@ -1569,6 +1569,7 @@ function applyFlash(){
 }
 const skelKpis = n => Array.from({length:n},()=>`<div class="kpi"><span class="skel" style="width:55%"></span><span class="skel" style="height:26px;width:75%;margin-top:6px"></span><span class="skel" style="width:40%;margin-top:6px"></span></div>`).join("");
 const skelRows = n => `<div class="skel-rows">${Array.from({length:n},(_,i)=>`<span class="skel" style="width:${92-i*9}%"></span>`).join("")}</div>`;
+window.toast = (...a) => toast(...a);
 function toast(msg){ const t=$("#toast"); t.innerHTML=`${ico("check")}<span></span>`; t.querySelector("span").textContent=msg; t.hidden=false; t.classList.remove("show"); void t.offsetWidth; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2800); }
 function showGate(){ document.body.classList.add("nodb"); $("#gate").hidden=false; }
 function setStatus(msg, warn){ const s=$("#status"); if(!msg){s.hidden=true;return;} s.hidden=false; s.textContent=msg; s.classList.toggle("warn",!!warn); }
