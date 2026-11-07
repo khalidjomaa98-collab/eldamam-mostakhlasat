@@ -11,7 +11,8 @@ const LIBS = [
 self.addEventListener("install", e => {
   e.waitUntil((async () => {
     const c = await caches.open(SHELL);
-    await c.addAll(CORE);
+    // cache:"reload" عشان ياخد الملفات الجديدة من السيرفر مش من كاش المتصفح القديم
+    await c.addAll(CORE.map(u => new Request(u, { cache: "reload" })));
     const r = await caches.open(RUNTIME);
     await Promise.all(LIBS.map(u => fetch(u, { mode: "no-cors" }).then(res => r.put(u, res)).catch(() => {})));
   })());

@@ -1408,7 +1408,7 @@ body.auth-out .app,body.auth-out .fab,body.auth-out .bulk,body.auth-out .toast{d
 
   /* ---------- تحديثات البرنامج نفسه ---------- */
   if("serviceWorker" in navigator && location.protocol !== "file:"){
-    navigator.serviceWorker.register("sw.js").then(reg => { window.__swReg = reg; if(reg.waiting && navigator.serviceWorker.controller){ const b = document.getElementById("updBar"); if(b) b.hidden = false; }
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(reg => { window.__swReg = reg; const chk = () => reg.update().catch(() => {}); setInterval(chk, 30 * 60 * 1000); document.addEventListener("visibilitychange", () => { if(!document.hidden) chk(); }); if(reg.waiting && navigator.serviceWorker.controller){ const b = document.getElementById("updBar"); if(b) b.hidden = false; }
       reg.addEventListener("updatefound", () => { const w = reg.installing; w && w.addEventListener("statechange", () => {
         if(w.state === "installed" && navigator.serviceWorker.controller){ const b = document.getElementById("updBar"); if(b) b.hidden = false; } }); });
       setInterval(() => reg.update().catch(() => {}), 30 * 60000);

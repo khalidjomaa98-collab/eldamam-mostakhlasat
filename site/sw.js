@@ -1,5 +1,5 @@
 /* Service worker: يخلي البرنامج يفتح من غير إنترنت، ويجيب التحديثات لما النت يرجع */
-const VERSION = "d4bb758da604";
+const VERSION = "50b86b6a73d4";
 const SHELL = "shell-" + VERSION;
 const RUNTIME = "runtime-v1";
 const CORE = ["./", "./index.html", "./supabase.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./favicon.png"];
@@ -11,7 +11,8 @@ const LIBS = [
 self.addEventListener("install", e => {
   e.waitUntil((async () => {
     const c = await caches.open(SHELL);
-    await c.addAll(CORE);
+    // cache:"reload" عشان ياخد الملفات الجديدة من السيرفر مش من كاش المتصفح القديم
+    await c.addAll(CORE.map(u => new Request(u, { cache: "reload" })));
     const r = await caches.open(RUNTIME);
     await Promise.all(LIBS.map(u => fetch(u, { mode: "no-cors" }).then(res => r.put(u, res)).catch(() => {})));
   })());
