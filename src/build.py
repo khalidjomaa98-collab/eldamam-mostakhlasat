@@ -12,18 +12,35 @@ out = f"{S}/site"; os.makedirs(out, exist_ok=True)
 # ---------- الأيقونات من لوجو الشركة ----------
 try:
     from PIL import Image
+    from PIL import ImageDraw
     logo = Image.open(io.BytesIO(base64.b64decode(logo_uri.split(",", 1)[1]))).convert("RGBA")
-    for size, pad in ((192, .16), (512, .16), (512, .26)):
-        bg = Image.new("RGBA", (size, size), (255, 255, 255, 255))
-        box = int(size * (1 - 2 * pad)); lg = logo.copy(); lg.thumbnail((box, box), Image.LANCZOS)
-        bg.paste(lg, ((size - lg.width) // 2, (size - lg.height) // 2), lg)
-        name = f"icon-{size}.png" if pad == .16 else "icon-maskable.png"
-        bg.convert("RGB").save(f"{out}/{name}", optimize=True)
+    logo = logo.crop(logo.split()[3].getbbox())
+    white = Image.new("RGBA", logo.size, (255, 255, 255, 255)); white.putalpha(logo.split()[3])
+    def tile(size, fill_h, radius):
+        # مربع كحلي بزوايا مدورة واللوجو أبيض في النص وبيملا أغلب المساحة
+        ss = size * 4
+        bg = Image.new("RGBA", (ss, ss), (0, 0, 0, 0))
+        top, bot = (0x23, 0x35, 0x8f), (0x0b, 0x15, 0x50)
+        grad = Image.new("RGBA", (ss, ss))
+        gd = ImageDraw.Draw(grad)
+        for y in range(ss):
+            t = y / (ss - 1); gd.line([(0, y), (ss, y)], fill=tuple(int(top[i] + (bot[i] - top[i]) * t) for i in range(3)) + (255,))
+        mask = Image.new("L", (ss, ss), 0)
+        ImageDraw.Draw(mask).rounded_rectangle([0, 0, ss - 1, ss - 1], radius=int(ss * radius), fill=255)
+        bg.paste(grad, (0, 0), mask)
+        h = int(ss * fill_h); w = int(white.width * h / white.height)
+        lg = white.resize((w, h), Image.LANCZOS)
+        bg.alpha_composite(lg, ((ss - w) // 2, (ss - h) // 2))
+        return bg.resize((size, size), Image.LANCZOS)
+    tile(192, .72, .22).save(f"{out}/icon-192.png", optimize=True)
+    tile(512, .72, .22).save(f"{out}/icon-512.png", optimize=True)
+    tile(512, .56, 0).save(f"{out}/icon-maskable.png", optimize=True)
+    tile(64, .76, .22).save(f"{out}/favicon.png", optimize=True)
 except ImportError:
     print("PIL مش متسطب: الأيقونات القديمة هتفضل زي ما هي")
 
 manifest = {
-  "name": "متابعة المستخلصات — الدمام", "short_name": "المستخلصات",
+  "name": "مستخلصات الدمام", "short_name": "مستخلصات الدمام",
   "description": "متابعة مستخلصات شركة الدمام للمقاولات العامة",
   "lang": "ar", "dir": "rtl", "start_url": "./", "scope": "./", "display": "standalone",
   "background_color": "#0b1550", "theme_color": "#0b1550",
@@ -98,7 +115,7 @@ html = f'''<!doctype html>
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#0b1550">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png">
+<link rel="icon" href="favicon.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 {head_part}
 {css}
@@ -111,7 +128,10 @@ html = f'''<!doctype html>
 </body>
 </html>'''
 open(f"{out}/index.html", "w", encoding="utf-8").write(html)
-ver = hashlib.sha256((html + shim + sw).encode()).hexdigest()[:12]
+h = hashlib.sha256((html + shim + sw).encode())
+for n in ("icon-192.png", "icon-512.png", "icon-maskable.png", "favicon.png", "manifest.webmanifest"):
+    if os.path.exists(f"{out}/{n}"): h.update(open(f"{out}/{n}", "rb").read())
+ver = h.hexdigest()[:12]
 open(f"{out}/sw.js", "w", encoding="utf-8").write(sw.replace("__VERSION__", ver))
 open(f"{out}/.nojekyll", "w").write("")
 print("built", len(html), "version", ver)
