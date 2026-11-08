@@ -3362,7 +3362,8 @@ function coCompute(p, doc){
   const part = (pre, type) => {
     const key = pre+"InvoiceId";
     const inv = doc && key in doc ? (doc[key] ? vs.find(v=>v.id===doc[key])||null : null) : (vs.find(v=>v.type===type && v.paid!=="نعم") || vs.find(v=>v.type===type) || null);
-    const amount = has(doc?.[pre+"Amount"]) ? num(doc[pre+"Amount"]) : inv ? num(calc(inv).net) : 0;
+    const est = pre==="fi" && !has(doc?.[pre+"Amount"]) && !inv && contractVal(p)>0 ? Math.round(contractVal(p)*0.05) : 0;
+    const amount = has(doc?.[pre+"Amount"]) ? num(doc[pre+"Amount"]) : inv ? num(calc(inv).net) : est;
     const pays = (doc?.[pre+"Payments"]||[]).filter(x=>num(x.amount)>0);
     let collected = pays.reduce((s,x)=>s+num(x.amount),0);
     let paidDate = pays.length ? pays.map(x=>x.date||"").sort().at(-1) : "";
@@ -3372,9 +3373,16 @@ function coCompute(p, doc){
     const partial = !done && collected>0;
     const submitted = doc?.[pre+"Submitted"] || (inv ? inv.date||"" : "");
     return {inv, amount, collected, remaining: done ? 0 : Math.max(0, amount-collected), pays, paidDate, settled, done, partial, submitted,
-      note: doc?.[pre+"Note"]||"", place: inv ? calc(inv).stage : "", amountKnown: amount>0};
+      note: doc?.[pre+"Note"]||"", place: inv ? calc(inv).stage : "", amountKnown: amount>0, estimated: est>0};
   };
-  const wg = part("wg", CO_WG), fi = part("fi", CO_FI);
+  const wg = part("wg", CO_WG);
+  // التأمين النهائي: نقدي (5% من قيمة العقد) أو خطاب ضمان — والاتنين بيرجعوا للشركة
+  const lg = doc?.fiKind==="lg";
+  const fi = lg ? (()=>{ const est = !has(doc?.fiAmount) && contractVal(p)>0 ? Math.round(contractVal(p)*0.05) : 0; const amount = has(doc?.fiAmount) ? num(doc.fiAmount) : est;
+      const ret = isoDate(doc?.fiLgReturned), settled = !!doc?.fiSettled, done = settled || !!ret;
+      return {kind:"lg", inv:null, amount, collected: done?amount:0, remaining:0, lgOpen: done?0:amount, pays:[], paidDate: ret, settled, done, partial:false, submitted: doc?.fiSubmitted||"",
+        note: doc?.fiNote||"", place:"", amountKnown: amount>0, estimated: est>0, lgNo: doc?.fiLgNo||"", lgBank: doc?.fiLgBank||"", lgExpiry: isoDate(doc?.fiLgExpiry)}; })()
+    : {...part("fi", CO_FI), kind:"cash", lgOpen:0};
   const due = handover ? addYear(handover) : "";
   const avail = !due || !wg.done ? "" : (wg.paidDate && wg.paidDate > due ? wg.paidDate : due);
   const t = today();
@@ -3383,9 +3391,11 @@ function coCompute(p, doc){
   wg.status = wg.done ? (wg.settled ? "تسوية معتمدة" : "تم الصرف") : wg.partial ? "صرف جزئي" : wg.inv ? "قيد الصرف" : "مطلوب المتابعة";
   wg.tone = wg.done ? "ok" : wg.partial ? "warn" : wg.inv ? "info" : "bad";
   const dueIn = due ? dayDiff(t, due) : null;
-  if(fi.done){ fi.status = fi.settled ? "تسوية معتمدة" : "تم الصرف"; fi.tone="ok"; }
+  if(fi.done){ fi.status = fi.settled ? "تسوية معتمدة" : lg ? "تم استرداد الخطاب" : "تم الصرف"; fi.tone="ok"; }
   else if(fi.partial){ fi.status = "صرف جزئي"; fi.tone="warn"; }
   else if(fi.inv){ fi.status = "قيد الصرف"; fi.tone="info"; }
+  else if(lg && fi.submitted){ fi.status = "طلب استرداد الخطاب مقدم"; fi.tone="info"; }
+  else if(lg && handover && avail && t >= avail){ fi.status = "مستحق — اطلب استرداد الخطاب"; fi.tone="bad"; }
   else if(!handover){ fi.status = "بيانات ناقصة"; fi.tone="mute"; }
   else if(avail && t >= avail){ fi.status = "مستحق — لم يُطالب به"; fi.tone="bad"; }
   else if(t >= due){ fi.status = "حل موعده — في انتظار صرف الضمان"; fi.tone="warn"; }
@@ -3407,7 +3417,16 @@ function coAlerts(s){
     else if(s.wg.partial) add("warn","صرف جزئي","ضمان أعمال صُرف جزئيًا",`متبقي ${fmt(s.wg.remaining)} من ${fmt(s.wg.amount)}`);
     else { const d = s.wg.submitted ? dayDiff(s.wg.submitted, t) : null; add(d!=null && d>L ? "bad" : "info", d!=null && d>L ? "متأخر" : "قيد الصرف", d!=null && d>L ? "ضمان أعمال مقدم ولم يُصرف" : "ضمان أعمال قيد الصرف", `${certLabel(s.wg.inv)}${s.wg.place&&s.wg.place!=="—"?` · في ${s.wg.place}`:""}${d!=null?` · مقدم من ${d} يوم`:""}`); }
   }
-  if(!s.fi.done && s.handover){
+  if(s.fi.kind==="lg" && !s.fi.done && s.fi.lgExpiry){ const d=dayDiff(t, s.fi.lgExpiry);
+    if(d<0) add("bad","عاجل","خطاب ضمان التأمين النهائي انتهى",`انتهى ${dmy(s.fi.lgExpiry)}${s.fi.lgNo?` · خطاب رقم ${s.fi.lgNo}`:""} — جدده أو استرده`);
+    else if(d<=30) add("warn","تجديد","خطاب ضمان التأمين النهائي ينتهي قريب",`ينتهي ${dmy(s.fi.lgExpiry)} · باقي ${d} يوم${s.fi.lgBank?` · ${s.fi.lgBank}`:""}`); }
+  if(!s.fi.done && s.handover && s.fi.kind==="lg"){
+    if(s.fi.submitted){ const d=dayDiff(s.fi.submitted,t); if(d>L) add("bad","متأخر","طلب استرداد خطاب الضمان مقدم ولم يُسترد",`مقدم من ${d} يوم`); else add("info","قيد الاسترداد","طلب استرداد خطاب الضمان مقدم",`مقدم ${dmy(s.fi.submitted)}`); }
+    else if(s.avail && t>=s.avail) add("bad","عاجل","خطاب ضمان التأمين النهائي مستحق الاسترداد",`متاح من ${dmy(s.avail)} · ${dayDiff(s.avail,t)} يوم${s.fi.amountKnown?` · ${fmt(s.fi.amount)}`:""}`);
+    else if(t>=s.due) add("warn","في انتظار الضمان","حل موعد استرداد خطاب الضمان",`السنة خلصت ${dmy(s.due)} لكن ضمان الأعمال لم يُصرف بالكامل بعد`);
+    else if(s.dueIn<=30) add("warn","قرب الاستحقاق","خطاب الضمان يستحق الاسترداد خلال 30 يوم",`موعد مرور السنة ${dmy(s.due)} · باقي ${s.dueIn} يوم`);
+  }
+  else if(!s.fi.done && s.handover){
     if(s.fi.partial) add("warn","صرف جزئي","تأمين نهائي صُرف جزئيًا",`متبقي ${fmt(s.fi.remaining)} من ${fmt(s.fi.amount)}`);
     else if(s.fi.inv){ const d = s.fi.submitted ? dayDiff(s.fi.submitted, t) : null; if(s.avail && t>=s.avail) add(d!=null && d>L ? "bad" : "info", d!=null && d>L ? "متأخر" : "قيد الصرف", d!=null && d>L ? "تأمين نهائي مقدم ولم يُصرف" : "تأمين نهائي قيد الصرف", `${certLabel(s.fi.inv)}${d!=null?` · مقدم من ${d} يوم`:""}`); }
     else if(s.avail && t>=s.avail) add("bad","عاجل","تأمين نهائي مستحق ولم يُطالب به",`متاح من ${dmy(s.avail)} · ${dayDiff(s.avail,t)} يوم`);
@@ -3424,9 +3443,10 @@ function coKpisHtml(list){
   const wgOpen = list.filter(s=>!s.wg.done), wgVal = wgOpen.reduce((a,s)=>a+s.wg.remaining,0), wgUnknown = wgOpen.filter(s=>!s.wg.amountKnown).length;
   const soon = list.filter(s=>!s.fi.done && !s.fi.inv && s.due && s.dueIn!=null && s.dueIn>=0 && s.dueIn<=30);
   const avail = list.filter(s=>!s.fi.done && s.avail && today()>=s.avail), availVal = avail.reduce((a,s)=>a+s.fi.remaining,0);
+  const lgs = list.filter(s=>s.fi.kind==="lg" && !s.fi.done), lgVal = lgs.reduce((a,s)=>a+s.fi.lgOpen,0);
   const tot = list.reduce((a,s)=>a+s.remaining,0), unknown = list.filter(s=>(!s.wg.done&&!s.wg.amountKnown)||(!s.fi.done&&!s.fi.amountKnown)).length;
   return `
-    <button type="button" class="kpi lead" data-cof="open"><span class="lbl">${ico("money")}إجمالي مستحقات الشركة بعد الختامي</span><span class="val">${money(tot)}${cur}</span><span class="sub">على ${list.filter(s=>!s.closed).length} مشروع${unknown?` · ${unknown} مشروع قيمته لسه متسجلتش`:""}</span></button>
+    <button type="button" class="kpi lead" data-cof="open"><span class="lbl">${ico("money")}إجمالي مستحقات الشركة بعد الختامي</span><span class="val">${money(tot)}${cur}</span><span class="sub">نقدي على ${list.filter(s=>!s.closed).length} مشروع${lgs.length?` · + ${lgs.length} خطاب ضمان بقيمة ${fmt(lgVal)} لم يُسترد`:""}${unknown?` · ${unknown} مشروع قيمته لسه متسجلتش`:""}</span></button>
     <button type="button" class="kpi ${wgOpen.length?"wn":""}" data-cof="wg"><span class="lbl">${ico("shield")}ضمان أعمال مطلوب رده</span><span class="val num">${wgOpen.length}</span><span class="sub">مشروع</span></button>
     <button type="button" class="kpi" data-cof="wg"><span class="lbl">${ico("money")}قيمة ضمانات الأعمال غير المحصلة</span><span class="val">${money(wgVal)}${cur}</span><span class="sub">${wgUnknown?`${wgUnknown} مشروع بدون قيمة مسجلة`:"مبالغ لم تُحصّل"}</span></button>
     <button type="button" class="kpi ${soon.length?"wn":""}" data-cof="soon"><span class="lbl">${ico("clock")}تأمينات نهائية اقترب موعدها</span><span class="val num">${soon.length}</span><span class="sub">خلال 30 يوم</span></button>
@@ -3463,7 +3483,7 @@ function renderCo(){
       <td><b>${esc(pName(p,true))}</b><div class="sub2">${coTag(p.company)}${realId(p.contractNo)?` · عقد <span class="code">${esc(p.contractNo)}</span>`:""}${p.dept?` · ${esc(p.dept)}`:""}</div></td>
       <td><span class="certp">${esc(certLabel(s.fin))}</span><div class="sub2">${s.handover?`التسليم <span class="dte">${dmy(s.handover)}</span>`:`<span class="warnline small">بدون تاريخ</span>`}</div><div class="sub2">${s.finPaid?`اتصرف${s.finPaidDate?` <span class="dte">${dmy(s.finPaidDate)}</span>`:""}`:"لم يُصرف"}</div></td>
       <td>${coToneChip(s.wg.tone, s.wg.status)}<div class="sub2">${s.wg.amountKnown?`${fmt(s.wg.amount)}${s.wg.collected&&!s.wg.done?` · حُصّل ${fmt(s.wg.collected)}`:""}`:"القيمة لم تُسجل"}</div>${s.wg.paidDate&&s.wg.done?`<div class="sub2">صُرف <span class="dte">${dmy(s.wg.paidDate)}</span></div>`:""}</td>
-      <td>${coToneChip(s.fi.tone, s.fi.status)}<div class="sub2">${s.due?`مرور السنة <span class="dte">${dmy(s.due)}</span>`:""}${s.avail&&s.avail!==s.due?` · متاح <span class="dte">${dmy(s.avail)}</span>`:""}</div><div class="sub2">${s.fi.amountKnown?`${fmt(s.fi.amount)}${s.fi.collected&&!s.fi.done?` · حُصّل ${fmt(s.fi.collected)}`:""}`:"القيمة لم تُسجل"}</div></td>
+      <td>${coToneChip(s.fi.tone, s.fi.status)}<div class="sub2">${s.fi.kind==="lg"?`خطاب ضمان${s.fi.lgNo?` ${esc(s.fi.lgNo)}`:""}${s.fi.lgExpiry?` · ينتهي <span class="dte">${dmy(s.fi.lgExpiry)}</span>`:""}`:"نقدي"}${s.fi.estimated?" · 5% تقديري":""}</div><div class="sub2">${s.due?`مرور السنة <span class="dte">${dmy(s.due)}</span>`:""}${s.avail&&s.avail!==s.due?` · متاح <span class="dte">${dmy(s.avail)}</span>`:""}</div><div class="sub2">${s.fi.amountKnown?`${fmt(s.fi.amount)}${s.fi.collected&&!s.fi.done?` · حُصّل ${fmt(s.fi.collected)}`:""}`:"القيمة لم تُسجل"}</div></td>
       <td class="n">${s.closed?`<span class="cos ok">مغلق</span>`:coRemTxt(s)}</td></tr>`; }).join("")}</tbody><tfoot><tr><td colspan="4">الإجمالي · ${rows.length} مشروع</td><td class="n"><b class="num">${fmt(rows.reduce((a,s)=>a+s.remaining,0))}</b></td></tr></tfoot>`
     : `<tbody><tr><td><div class="empty">${ico("check")}<div>${all.length?"لا توجد مشروعات بالفلاتر الحالية.":"لا يوجد مشروع اتصرف مستخلصه الختامي بعد."}</div></div></td></tr></tbody>`;
   const nAl = all.flatMap(coAlerts).filter(a=>a.sev==="bad").length;
@@ -3496,15 +3516,21 @@ function coDialog(pid){
   const payHtml = pre => { const arr=d[pre+"Payments"]; return arr.length ? `<div class="mrow mh" aria-hidden="true" style="grid-template-columns:150px minmax(0,1fr) minmax(0,1.4fr) auto"><span>التاريخ</span><span>المبلغ</span><span>ملاحظة</span><span></span></div>` + arr.map((x,i)=>`<div class="mrow" data-pay="${pre}" data-pi="${i}" style="grid-template-columns:150px minmax(0,1fr) minmax(0,1.4fr) auto"><input class="cell" type="date" data-pf="date" value="${esc(x.date||"")}" aria-label="تاريخ التحصيل"><input class="cell num" data-pf="amount" inputmode="decimal" value="${esc(x.amount??"")}" placeholder="المبلغ" aria-label="المبلغ المحصل"><input class="cell" data-pf="note" value="${esc(x.note||"")}" placeholder="شيك / تحويل…" aria-label="ملاحظة"><button type="button" class="link bad" data-rmpay="${pre}:${i}" aria-label="حذف">${ico("x")}</button></div>`).join("") : `<p class="hint">لم يُسجل تحصيل بعد.${pre==="wg"&&s0.wg.inv?.paid==="نعم"||pre==="fi"&&s0.fi.inv?.paid==="نعم"?" المستخلص متعلّم «اتصرف» فبيتحسب متحصل بالكامل.":""}</p>`; };
   const logHtml = () => d.log.length ? `<div class="feed">${d.log.slice().reverse().map(x=>{ const n=who(x.by); return `<div class="feed-i"><span class="dot">${esc(initials(n))}</span><div><b>${esc(n)}</b><div class="txt pre">${esc(x.text)}</div></div><span class="when dte">${dmy(x.at)}</span></div>`; }).join("")}</div>` : `<p class="hint">لا توجد تعديلات مسجلة.</p>`;
   const sec = (pre, title, type, icon) => { const s=s0[pre]; return `<section class="sec"><h3>${ico(icon)}${title}</h3>
+      ${pre==="fi"?`<div class="fields" style="margin-bottom:12px"><div class="f"><label for="co_fiKind">نوع التأمين النهائي</label><select id="co_fiKind"><option value="cash" ${d.fiKind!=="lg"?"selected":""}>نقدي — 5% من قيمة العقد</option><option value="lg" ${d.fiKind==="lg"?"selected":""}>خطاب ضمان</option></select></div>
+        <div class="f fi-lg">${`<label for="co_fiLgNo">رقم خطاب الضمان</label><input id="co_fiLgNo" value="${esc(d.fiLgNo||"")}">`}</div>
+        <div class="f fi-lg"><label for="co_fiLgBank">البنك</label><input id="co_fiLgBank" value="${esc(d.fiLgBank||"")}"></div>
+        <div class="f fi-lg"><label for="co_fiLgExpiry">تاريخ انتهاء الخطاب</label><input id="co_fiLgExpiry" type="date" value="${esc(d.fiLgExpiry||"")}"></div>
+        <div class="f fi-lg"><label for="co_fiLgReturned">تاريخ استرداد الخطاب</label><input id="co_fiLgReturned" type="date" value="${esc(d.fiLgReturned||"")}"></div>
+        </div><p class="hint" id="coFi5"></p>`:""}
       <div class="fields">
-        <div class="f"><label for="co_${pre}Inv">مستخلص ${title}</label><select id="co_${pre}Inv">${optInv(vs.filter(v=>v.type===type), s.inv?.id||"", vs.some(v=>v.type===type)?"لم يُسجل بعد":`لا يوجد مستخلص «${type}» على المشروع`)}</select></div>
-        ${fld(`co_${pre}Amt`, "القيمة المستحقة", has(d[pre+"Amount"])?d[pre+"Amount"]:"", "number", `placeholder="${s.inv?fmt(calc(s.inv).net):"اكتب القيمة"}"`)}
+        <div class="f fi-cash-${pre}"><label for="co_${pre}Inv">مستخلص ${title}</label><select id="co_${pre}Inv">${optInv(vs.filter(v=>v.type===type), s.inv?.id||"", vs.some(v=>v.type===type)?"لم يُسجل بعد":`لا يوجد مستخلص «${type}» على المشروع`)}</select></div>
+        ${fld(`co_${pre}Amt`, pre==="fi"?"قيمة التأمين النهائي":"القيمة المستحقة", has(d[pre+"Amount"])?d[pre+"Amount"]:"", "number", `placeholder="${s.inv?fmt(calc(s.inv).net):"اكتب القيمة"}"`)}
         ${fld(`co_${pre}Sub`, "تاريخ تقديم المستخلص", d[pre+"Submitted"]||"", "date")}
-        <div class="f"><label>مكان المستخلص الحالي</label><div class="calcs"><div id="co_${pre}Place"><b>—</b></div></div></div>
+        <div class="f fi-cash-${pre}"><label>مكان المستخلص الحالي</label><div class="calcs"><div id="co_${pre}Place"><b>—</b></div></div></div>
       </div>
       ${pre==="fi"?`<div class="pinfo" id="coFiDates" style="margin-top:12px"></div>`:""}
-      <h4 class="coh4">التحصيل (يدعم الصرف الجزئي) <button type="button" class="btn sm" data-addpay="${pre}">${ico("plus")}إضافة تحصيل</button></h4>
-      <div id="co_${pre}Pays" style="display:flex;flex-direction:column;gap:8px">${payHtml(pre)}</div>
+      <div class="fi-cash-${pre}"><h4 class="coh4">التحصيل (يدعم الصرف الجزئي) <button type="button" class="btn sm" data-addpay="${pre}">${ico("plus")}إضافة تحصيل</button></h4>
+      <div id="co_${pre}Pays" style="display:flex;flex-direction:column;gap:8px">${payHtml(pre)}</div></div>
       <div class="co-tot" id="co_${pre}Tot"></div>
       <label class="chk" style="margin-top:10px"><input type="checkbox" id="co_${pre}Set" ${d[pre+"Settled"]?"checked":""}> إغلاق بتسوية معتمدة (من غير تحصيل كامل)</label>
       <div class="f wide" style="margin-top:10px"><label for="co_${pre}Note">ملاحظات</label><textarea id="co_${pre}Note" placeholder="أي تفاصيل عن المطالبة أو الصرف">${esc(d[pre+"Note"]||"")}</textarea></div>
@@ -3535,6 +3561,7 @@ function coDialog(pid){
       const pays = pre => d[pre+"Payments"].map(x=>({date:x.date||"", amount:has(x.amount)&&String(x.amount).trim()!==""?num(x.amount):"", note:(x.note||"").trim()})).filter(x=>num(x.amount)>0);
       const data = {...stripId(d), projectId:pid, finalInvoiceId: fin.id, handoverDate: hand && hand!==handDefault ? hand : "",
         wgInvoiceId: val("co_wgInv"), wgAmount: nval("co_wgAmt"), wgSubmitted: val("co_wgSub"), wgPayments: pays("wg"), wgSettled: form.querySelector("#co_wgSet").checked, wgNote: val("co_wgNote").trim(),
+        fiKind: val("co_fiKind")||"cash", fiLgNo: val("co_fiLgNo").trim(), fiLgBank: val("co_fiLgBank").trim(), fiLgExpiry: val("co_fiLgExpiry"), fiLgReturned: val("co_fiLgReturned"),
         fiInvoiceId: val("co_fiInv"), fiAmount: nval("co_fiAmt"), fiSubmitted: val("co_fiSub"), fiPayments: pays("fi"), fiSettled: form.querySelector("#co_fiSet").checked, fiNote: val("co_fiNote").trim(),
         updatedAt: new Date().toISOString(), updatedBy: myId||""};
       // سجل المراجعة: أي تغيير في التواريخ أو القيم
@@ -3542,6 +3569,8 @@ function coDialog(pid){
       const cmp = (lab, a, b, f=x=>x) => { if(String(a??"")!==String(b??"")) ch.push(`${lab}: ${a!==""&&a!=null?f(a):"—"} ← ${b!==""&&b!=null?f(b):"—"}`); };
       cmp("تاريخ التسليم الابتدائي", prevHand, s1.handover, dmy);
       if(s0.fin.id!==s1.fin.id) ch.push(`المستخلص الختامي ← ${certLabel(s1.fin)}`);
+      if(s0.fi.kind!==s1.fi.kind) ch.push(`نوع التأمين النهائي ← ${s1.fi.kind==="lg"?"خطاب ضمان":"نقدي"}`);
+      if(s1.fi.kind==="lg"){ cmp("تاريخ انتهاء خطاب الضمان", s0.fi.lgExpiry||"", s1.fi.lgExpiry||"", dmy); cmp("تاريخ استرداد خطاب الضمان", s0.fi.kind==="lg"?s0.fi.paidDate||"":"", s1.fi.paidDate||"", dmy); }
       for(const [pre, lab] of [["wg","ضمان الأعمال"],["fi","التأمين النهائي"]]){
         if((s0[pre].inv?.id||"")!==(s1[pre].inv?.id||"")) ch.push(`مستخلص ${lab} ← ${s1[pre].inv?certLabel(s1[pre].inv):"بدون"}`);
         cmp(`قيمة ${lab}`, s0[pre].amount||"", s1[pre].amount||"", fmt);
@@ -3559,13 +3588,21 @@ function coDialog(pid){
       const cur = () => { const fin = vs.find(v=>v.id===val("coFin")) || s0.fin, hand=val("coHand");
         return coCompute(p, {...d, finalInvoiceId:fin.id, handoverDate: hand && hand!==(fin.date||"") ? hand : "",
           wgInvoiceId:val("co_wgInv"), wgAmount:nval("co_wgAmt"), wgSubmitted:val("co_wgSub"), wgSettled:form.querySelector("#co_wgSet").checked,
+          fiKind:val("co_fiKind")||"cash", fiLgNo:val("co_fiLgNo"), fiLgBank:val("co_fiLgBank"), fiLgExpiry:val("co_fiLgExpiry"), fiLgReturned:val("co_fiLgReturned"),
           fiInvoiceId:val("co_fiInv"), fiAmount:nval("co_fiAmt"), fiSubmitted:val("co_fiSub"), fiSettled:form.querySelector("#co_fiSet").checked}); };
       const refresh = () => { const s = cur();
         form.querySelector("#coSum").innerHTML = coSummaryHtml(s) + (s.closed ? `<p class="hint" style="color:var(--ok);font-weight:600">${ico("check")} المستحقات اتقفلت بالكامل.</p>` : `<p class="hint">المتبقي للشركة: <b class="num">${fmt(s.remaining)}</b> ${esc(state.cfg.currency||"")}${coUnknown(s)?" — وفيه قيمة لسه متسجلتش (اكتبها تحت عشان تدخل في الحساب)":""}</p>`);
         for(const pre of ["wg","fi"]){ const x=s[pre];
           form.querySelector(`#co_${pre}Place`).innerHTML = x.inv ? `<b>${esc(x.place==="—"?"جهة بدون مراحل":x.place)}</b>` : "<b>—</b>";
+          if(pre==="fi" && x.kind==="lg"){ form.querySelector("#co_fiTot").innerHTML = `<span>قيمة خطاب الضمان <b class="num">${fmt(x.amount)}</b></span>${x.lgExpiry?`<span>ينتهي <b class="dte">${dmy(x.lgExpiry)}</b></span>`:""}${coToneChip(x.tone,x.status)}`; continue; }
           form.querySelector(`#co_${pre}Tot`).innerHTML = `<span>المستحق <b class="num">${fmt(x.amount)}</b></span><span>المحصل <b class="num">${fmt(x.collected)}</b></span><span>المتبقي <b class="num">${fmt(x.remaining)}</b></span>${coToneChip(x.tone,x.status)}`; }
         form.querySelector("#coFiDates").innerHTML = `<div><span>بداية السنة (التسليم الابتدائي)</span>${s.handover?`<span class="dte">${dmy(s.handover)}</span>`:"بيانات ناقصة"}</div><div><span>موعد مرور السنة</span>${s.due?`<span class="dte">${dmy(s.due)}</span>`:"—"}</div><div><span>تاريخ صرف ضمان الأعمال</span>${s.wg.done?(s.wg.paidDate?`<span class="dte">${dmy(s.wg.paidDate)}</span>`:"اتصرف (التاريخ غير مسجل)"):"لم يُصرف بعد"}</div><div><span>تاريخ إتاحة المطالبة</span>${s.avail?`<b class="dte">${dmy(s.avail)}</b>`:"بعد صرف ضمان الأعمال"}</div>`;
+        { const lgOn = val("co_fiKind")==="lg", cv = contractVal(p);
+          form.querySelectorAll(".fi-lg").forEach(el=>el.hidden=!lgOn); form.querySelectorAll(".fi-cash-fi").forEach(el=>el.hidden=lgOn);
+          form.querySelector('label[for="co_fiAmt"]').textContent = lgOn ? "قيمة خطاب الضمان" : "قيمة التأمين النهائي";
+          form.querySelector('label[for="co_fiSub__t"], label[for="co_fiSub"]').textContent = lgOn ? "تاريخ طلب استرداد الخطاب" : "تاريخ تقديم المستخلص";
+          form.querySelector("#co_fiAmt").placeholder = cv>0 ? fmt(Math.round(cv*0.05)) : "اكتب القيمة";
+          form.querySelector("#coFi5").innerHTML = cv>0 ? `5% من قيمة العقد${num(p.totalReduced)>0?" بعد التخفيض":""} (${fmt(cv)}) = <b class="num">${fmt(Math.round(cv*0.05))}</b>${has(nval("co_fiAmt"))?"":" — دي القيمة المحسوبة لحد ما تكتب القيمة الفعلية"}` : "قيمة العقد مش متسجلة في بيانات المشروع، فاكتب قيمة التأمين النهائي بنفسك."; }
         const hand=val("coHand"); form.querySelector("#coRsnF").hidden = !(s0.handover && hand!==s0.handover);
       };
       form.querySelector("#coFin").addEventListener("change", ()=>{ const fin=vs.find(v=>v.id===val("coFin")); if(fin && !d.handoverDate) form.querySelector("#coHand").value = fin.date||""; refresh(); });
@@ -3575,7 +3612,7 @@ function coDialog(pid){
         box.addEventListener("click", e=>{ const b=e.target.closest("[data-rmpay]"); if(b){ d[pre+"Payments"].splice(+b.dataset.rmpay.split(":")[1],1); box.innerHTML=payHtml(pre); refresh(); } });
       }
       form.querySelectorAll("[data-addpay]").forEach(b=>b.onclick=()=>{ const pre=b.dataset.addpay; d[pre+"Payments"].push({date:today(),amount:"",note:""}); const box=form.querySelector(`#co_${pre}Pays`); box.innerHTML=payHtml(pre); box.querySelector("[data-pi]:last-child [data-pf=amount]")?.focus(); });
-      ["coHand","co_wgInv","co_wgAmt","co_wgSub","co_wgSet","co_fiInv","co_fiAmt","co_fiSub","co_fiSet"].forEach(id=>{ const el=form.querySelector("#"+id); el.addEventListener("input",refresh); el.addEventListener("change",refresh); });
+      ["coHand","co_wgInv","co_wgAmt","co_wgSub","co_wgSet","co_fiInv","co_fiAmt","co_fiSub","co_fiSet","co_fiKind","co_fiLgNo","co_fiLgBank","co_fiLgExpiry","co_fiLgReturned"].forEach(id=>{ const el=form.querySelector("#"+id); el.addEventListener("input",refresh); el.addEventListener("change",refresh); });
       refresh();
     }
   });
@@ -3585,14 +3622,14 @@ function coDialog(pid){
 function coAoa(){
   return coFiltered().map((s,i)=>{ const p=s.p; return [i+1, pName(p,false), p.contractNo||"", p.company||"", p.dept||"", certLabel(s.fin), s.finPaidDate||"", s.handover||"",
     s.wg.amount||"", s.wg.status, s.wg.inv?certLabel(s.wg.inv):"", s.wg.paidDate||"", s.wg.collected||"", s.wg.remaining||"",
-    s.fi.amount||"", s.due||"", s.avail||"", s.fi.status, s.fi.inv?certLabel(s.fi.inv):"", s.fi.collected||"", s.fi.remaining||"", s.remaining||""]; });
+    s.fi.kind==="lg"?"خطاب ضمان":"نقدي", s.fi.lgNo||"", s.fi.lgExpiry||"", s.fi.amount||"", s.due||"", s.avail||"", s.fi.status, s.fi.inv?certLabel(s.fi.inv):"", s.fi.collected||"", s.fi.remaining||"", s.remaining||""]; });
 }
-const CO_HEAD = ["م","اسم المشروع","رقم العقد","الشركة","جهة الإسناد","المستخلص الختامي","تاريخ صرف الختامي","تاريخ التسليم الابتدائي","قيمة ضمان الأعمال","موقف رد ضمان الأعمال","مستخلص رد الضمان","تاريخ صرف الضمان","المحصل من الضمان","المتبقي من الضمان","قيمة التأمين النهائي","موعد مرور السنة","موعد إتاحة التأمين النهائي","موقف التأمين النهائي","مستخلص رد التأمين","المحصل من التأمين","المتبقي من التأمين","إجمالي المتبقي للشركة"];
+const CO_HEAD = ["م","اسم المشروع","رقم العقد","الشركة","جهة الإسناد","المستخلص الختامي","تاريخ صرف الختامي","تاريخ التسليم الابتدائي","قيمة ضمان الأعمال","موقف رد ضمان الأعمال","مستخلص رد الضمان","تاريخ صرف الضمان","المحصل من الضمان","المتبقي من الضمان","نوع التأمين النهائي","رقم خطاب الضمان","انتهاء خطاب الضمان","قيمة التأمين النهائي","موعد مرور السنة","موعد إتاحة التأمين النهائي","موقف التأمين النهائي","مستخلص رد التأمين","المحصل من التأمين","المتبقي من التأمين","إجمالي المتبقي للشركة"];
 async function exportCoXlsx(){
   let X; try{ X=await loadXLSX(); }catch{ toast("تعذر تحميل مكتبة Excel"); return; }
   memo.clear();
   const aoa=[["كشف مستحقات الشركة بعد الختامي"],[`تحديث بتاريخ: ${dmy(today())}`],[],CO_HEAD,...coAoa()];
-  const wb=newWb(X); X.utils.book_append_sheet(wb, sheetOf(X,aoa,[5,40,16,18,22,12,13,13,14,18,20,13,14,14,14,13,13,24,20,14,14,16]), "مستحقات ما بعد الختامي");
+  const wb=newWb(X); X.utils.book_append_sheet(wb, sheetOf(X,aoa,[5,40,16,18,22,12,13,13,14,18,20,13,14,14,12,16,13,14,13,13,24,20,14,14,16]), "مستحقات ما بعد الختامي");
   await offer(`كشف مستحقات ما بعد الختامي ${today()}.xlsx`, new Uint8Array(X.write(wb,{bookType:"xlsx",type:"array"})));
 }
 function exportCoHtml(){
@@ -3608,7 +3645,7 @@ th{background:#dde3f2}td.n{direction:ltr;text-align:left;white-space:nowrap}.c{t
 ${rows.map((s,i)=>`<tr><td class="c">${i+1}</td><td><b>${esc(pName(s.p,false))}</b><br><small>عقد ${esc(s.p.contractNo||"—")} · ${esc(s.p.company||"")} · ${esc(s.p.dept||"")}</small></td>
 <td>${esc(certLabel(s.fin))} — ${s.finPaid?"اتصرف":"لم يُصرف"} ${d(s.finPaidDate)}<br><small>التسليم الابتدائي: ${d(s.handover)}</small></td>
 <td><b>${esc(s.wg.status)}</b><br><small>القيمة ${n(s.wg.amount)} · المحصل ${n(s.wg.collected)} · صُرف ${d(s.wg.paidDate)}</small></td>
-<td><b>${esc(s.fi.status)}</b><br><small>مرور السنة ${d(s.due)} · الإتاحة ${d(s.avail)} · القيمة ${n(s.fi.amount)} · المحصل ${n(s.fi.collected)}</small></td>
+<td><b>${esc(s.fi.status)}</b><br><small>${s.fi.kind==="lg"?`خطاب ضمان ${esc(s.fi.lgNo)}${s.fi.lgExpiry?` ينتهي ${d(s.fi.lgExpiry)}`:""} · `:"نقدي · "}مرور السنة ${d(s.due)} · الإتاحة ${d(s.avail)} · القيمة ${n(s.fi.amount)} · المحصل ${n(s.fi.collected)}</small></td>
 <td class="n">${s.closed?"مغلق":fmt(s.remaining)}</td></tr>`).join("")}
 </tbody><tfoot><tr><td colspan="5">الإجمالي</td><td class="n">${fmt(tot)}</td></tr></tfoot></table><p style="color:#666">للطباعة أو الحفظ PDF: افتح الملف في المتصفح واضغط Ctrl+P.</p></body></html>`;
   offer(`كشف مستحقات ما بعد الختامي ${today()}.html`, html);
