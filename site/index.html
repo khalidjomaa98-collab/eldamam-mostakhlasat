@@ -1188,6 +1188,8 @@ html{scrollbar-gutter:stable}
 .psub[role=button]:hover{border-color:var(--accent)}
 .psub[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
 .psub[aria-pressed="true"] b{color:#fff}
+
+.nt2.flw{color:var(--info)}
 </style>
 <style>
 [hidden]{display:none!important}
@@ -2163,7 +2165,7 @@ function rowHtml(v,k,o){
   const amt = `${o.proj?`<span class="certp ${k.work?"":"ret"}">${esc(certLabel(v))}</span>`:""}<b class="num amtv">${fmt(k.net)}</b>
       ${k.exec!=null?`<div class="pg"><span class="pgb"><i style="width:${Math.min(100,k.exec*100)}%"></i></span><span class="num">${pctTxt(k.exec)}</span></div>`:""}
       ${o.extra&&k.work&&Math.abs(num(v.gross)-num(k.net))>0.5?`<div class="amx">الإجمالي التراكمي <span class="num">${fmt(v.gross)}</span></div>`:""}${k.mat?`<div class="amx">بعد الخامات <span class="num">${fmt(k.afterMat)}</span></div>`:""}${has(v.bankExpected)?`<div class="amx">المتوقع للبنك <span class="num">${fmt(v.bankExpected)}</span></div>`:""}`;
-  const note = (isRaiseRef(v)&&v.paid!=="نعم"?`<div class="rbl ${raiseReady(v)?"ok":""}">${ico(raiseReady(v)?"check":"clock")}<span>${esc(raiseTxt(v))}</span></div>`:"") + (v.notes?`<div class="nt2" title="${esc(v.notes)}">${ico("msg")}<span>${esc(v.notes)}</span></div>`:"");
+  const note = (isRaiseRef(v)&&v.paid!=="نعم"?`<div class="rbl ${raiseReady(v)?"ok":""}">${ico(raiseReady(v)?"check":"clock")}<span>${esc(raiseTxt(v))}</span></div>`:"") + ((v.log||[]).length?(()=>{ const l=v.log.at(-1); return `<div class="nt2 flw" title="آخر متابعة — ${esc(who(l.by))}: ${esc(l.text)}">${ico("clock")}<span><span class="dte">${dmy(l.date)}</span> · ${esc(l.text)}</span></div>`; })():"") + (v.notes?`<div class="nt2" title="${esc(v.notes)}">${ico("msg")}<span>${esc(v.notes)}</span></div>`:"");
   const first = o.proj
     ? `<td class="pj"><button type="button" class="pname" data-inv="${esc(v.id)}" title="${esc(p.name||"")}">${esc(pName(p,o.short))}</button>
       <div class="pjm">${esc(p.location||"—")} · ${coTag(k.company)}</div>${idChips(p)}${note}</td>`
@@ -2452,7 +2454,8 @@ function invDialog(v, projectId){
   const d = v ? clone(v) : {order:nextOrder(state.invoices), projectId:projectId||"", certNo:"", type:"مستخلص أعمال", gross:"", date:today(), paid:"لا", paidDate:"", bankExpected:"",
     insStatus:"لا", insPaid:"", mpStatus:"", mpEstimate:"", showSat:true, showMp:false, notes:"", stage:"", stageDate:"", stageLog:[], materials:[], company:""};
   d._draft = true; d.id = v?.id || "__new";
-  d.materials ||= []; d.stageLog ||= [];
+  d.materials ||= []; d.stageLog ||= []; d.log ||= [];
+  const vLogHtml = () => d.log.length ? `<div class="feed">${d.log.slice().reverse().map(x=>{ const n=who(x.by); return `<div class="feed-i"><span class="dot">${esc(initials(n))}</span><div><b>${esc(n)}</b><div class="txt pre">${esc(x.text)}</div></div><span class="when dte">${dmy(x.date)}</span></div>`; }).join("")}</div>` : `<p class="hint">لا توجد متابعات مسجلة على المستخلص ده.</p>`;
   if(!v && projectId){ const n = state.invoices.filter(x=>x.projectId===projectId && isWork(x.type)).length; d.certNo = `جاري ${n+1}`; }
   const origStage = v?.stage || "";
   const ro = !state.canWrite;
@@ -2513,6 +2516,9 @@ function invDialog(v, projectId){
           ${sfld("vCompany","الشركة (لو مختلفة عن شركة المشروع)",uniq([...(cfg.companies||[]),...state.projects.map(p=>p.company)]),d.company,"نفس شركة المشروع")}
         </div>
       </section>
+      <section class="sec"><h3>${ico("clock")}سجل المتابعة</h3>
+        <div style="display:flex;gap:8px;align-items:flex-start"><textarea class="cell" id="vNote" rows="2" placeholder="اكتب ما تم في المتابعة… ستُسجل باسمك وبتاريخ اليوم" style="flex:1;min-height:46px;resize:vertical"></textarea><button type="button" class="btn" id="vAddNote">${ico("plus")}إضافة</button></div>
+        <div id="vLogBox">${vLogHtml()}</div></section>
     </fieldset>
     ${v?(()=>{ const h=state.activity.filter(a=>a.inv===v.id).slice(0,12); return `<section class="sec"><h3>${ico("clock")}سجل التعديلات</h3>${h.length?`<div class="feed">${h.map(a=>{const n=who(a.by); return `<div class="feed-i"><span class="dot">${esc(initials(n))}</span><div><b>${esc(n)}</b><div class="txt">${esc(a.text)}</div></div><span class="when">${esc(ago(a.at))}</span></div>`;}).join("")}</div>`:`<p class="hint">لا توجد تعديلات مسجلة على هذا المستخلص.</p>`}</section>`; })():""}`,
     foot: footBtns("حفظ المستخلص", v?"vDel":""),
@@ -2520,6 +2526,7 @@ function invDialog(v, projectId){
       if(ro) return;
       const p = state.projects.find(x=>x.contractNo.trim()===val("vContract").trim());
       if(!p){ toast("رقم العقد غير موجود في المشاريع. أضف المشروع أولًا."); form.querySelector("#vContract").focus(); return; }
+      { const pn=val("vNote").trim(); if(pn) d.log.push({date:today(), by:myId||"", text:pn}); }
       const data = {...stripId(d)}; delete data._draft;
       Object.assign(data, {projectId:p.id, certNo:val("vCert").trim(), type:val("vType")||"مستخلص أعمال", gross:nval("vGross"), date:val("vDate"),
         bankExpected:nval("vBank"), paid:val("vPaid"), paidDate:val("vPaidDate"), insStatus:val("vIns"), insPaid:nval("vInsPaid"), insRaise: val("vIns")==="تعلية" ? nval("vRaise") : (d.insRaise??""), insRaiseDate: val("vIns")==="تعلية" ? (val("vRaiseDate")||today()) : (d.insRaiseDate||""),
@@ -2534,11 +2541,12 @@ function invDialog(v, projectId){
       data.updatedBy = myId||"";
       const ref = v ? db.collection("invoices").doc(v.id) : db.collection("invoices").doc();
       if(await save(ref, data)){ dlg.close(); toast(v?"تم حفظ المستخلص":"تم تسجيل المستخلص");
-        const ch=[]; if(v){ if((v.stage||"")!==(data.stage||"")) ch.push(`المكان ← ${data.stage||"غير محدد"}`); if((v.paid||"")!==(data.paid||"")) ch.push(data.paid==="نعم"?"تم الصرف":`الصرف ← ${data.paid==="لا"?"لم يُصرف":"لم يُحدَّث"}`); if((v.insStatus||"")!==(data.insStatus||"")) ch.push(`التأمينات ← ${data.insStatus||"لم يُحدَّث"}`); if((v.mpStatus||"")!==(data.mpStatus||"")) ch.push(`القوة العاملة ← ${data.mpStatus||"لم يُحدَّث"}`); if(num(v.gross)!==num(data.gross)) ch.push(`القيمة ← ${fmt(data.gross)}`); if(num(v.bankExpected)!==num(data.bankExpected)) ch.push("المتوقع للبنك"); if((v.notes||"")!==(data.notes||"")) ch.push("الملاحظات"); if(JSON.stringify(v.materials||[])!==JSON.stringify(data.materials)) ch.push("الخامات"); if(!!v.showSat!==!!data.showSat) ch.push(data.showSat?"أُضيف لكشف المتابعة":"أُزيل من كشف المتابعة"); }
+        const ch=[]; if(v){ if((v.log||[]).length!==(data.log||[]).length) ch.push("متابعة جديدة"); if((v.stage||"")!==(data.stage||"")) ch.push(`المكان ← ${data.stage||"غير محدد"}`); if((v.paid||"")!==(data.paid||"")) ch.push(data.paid==="نعم"?"تم الصرف":`الصرف ← ${data.paid==="لا"?"لم يُصرف":"لم يُحدَّث"}`); if((v.insStatus||"")!==(data.insStatus||"")) ch.push(`التأمينات ← ${data.insStatus||"لم يُحدَّث"}`); if((v.mpStatus||"")!==(data.mpStatus||"")) ch.push(`القوة العاملة ← ${data.mpStatus||"لم يُحدَّث"}`); if(num(v.gross)!==num(data.gross)) ch.push(`القيمة ← ${fmt(data.gross)}`); if(num(v.bankExpected)!==num(data.bankExpected)) ch.push("المتوقع للبنك"); if((v.notes||"")!==(data.notes||"")) ch.push("الملاحظات"); if(JSON.stringify(v.materials||[])!==JSON.stringify(data.materials)) ch.push("الخامات"); if(!!v.showSat!==!!data.showSat) ch.push(data.showSat?"أُضيف لكشف المتابعة":"أُزيل من كشف المتابعة"); }
         const lab = `${certLabel(data)} · ${pName(p,true)}`;
         logAct(v ? `عدّل ${lab}${ch.length?" — "+ch.join("، "):""}` : `سجّل مستخلص جديد: ${lab}`, ref.id, p.id); }
     },
     onMount: () => {
+      form.querySelector("#vAddNote").onclick=()=>{ const t=val("vNote").trim(); if(!t) return; d.log.push({date:today(), by:myId||"", text:t}); form.querySelector("#vNote").value=""; form.querySelector("#vLogBox").innerHTML=vLogHtml(); toast("أُضيفت المتابعة. اضغط «حفظ المستخلص» لتسجيلها"); };
       const refresh = () => {
         const p = state.projects.find(x=>x.contractNo.trim()===val("vContract").trim());
         d.projectId = p?.id || ""; d.type = val("vType"); d.gross = nval("vGross");
