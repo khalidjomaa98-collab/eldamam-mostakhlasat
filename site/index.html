@@ -1090,7 +1090,7 @@ body.nodb .fab,body.nodb .bulk{display:none!important}
 
 /* ===== جدول ملفات التأمينات ===== */
 #insTable{table-layout:fixed;min-width:1000px}
-#insTable col.ic-pj{width:22%} #insTable col.ic-inv{width:205px} #insTable col.ic-file{width:170px} #insTable col.ic-nx{width:115px}
+#insTable col.ic-pj{width:20%} #insTable col.ic-inv{width:168px} #insTable col.ic-due{width:118px} #insTable col.ic-file{width:158px} #insTable col.ic-nx{width:100px}
 #insTable td{vertical-align:top;padding:12px 10px}
 #insTable td.idx{padding-top:14px}
 #insTable td.pj{min-width:0}
@@ -1098,7 +1098,9 @@ body.nodb .fab,body.nodb .bulk{display:none!important}
 #insTable td.pj .sub2{margin:3px 0 2px}
 #insTable td.ins-txt{min-width:0;max-width:none}
 #insTable .iinv .certp{white-space:normal;line-height:1.5}
-#insTable .iamt{font-weight:700;font-size:.95rem;margin:2px 0 6px}
+#insTable .iamt{font-weight:700;font-size:1rem;color:var(--bad)}
+#insTable .iinv .certp{margin-bottom:6px}
+#insTable{min-width:1000px}
 #insTable .ist{display:flex;justify-content:flex-start}
 #insTable .ifile b{display:block;font-size:.9rem;margin-bottom:3px}
 #insTable .reqn{white-space:nowrap;text-align:start;direction:ltr;font-size:.72rem}
@@ -1106,7 +1108,7 @@ body.nodb .fab,body.nodb .bulk{display:none!important}
 #insTable .stgt{max-width:100%;white-space:normal}
 #insTable td.inx,#insTable td.inx .sub2{white-space:nowrap}
 #insTable td.inx .sub2{margin-top:4px}
-@media (max-width:900px){ #insTable{width:1000px} #insTable td.pj{width:auto;min-width:0;max-width:none} }
+@media (max-width:900px){ #insTable{width:1040px} #insTable td.pj{width:auto;min-width:0;max-width:none} }
 
 /* اختيار رقم العقد */
 .cpick{position:absolute;top:calc(100% + 4px);inset-inline-start:0;z-index:30;width:max(100%,380px);max-width:min(520px,86vw);max-height:320px;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 34px rgba(10,20,60,.18);padding:4px}
@@ -3182,15 +3184,16 @@ function renderIns(){
   if(!rows.length){
     $("#insTable").innerHTML = `<tbody><tr><td><div class="empty">${ico("shield")}<div>${state.ins.length?"لا توجد ملفات بالفلاتر الحالية.":"لا توجد ملفات تأمينات بعد. اضغط «ملف تأمينات» أو اختر مشروعًا من القائمة أدناه."}</div></div></td></tr></tbody>`;
   } else {
-    $("#insTable").innerHTML = `<colgroup><col style="width:38px"><col class="ic-pj"><col class="ic-inv"><col class="ic-file"><col><col><col class="ic-nx"></colgroup><thead><tr><th class="c">م</th><th class="pjh">المشروع</th><th>المستخلص وموقفه</th><th>رقم الملف والطلبات</th><th>الوضع الحالي</th><th>المطلوب</th><th>المتابعة</th></tr></thead><tbody>${
+    $("#insTable").innerHTML = `<colgroup><col style="width:38px"><col class="ic-pj"><col class="ic-inv"><col class="ic-due"><col class="ic-file"><col><col><col class="ic-nx"></colgroup><thead><tr><th class="c">م</th><th class="pjh">المشروع</th><th>المستخلص وموقفه</th><th class="n">المطلوب دفعه للتأمينات</th><th>رقم الملف والطلبات</th><th>الوضع الحالي</th><th>المطلوب</th><th>المتابعة</th></tr></thead><tbody>${
       rows.map(([r,p],i)=>{ p=p||{}; const tone=insTone(r.status), iv=insInv(r), ik=iv?calc(iv):null, last=(r.log||[]).at?.(-1), late=r.nextDate && r.nextDate<today() && !insDone(r);
         const reqs=(r.requests||[]).filter(x=>x.no);
         return `<tr class="r insr ${i%2?"zb":""}" style="--sc:${coVar(p.company)};cursor:pointer" data-ins="${esc(r.id)}">
         <td class="c idx num">${i+1}</td>
         <td class="pj"><span class="pname" title="${esc(p.name||"")}">${esc(pName(p,true))}</span><div class="sub2">${coTag(p.company)} · ${esc(p.location||"—")}</div>${idChips(p)}</td>
-        <td class="iinv">${iv?`<span class="certp ${ik.work?"":"ret"}">${esc(certLabel(iv))}</span><div class="iamt num">${fmt(ik.net)}</div><div class="ist">${statusBtn(iv,ik)}</div>${ik.insLabel==="تم عمل تعلية"&&num(iv.insRaise)?`<div class="sub2">تعلية <span class="num">${fmt(iv.insRaise)}</span></div>`:""}`:`<div class="warnline small">غير مربوط بمستخلص</div><div class="sub2">افتح الملف واختر المستخلص</div>`}</td>
+        <td class="iinv">${iv?`<span class="certp ${ik.work?"":"ret"}">${esc(certLabel(iv))}</span><div class="ist">${statusBtn(iv,ik)}</div>${ik.insLabel==="تم عمل تعلية"&&num(iv.insRaise)?`<div class="sub2">تعلية <span class="num">${fmt(iv.insRaise)}</span></div>`:""}`:`<div class="warnline small">غير مربوط بمستخلص</div><div class="sub2">افتح الملف واختر المستخلص</div>`}</td>
+        <td class="n idue">${num(r.amountDue)?`<div class="iamt num">${fmt(r.amountDue)}</div><div class="sub2">لصرف المستخلص</div>`:`<span class="faint small">لا يوجد مبلغ</span>`}</td>
         <td class="ifile"><b class="num">${esc(r.fileNo||"—")}</b>${reqs.slice(0,3).map(x=>`<span class="reqn" title="${esc(x.subject||"")}">${esc(x.no)}</span>`).join("")}${reqs.length>3?`<span class="sub2">+ ${reqs.length-3} طلب</span>`:""}</td>
-        <td class="ins-txt">${r.status?`<span class="stgt" style="--sc:${toneColor(tone)}">${esc(r.status)}</span>`:`<span class="faint small">بدون حالة</span>`}${r.statusText?`<div class="sub2 pre">${esc(r.statusText)}</div>`:""}${num(r.amountDue)?`<div class="due">مطلوب دفع <span class="num">${fmt(r.amountDue)}</span></div>`:""}</td>
+        <td class="ins-txt">${r.status?`<span class="stgt" style="--sc:${toneColor(tone)}">${esc(r.status)}</span>`:`<span class="faint small">بدون حالة</span>`}${r.statusText?`<div class="sub2 pre">${esc(r.statusText)}</div>`:""}</td>
         <td class="ins-txt">${r.required?`<div class="pre ireq">${esc(r.required)}</div>`:`<span class="faint">—</span>`}${r.owner?`<div class="sub2">${ico("users")} ${esc(r.owner)}</div>`:""}</td>
         <td class="inx">${r.nextDate?`<div class="sub2" style="margin:0">المتابعة التالية</div><span class="dbg ${late?"late":""}"><span class="dte">${dmy(r.nextDate)}</span></span>`:`<span class="faint small">لا يوجد موعد</span>`}${last?`<div class="sub2" title="${esc(last.text)}">آخر متابعة <span class="dte">${dmy(last.date)}</span></div>`:""}</td></tr>`; }).join("")
     }</tbody>`;
