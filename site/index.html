@@ -3278,10 +3278,13 @@ const raiseReady = rv => { const o=raiseOrig(rv); const f=raiseFile(rv)||(o&&ins
 const raiseTxt = rv => { const o=raiseOrig(rv), on=o?certLabel(o):"المستخلص الأصلي"; return rv.paid==="نعم" ? "اتصرف" : raiseReady(rv) ? `جاهز للصرف — تأمينات ${on} اتدفعت` : `لا يُصرف قبل دفع تأمينات ${on}`; };
 const needsCert = v => { const k=calc(v); return k.insLabel==="لم يتم استخراج الشهادة" || k.insLabel==="لم يُحدَّث"; };
 const missingCert = pid => state.invoices.filter(v=>v.projectId===pid && calc(v).insLabel==="لم يتم استخراج الشهادة");
+// الملف خلص لما شهادة المستخلص الأصلي تطلع: بيختفي من الكشف ويفضل متاح من شارة «الشهادات المستخرجة»
+const insCertDone = r => { if(/تم استخراج/.test(r.status||"")) return true; const iv=insInv(r); return !!iv && calc(iv).insLabel==="تم استخراج الشهادة"; };
 function insFiltered(){
   const f=state.insFilter, q=($("#nSearch").value||"").trim().toLowerCase(), ow=$("#nOwner").value, so=$("#nSort").value;
   const rows = state.ins.map(r=>[r, proj(r.projectId)]).filter(([r,p])=>
-    (!f.status || (f.status==="__none" ? !r.status : r.status===f.status)) && (!ow || r.owner===ow) &&
+    (f.status==="__done" ? insCertDone(r) : !insCertDone(r)) &&
+    (!f.status || f.status==="__done" || (f.status==="__none" ? !r.status : r.status===f.status)) && (!ow || r.owner===ow) &&
     (!q || `${p?.name} ${p?.shortName} ${p?.contractNo} ${p?.boqNo} ${p?.unifiedCode} ${r.fileNo} ${(r.requests||[]).map(x=>x.no+" "+x.subject).join(" ")} ${r.status} ${r.statusText} ${r.required} ${r.owner}`.toLowerCase().includes(q)));
   const key = so==="next" ? (([r])=>r.nextDate||"9999") : so==="due" ? (([r])=>-num(r.amountDue)) : (([r])=>num(r.order));
   return rows.sort((a,b)=>{ const x=key(a), y=key(b); return x>y?1:x<y?-1:0; });
@@ -3290,7 +3293,8 @@ function renderIns(){
   const cfg=state.cfg;
   if(!state.loaded.i){ $("#insKpis").innerHTML=skelKpis(4); $("#insTable").innerHTML=`<tbody><tr><td>${skelRows(6)}</td></tr></tbody>`; return; }
   fillSel("#nOwner", uniq(state.ins.map(r=>r.owner)).sort((a,b)=>a.localeCompare(b,"ar")), "الكل");
-  const all = state.ins.map(r=>[r, proj(r.projectId)]);
+  const doneC = state.ins.filter(insCertDone).length;
+  const all = state.ins.filter(r=>!insCertDone(r)).map(r=>[r, proj(r.projectId)]);
   const open = all.filter(([r])=>!insDone(r));
   const due = open.reduce((s,[r])=>s+num(r.amountDue),0);
   const lateF = open.filter(([r])=>r.nextDate && r.nextDate<today()).length;
@@ -3298,14 +3302,14 @@ function renderIns(){
   const raised = state.invoices.filter(v=>v.insStatus==="تعلية" && calc(v).insLabel==="تم عمل تعلية"), raisedSum = raised.reduce((a,v)=>a+num(v.insRaise),0);
   const cur = `<small>${esc(cfg.currency||"")}</small>`;
   $("#insKpis").innerHTML = `
-    <div class="kpi lead"><span class="lbl">${ico("shield")}ملفات تحت المتابعة</span><span class="val num">${open.length}</span><span class="sub">من ${all.length} ملف · ${all.length-open.length} خلصان</span></div>
+    <div class="kpi lead"><span class="lbl">${ico("shield")}ملفات تحت المتابعة</span><span class="val num">${open.length}</span><span class="sub">${doneC?`${doneC} ملف اتطلعت شهادته واتشال من الكشف`:`من ${all.length} ملف`}</span></div>
     <div class="kpi ${due?"wn":""}"><span class="lbl">${ico("money")}مبالغ مطلوب دفعها للتأمينات</span><span class="val">${money(due)}${cur}</span><span class="sub">${open.filter(([r])=>num(r.amountDue)).length} ملف عليه مبلغ</span></div>
     <div class="kpi ${lateF?"hl":""}"><span class="lbl">${ico("clock")}متابعات تجاوزت موعدها</span><span class="val num">${lateF}</span><span class="sub">تجاوز موعد المتابعة التالية</span></div>
     <div class="kpi ${certsMissing?"wn":""}"><span class="lbl">${ico("doc")}في انتظار شهادة التأمينات</span><span class="val num">${certsMissing}</span><span class="sub">${raised.length?`+ ${raised.length} مستخلص اتعملهم تعلية (${fmt(raisedSum)})`:"مستخلص دون شهادة ولا تعلية"}</span></div>`;
   const f=state.insFilter, sts=uniq([...(cfg.insStatuses||[]), ...state.ins.map(r=>r.status)]);
   const chip = (key,label,n,tone) => `<button type="button" class="alert st" data-insst="${esc(key)}" aria-pressed="${f.status===key}" ${n||f.status===key||key===""?"":"hidden"}>${key?`<i class="dt" style="background:${toneColor(tone)}"></i>`:""}${esc(label)} <b class="num">${n}</b></button>`;
   const noSt = all.filter(([r])=>!r.status).length;
-  $("#insChips").innerHTML = chip("","كل الملفات",all.length) + sts.map(st=>chip(st,st,all.filter(([r])=>r.status===st).length,insTone(st))).join("") + (noSt?chip("__none","بدون حالة",noSt,"mute"):"");
+  $("#insChips").innerHTML = chip("","كل الملفات",all.length) + sts.map(st=>chip(st,st,all.filter(([r])=>r.status===st).length,insTone(st))).join("") + (noSt?chip("__none","بدون حالة",noSt,"mute"):"") + (doneC||f.status==="__done"?chip("__done","الشهادات المستخرجة",doneC,"ok"):"");
   const rows = insFiltered();
   $("#insCount").textContent = `${rows.length} ملف`;
   if(!rows.length){
