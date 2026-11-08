@@ -1170,16 +1170,14 @@ html{scrollbar-gutter:stable}
 @media (max-width:900px){ .dstash{bottom:86px} }
 
 /* أماكن فرعية داخل كارت المكان الرئيسي */
-.pstep{position:relative}
-.pstep .pn small{font-weight:500;color:var(--faint);font-size:.68rem}
-.pstep.pgrp{flex:1.6 1 0}
-.psubs{display:flex;flex-direction:column;gap:3px;width:100%;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
-.psub{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:baseline;font-size:.74rem;color:var(--muted);padding:3px 6px;border-radius:6px;cursor:pointer}
-.psub b{font-size:.85rem;color:var(--fg)}
-.psub .pl{grid-column:1/-1;font-style:normal;font-size:.68rem}
-.psub:hover{background:var(--sunk)}
-.psub[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-strong);font-weight:700}
-.psub.own{cursor:default}.psub.own:hover{background:none}
+.pstep .pft{display:flex;align-items:center;gap:6px;flex-wrap:wrap;width:100%;min-height:20px}
+.psubs{display:flex;gap:4px;flex-wrap:wrap}
+.psub{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:600;color:var(--muted);background:var(--sunk);border:1px solid var(--line);border-radius:999px;padding:1px 8px;white-space:nowrap}
+.psub b{font-size:.74rem;color:var(--fg)}
+.psub[role=button]{cursor:pointer}
+.psub[role=button]:hover{border-color:var(--accent)}
+.psub[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.psub[aria-pressed="true"] b{color:#fff}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -1768,8 +1766,9 @@ function renderSat(){
     $("#satPipe").innerHTML = full.map(st=>{ const rr=inSt(st); const lt=rr.filter(([v,k])=>k.late).length, val=sum(rr,([v,k])=>k.net);
       const subs = steps.filter(x=>stageParent(x)===st).map(x=>[x, all.filter(([v,k])=>k.stage===x)]).filter(([x,r])=>r.length || f.stage===x);
       const own = all.filter(([v,k])=>k.stage===st);
-      const subHtml = subs.length ? `<span class="psubs">${own.length?`<span class="psub own"><span>${esc(st)} مباشرة</span><b class="num">${own.length}</b><span class="num">${money(sum(own,([v,k])=>k.net))}</span></span>`:""}${subs.map(([x,r])=>`<span class="psub" role="button" tabindex="0" data-pipe="${esc(x)}" aria-pressed="${f.stage===x}"><span>${esc(stageSplit(x).sub)}</span><b class="num">${r.length}</b><span class="num">${money(sum(r,([v,k])=>k.net))}</span>${r.some(([v,k])=>k.late)?`<i class="pl">${r.filter(([v,k])=>k.late).length} متأخر</i>`:""}</span>`).join("")}</span>` : "";
-      return `<div class="pstep ${subs.length?"pgrp":""}" role="button" tabindex="0" data-pipe="${esc(st)}" aria-pressed="${f.stage===st}"><span class="pn">${esc(st==="—"?"جهات بدون مراحل":st)}${subs.length?` <small>شامل ${subs.map(([x])=>esc(stageSplit(x).sub)).join(" و")}</small>`:""}</span><span class="pr"><b class="num">${rr.length}</b><span class="ps num">${money(val)}</span></span><span class="pbar"><i style="width:${Math.round(val/T*100)}%"></i></span>${lt?`<span class="pl">${lt} متأخر</span>`:`<span class="pl ok">&nbsp;</span>`}${subHtml}</div>`; }).join("");
+      const chip=(key,label,r,clk)=>`<span class="psub" ${clk?`role="button" tabindex="0" data-pipe="${esc(key)}" aria-pressed="${f.stage===key}"`:""} title="${esc(label)}: ${r.length} مستخلص · ${fmt(sum(r,([v,k])=>k.net))}">${esc(label)} <b class="num">${r.length}</b></span>`;
+      const subHtml = subs.length ? `<span class="psubs">${own.length?chip(st,"مباشرة",own,false):""}${subs.map(([x,r])=>chip(x,stageSplit(x).sub,r,true)).join("")}</span>` : "";
+      return `<div class="pstep" role="button" tabindex="0" data-pipe="${esc(st)}" aria-pressed="${f.stage===st}"><span class="pn">${esc(st==="—"?"جهات بدون مراحل":st)}</span><span class="pr"><b class="num">${rr.length}</b><span class="ps num">${money(val)}</span></span><span class="pbar"><i style="width:${Math.round(val/T*100)}%"></i></span><span class="pft">${lt?`<span class="pl">${lt} متأخر</span>`:""}${subHtml}${!lt&&!subHtml?`<span class="pl ok">&nbsp;</span>`:""}</span></div>`; }).join("");
     $("#satPipeE").textContent = empty.length ? `لا توجد مستخلصات حاليًا في: ${empty.join("، ")}` : "";
     $("#mxWrap").hidden=!state.mxOpen; $("#mxToggle").setAttribute("aria-expanded", String(state.mxOpen)); $("#mxToggle").textContent = state.mxOpen?"إخفاء الجدول":"جدول الإدارة × المكان"; }
   // heatmap
