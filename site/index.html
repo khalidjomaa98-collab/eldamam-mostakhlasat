@@ -1128,6 +1128,21 @@ body.nodb .fab,body.nodb .bulk{display:none!important}
 .dwrap .dcal{position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:6px;display:grid;place-items:center}
 .dwrap .dcal:hover{color:var(--accent-strong);background:var(--accent-soft)}
 .dwrap .dtxt:disabled~.dcal{display:none}
+
+/* حاسبة التأمينات */
+.icalc{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:var(--sunk);padding:12px 14px}
+.icalc-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.icalc-h svg.i{width:16px;height:16px;color:var(--accent-strong)}
+.icalc-g{display:grid;grid-template-columns:minmax(0,1.4fr) auto minmax(0,1fr) auto auto auto minmax(0,1.2fr);gap:8px;align-items:end}
+.icalc-g .f{margin:0}
+.icalc-op{font-weight:700;color:var(--muted);padding-bottom:10px;font-size:1.05rem}
+.icalc-pct{position:relative}
+.icalc-pct input{width:100%;padding-inline-end:30px;text-align:right}
+.icalc-pct span{position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700}
+.icalc-fix{padding:9px 12px;border-radius:10px;background:var(--surface);border:1px dashed var(--line);font-weight:700;white-space:nowrap}
+.icalc-res{padding:8px 12px;border-radius:10px;background:var(--accent-soft);color:var(--accent-strong);font-weight:800;font-size:1.1rem;white-space:nowrap;text-align:center}
+.icalc-f{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
+@media (max-width:700px){ .icalc-g{grid-template-columns:1fr} .icalc-op{display:none} }
 </style>
 <style>
 [hidden]{display:none!important}
@@ -2328,6 +2343,7 @@ dlg.addEventListener("close", ()=>lockScroll(false));
 const fld = (id,label,v,type="text",extra="") => `<div class="f${/\bwide\b/.test(extra)?" wide":""}"><label for="${id}">${label}</label><input id="${id}" type="${type==="number"?"text":type}" value="${esc(v??"")}" ${type==="number"?'inputmode="decimal" autocomplete="off" data-numf="1"':""} ${extra.replace(/\bwide\b/,"")}></div>`;
 const sfld = (id,label,list,v,all,lab) => `<div class="f"><label for="${id}">${label}</label><select id="${id}">${opts(list,v,all,lab)}</select></div>`;
 const val = id => form.querySelector("#"+id)?.value ?? "";
+const cNum = x => { x=String(x||"").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[٬,\s%]/g,"").replace("٫","."); if(x==="") return ""; const n=parseFloat(x); return isFinite(n)?n:""; };
 const nval = id => { const x=val(id).trim(); return x===""?"":num(x); };
 const footBtns = (saveTxt, delId) => state.canWrite ? `<button class="btn primary" type="submit">${ico("check")}${saveTxt}</button><button class="btn ghost" type="button" data-cancel>إلغاء</button>${delId?`<span style="flex:1"></span><button class="btn danger" type="button" id="${delId}">حذف</button>`:""}` : "";
 
@@ -3227,7 +3243,21 @@ function insDialog(r, preId){
         ${fld("nNext","موعد المتابعة التالية",d.nextDate,"date")}
         <div class="f wide"><label for="nStatusText">الوضع الحالي</label><textarea id="nStatusText" placeholder="اكتب الوضع الحالي للملف بالتفصيل">${esc(d.statusText||"")}</textarea></div>
         <div class="f wide"><label for="nReq">المطلوب</label><textarea id="nReq" placeholder="اكتب الخطوة المطلوبة والمسؤول عنها">${esc(d.required||"")}</textarea></div>
-      </div><div id="nProj"></div></section>
+      </div>
+      <div class="icalc">
+        <div class="icalc-h">${ico("money")}<b>حاسبة قيمة التأمينات</b><span class="sub2" style="margin:0">الوعاء × نسبة العمالة × نسبة الاشتراك</span></div>
+        <div class="icalc-g">
+          <div class="f"><label for="cBase">وعاء قيمة المستخلص</label><input id="cBase" inputmode="decimal" dir="ltr" class="num" style="text-align:right" value="${esc(has(d.calcBase)?fmt(d.calcBase):"")}" placeholder="0" autocomplete="off"></div>
+          <span class="icalc-op">×</span>
+          <div class="f"><label for="cWage">نسبة العمالة المقررة</label><div class="icalc-pct"><input id="cWage" inputmode="decimal" dir="ltr" class="num" value="${esc(has(d.calcWage)?String(d.calcWage):"")}" placeholder="مثال 12" autocomplete="off"><span>%</span></div></div>
+          <span class="icalc-op">×</span>
+          <div class="f"><label>نسبة الاشتراك</label><div class="icalc-fix num">18.25%</div></div>
+          <span class="icalc-op">=</span>
+          <div class="f"><label>قيمة التأمينات</label><div class="icalc-res num" id="cRes">—</div></div>
+        </div>
+        <div class="icalc-f"><span class="sub2" id="cHint" style="margin:0"></span><button type="button" class="btn sm" id="cUse">${ico("check")}استخدمها كمبلغ مطلوب دفعه</button></div>
+      </div>
+      <div id="nProj"></div></section>
       <section class="sec"><h3>${ico("doc")}أرقام الطلبات (CS) <span class="r"><button type="button" class="btn sm" id="addReq">${ico("plus")}إضافة طلب</button></span></h3><div id="reqBox" style="display:flex;flex-direction:column;gap:8px">${reqHtml()}</div></section>
       <section class="sec"><h3>${ico("list")}المستخلص المربوط ومستخلصات المشروع</h3><div id="nInv"></div></section>
       <section class="sec"><h3>${ico("clock")}سجل المتابعة</h3>
@@ -3243,7 +3273,7 @@ function insDialog(r, preId){
       const other = state.ins.find(x=>x.invoiceId===invId && x.id!==r?.id);
       if(other){ toast("المستخلص ده له ملف تأمينات بالفعل"); return; }
       const pending = val("nNote").trim(); if(pending) d.log.push({date:today(), by:myId||"", text:pending});
-      const data = {...stripId(d), projectId:p.id, invoiceId:invId, fileNo:val("nFile").trim(), status:val("nStatus"), amountDue:nval("nDue"), owner:val("nOwnerF").trim(), nextDate:val("nNext"),
+      const data = {...stripId(d), projectId:p.id, invoiceId:invId, fileNo:val("nFile").trim(), status:val("nStatus"), amountDue:nval("nDue"), owner:val("nOwnerF").trim(), nextDate:val("nNext"), calcBase:cNum(val("cBase")), calcWage:cNum(val("cWage")),
         statusText:val("nStatusText").trim(), required:val("nReq").trim(),
         requests:d.requests.filter(x=>(x.no||"").trim()||(x.subject||"").trim()).map(x=>({no:(x.no||"").trim(), date:x.date||"", subject:(x.subject||"").trim()})),
         updatedAt:new Date().toISOString(), updatedBy:myId||""};
@@ -3271,6 +3301,25 @@ function insDialog(r, preId){
       };
       form.querySelector("#nContract").addEventListener("input", refresh);
       form.querySelector("#nInvSel").addEventListener("change", e=>{ d.invoiceId=e.target.value; refresh(); });
+      { // حاسبة التأمينات
+        const bI=form.querySelector("#cBase"), wI=form.querySelector("#cWage");
+        let bTouched=has(d.calcBase), wTouched=has(d.calcWage);
+        const calcIns=()=>{ const b=cNum(bI.value), w=cNum(wI.value); const ok=b!==""&&w!=="";
+          const res=ok?Math.round(b*w/100*0.1825*100)/100:null; form.querySelector("#cRes").textContent=ok?fmt(res):"—"; form.querySelector("#cUse").disabled=!ok||!state.canWrite;
+          const iv=state.invoices.find(x=>x.id===val("nInvSel")); const k=iv?calc(iv):null;
+          form.querySelector("#cHint").textContent = !bTouched && k && k.net!=null ? `الوعاء متاخد من قيمة ${certLabel(iv)} (${fmt(k.net)}) — تقدر تعدله` : ""; return res; };
+        const fill=()=>{ const iv=state.invoices.find(x=>x.id===val("nInvSel")); const p=iv?proj(iv.projectId):proj(d.projectId);
+          if(!bTouched){ const k=iv?calc(iv):null; bI.value = k&&k.net!=null ? fmt(k.net) : ""; }
+          if(!wTouched){ wI.value = p && num(p.wageRatio)>0 ? String(Math.round(num(p.wageRatio)*10000)/100) : ""; }
+          calcIns(); };
+        bI.addEventListener("input",()=>{ bTouched=bI.value.trim()!==""; calcIns(); });
+        wI.addEventListener("input",()=>{ wTouched=wI.value.trim()!==""; calcIns(); });
+        bI.addEventListener("blur",()=>{ const x=cNum(bI.value); if(x!=="") bI.value=fmt(x); });
+        form.querySelector("#nInvSel").addEventListener("change", fill);
+        form.querySelector("#nContract").addEventListener("input", ()=>setTimeout(fill));
+        form.querySelector("#cUse").onclick=()=>{ const r0=calcIns(); if(r0==null) return; form.querySelector("#nDue").value=String(r0); toast(`اتكتب ${fmt(r0)} في «المبلغ المطلوب دفعه»`); };
+        setTimeout(fill);
+      }
       const rb=form.querySelector("#reqBox");
       rb.addEventListener("input", e=>{ const w=e.target.closest("[data-ri]"); if(w) d.requests[+w.dataset.ri][e.target.dataset.rf]=e.target.value; });
       rb.addEventListener("click", e=>{ const b=e.target.closest("[data-rmreq]"); if(b){ d.requests.splice(+b.dataset.rmreq,1); rb.innerHTML=reqHtml(); } });
