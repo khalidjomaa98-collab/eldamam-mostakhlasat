@@ -1168,6 +1168,18 @@ html{scrollbar-gutter:stable}
 .ds-x{padding:0 12px;border-inline-start:1px solid rgba(255,255,255,.15)!important}
 .dstash svg.i{width:18px;height:18px}
 @media (max-width:900px){ .dstash{bottom:86px} }
+
+/* أماكن فرعية داخل كارت المكان الرئيسي */
+.pstep{position:relative}
+.pstep .pn small{font-weight:500;color:var(--faint);font-size:.68rem}
+.pstep.pgrp{flex:1.6 1 0}
+.psubs{display:flex;flex-direction:column;gap:3px;width:100%;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+.psub{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:baseline;font-size:.74rem;color:var(--muted);padding:3px 6px;border-radius:6px;cursor:pointer}
+.psub b{font-size:.85rem;color:var(--fg)}
+.psub .pl{grid-column:1/-1;font-style:normal;font-size:.68rem}
+.psub:hover{background:var(--sunk)}
+.psub[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-strong);font-weight:700}
+.psub.own{cursor:default}.psub.own:hover{background:none}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -1689,6 +1701,9 @@ function render(){
 }
 
 const deptOrder = () => [...(state.cfg.depts||[]).map(d=>d.name), "غير محدد"];
+/* أماكن فرعية: «الإدارة (تموين)» و«الإدارة (ميزانية)» تابعين لـ«الإدارة» */
+const stageSplit = st => { const m=/^(.+?)\s*\((.+)\)\s*$/.exec(st||""); return m && (state.cfg.stages||[]).includes(m[1].trim()) ? {parent:m[1].trim(), sub:m[2].trim()} : null; };
+const stageParent = st => stageSplit(st)?.parent || "";
 const stageOrder = () => [...(state.cfg.stages||[]), "غير محدد", "—"];
 function satBase(ignoreAlert){
   const f = state.satFilter;
@@ -1696,7 +1711,7 @@ function satBase(ignoreAlert){
     if(!v.showSat) return false;
     const k = calc(v);
     if(f.dept && k.dept!==f.dept) return false;
-    if(f.stage && k.stage!==f.stage) return false;
+    if(f.stage && k.stage!==f.stage && stageParent(k.stage)!==f.stage) return false;
     if(f.company && k.company!==f.company) return false;
     if(f.loc && (k.p?.location||"غير محدد")!==f.loc) return false;
     if(f.type==="__ret" ? isWork(v.type) : (f.type && (v.type||"مستخلص أعمال")!==f.type)) return false;
@@ -1748,9 +1763,13 @@ function renderSat(){
   { const fs=f.stage; f.stage=""; const all=satBase(true).map(v=>[v,calc(v)]); f.stage=fs;
     const steps=[...(cfg.stages||[])]; if(all.some(([v,k])=>k.stage==="غير محدد")) steps.push("غير محدد"); if(all.some(([v,k])=>k.stage==="—")) steps.push("—");
     const T = Math.max(1, sum(all,([v,k])=>k.net));
-    const full = steps.filter(st=>all.some(([v,k])=>k.stage===st) || f.stage===st), empty = steps.filter(st=>!full.includes(st));
-    $("#satPipe").innerHTML = full.map(st=>{ const rr=all.filter(([v,k])=>k.stage===st); const lt=rr.filter(([v,k])=>k.late).length, val=sum(rr,([v,k])=>k.net);
-      return `<button type="button" class="pstep" data-pipe="${esc(st)}" aria-pressed="${f.stage===st}"><span class="pn">${esc(st==="—"?"جهات بدون مراحل":st)}</span><span class="pr"><b class="num">${rr.length}</b><span class="ps num">${money(val)}</span></span><span class="pbar"><i style="width:${Math.round(val/T*100)}%"></i></span>${lt?`<span class="pl">${lt} متأخر</span>`:`<span class="pl ok">&nbsp;</span>`}</button>`; }).join("");
+    const inSt = st => all.filter(([v,k])=>k.stage===st || stageParent(k.stage)===st);
+    const full = steps.filter(st=>!stageParent(st) && (inSt(st).length || f.stage===st)), empty = steps.filter(st=>!stageParent(st) && !full.includes(st));
+    $("#satPipe").innerHTML = full.map(st=>{ const rr=inSt(st); const lt=rr.filter(([v,k])=>k.late).length, val=sum(rr,([v,k])=>k.net);
+      const subs = steps.filter(x=>stageParent(x)===st).map(x=>[x, all.filter(([v,k])=>k.stage===x)]).filter(([x,r])=>r.length || f.stage===x);
+      const own = all.filter(([v,k])=>k.stage===st);
+      const subHtml = subs.length ? `<span class="psubs">${own.length?`<span class="psub own"><span>${esc(st)} مباشرة</span><b class="num">${own.length}</b><span class="num">${money(sum(own,([v,k])=>k.net))}</span></span>`:""}${subs.map(([x,r])=>`<span class="psub" role="button" tabindex="0" data-pipe="${esc(x)}" aria-pressed="${f.stage===x}"><span>${esc(stageSplit(x).sub)}</span><b class="num">${r.length}</b><span class="num">${money(sum(r,([v,k])=>k.net))}</span>${r.some(([v,k])=>k.late)?`<i class="pl">${r.filter(([v,k])=>k.late).length} متأخر</i>`:""}</span>`).join("")}</span>` : "";
+      return `<div class="pstep ${subs.length?"pgrp":""}" role="button" tabindex="0" data-pipe="${esc(st)}" aria-pressed="${f.stage===st}"><span class="pn">${esc(st==="—"?"جهات بدون مراحل":st)}${subs.length?` <small>شامل ${subs.map(([x])=>esc(stageSplit(x).sub)).join(" و")}</small>`:""}</span><span class="pr"><b class="num">${rr.length}</b><span class="ps num">${money(val)}</span></span><span class="pbar"><i style="width:${Math.round(val/T*100)}%"></i></span>${lt?`<span class="pl">${lt} متأخر</span>`:`<span class="pl ok">&nbsp;</span>`}${subHtml}</div>`; }).join("");
     $("#satPipeE").textContent = empty.length ? `لا توجد مستخلصات حاليًا في: ${empty.join("، ")}` : "";
     $("#mxWrap").hidden=!state.mxOpen; $("#mxToggle").setAttribute("aria-expanded", String(state.mxOpen)); $("#mxToggle").textContent = state.mxOpen?"إخفاء الجدول":"جدول الإدارة × المكان"; }
   // heatmap
@@ -3247,7 +3266,7 @@ $("#bulk").addEventListener("click", e=>{ const b=e.target.closest("[data-bulk]"
   if(k==="all"){ selectAllVisible(); return; }
   if(k==="xlsx"){ exportSelXlsx(b); return; }
   askBulk(k); });
-document.addEventListener("keydown", e=>{ if(e.key==="Enter" && e.target.matches?.("tr[data-inv]")){ const v=state.invoices.find(x=>x.id===e.target.dataset.inv); if(v) invDialog(v); return; } if((e.key==="Enter"||e.key===" ") && e.target.matches?.(".pc2")){ e.preventDefault(); const p=proj(e.target.dataset.proj); if(p) projDialog(p); } });
+document.addEventListener("keydown", e=>{ if((e.key==="Enter"||e.key===" ") && e.target.matches?.("[data-pipe]")){ e.preventDefault(); e.target.click(); return; } if(e.key==="Enter" && e.target.matches?.("tr[data-inv]")){ const v=state.invoices.find(x=>x.id===e.target.dataset.inv); if(v) invDialog(v); return; } if((e.key==="Enter"||e.key===" ") && e.target.matches?.(".pc2")){ e.preventDefault(); const p=proj(e.target.dataset.proj); if(p) projDialog(p); } });
 /* quick search */
 const cmd=$("#cmd"); let cmdItems=[], cmdIdx=0;
 function openCmd(){ $("#cmdIn").value=""; renderCmd(); if(!cmd.open) cmd.showModal(); $("#cmdIn").focus(); }
@@ -3287,7 +3306,7 @@ document.addEventListener("click",e=>{
   if(e.target.closest("#stPop")) return;
   const pd=e.target.closest("[data-paid]"); if(pd){ quickPaid(pd); return; }
   const mvb=e.target.closest("[data-move]"); if(mvb){ if(state.canWrite) moveDialog(mvb.dataset.move); return; }
-  const pp=e.target.closest("[data-pipe]"); if(pp){ state.satFilter.stage = state.satFilter.stage===pp.dataset.pipe ? "" : pp.dataset.pipe; satChanged(); return; }
+  const pp=e.target.closest("[data-pipe]"); if(pp){ e.stopPropagation(); state.satFilter.stage = state.satFilter.stage===pp.dataset.pipe ? "" : pp.dataset.pipe; satChanged(); return; }
   const gtb=e.target.closest("[data-gotab]"); if(gtb){ state.tab=gtb.dataset.gotab; render(); window.scrollTo(0,0); markEnter(); return; }
   const mst=e.target.closest("[data-mvstage]"); if(mst){ state.mv.stage=mst.dataset.mvstage; mvChanged(); $("#mvList").scrollIntoView({behavior:"smooth",block:"start"}); return; }
   if(e.target.closest("#mvMore")){ state.mv.limit+=80; renderMoves(); return; }
