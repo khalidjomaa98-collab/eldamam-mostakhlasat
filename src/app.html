@@ -1348,6 +1348,32 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   .mbar{position:static}
   dialog.drawer .dw-h{padding-block:8px}
 }
+
+/* ===== مستحقات ما بعد الختامي ===== */
+.co-kpis{grid-template-columns:repeat(auto-fit,minmax(min(160px,100%),1fr))}
+.fbar .fi .dwrap{min-width:160px}
+.fbar .fi .dwrap .dtxt{padding:7px 34px 7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--sunk)}
+button.kpi{font:inherit;color:inherit;text-align:start;cursor:pointer;border:1px solid var(--line)}
+button.kpi:hover{border-color:var(--accent)}
+.cos{display:inline-block;font-size:.74rem;font-weight:700;border-radius:999px;padding:2px 10px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.cos.ok{background:var(--ok-soft);color:var(--ok)} .cos.bad{background:var(--bad-soft);color:var(--bad)} .cos.warn{background:var(--warn-soft);color:var(--warn)} .cos.info{background:var(--info-soft);color:var(--info)}
+.coal{display:flex;flex-direction:column;gap:6px}
+.coa{display:flex;align-items:center;gap:12px;width:100%;text-align:start;font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-inline-start:4px solid var(--faint);border-radius:10px;padding:10px 12px;cursor:pointer}
+.coa:hover{background:var(--sunk)}
+.coa svg.i{width:14px;height:14px;color:var(--faint);transform:rotate(-90deg);flex:none}
+.coa.bad{border-inline-start-color:var(--bad)} .coa.warn{border-inline-start-color:var(--warn)} .coa.info{border-inline-start-color:var(--info)}
+.coa-t{flex:none;font-size:.7rem;font-weight:700;border-radius:6px;padding:2px 8px;background:var(--sunk);color:var(--muted);min-width:74px;text-align:center}
+.coa.bad .coa-t{background:var(--bad);color:#fff} .coa.warn .coa-t{background:var(--warn-soft);color:var(--warn)} .coa.info .coa-t{background:var(--info-soft);color:var(--info)}
+.coa-b{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.coa-b b{font-size:.88rem}.coa-b span{font-size:.78rem;color:var(--muted)}
+.co-t tr.cor td{vertical-align:top}
+.co-t tr.cor td:first-child{box-shadow:inset -4px 0 0 var(--cc)}
+.coh4{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.86rem;margin:14px 0 8px}
+.co-tot{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--sunk);font-size:.82rem;color:var(--muted)}
+.co-tot b{color:var(--fg);font-size:.95rem}
+.coinv{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cosum td:first-child{font-weight:600}
+@media (max-width:640px){ .coa{align-items:flex-start} .coa-t{min-width:0} }
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -1403,6 +1429,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <button data-tab="proj" title="المشاريع"><svg class="i"><use href="#i-bld"/></svg><span class="lbl">المشاريع</span><span class="cnt" id="cProj">0</span></button>
       <div class="sect">الشهادات والمستحقات</div>
       <button data-tab="ins" title="التأمينات الاجتماعية"><svg class="i"><use href="#i-shield"/></svg><span class="lbl">التأمينات الاجتماعية</span><span class="cnt" id="cIns">0</span><span class="alrt" id="aIns" hidden title="متابعات تجاوزت موعدها">0</span></button>
+      <button data-tab="co" title="مستحقات ما بعد الختامي"><svg class="i"><use href="#i-money"/></svg><span class="lbl">مستحقات ما بعد الختامي</span><span class="cnt" id="cCo">0</span><span class="alrt" id="aCo" hidden title="تنبيهات عاجلة">0</span></button>
       <button data-tab="mp" title="القوة العاملة"><svg class="i"><use href="#i-users"/></svg><span class="lbl">القوة العاملة</span><span class="cnt" id="cMp">0</span></button>
     </nav>
     <div class="foot">
@@ -1433,6 +1460,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     <div id="v-home" style="display:flex;flex-direction:column;gap:16px" hidden>
       <div class="ph"><div><h1>نظرة عامة</h1><div class="sub" id="homeSub"></div></div></div>
       <div class="kpis" id="homeKpis"></div>
+      <section class="panel" id="hCoP"><div class="hd"><h2>مستحقات الشركة بعد الختامي</h2><button type="button" class="btn sm ghost" data-gotab="co">الكشف والتنبيهات ←</button></div><div class="bd"><div class="kpis co-kpis" id="hCo"></div></div></section>
       <div class="home-grid">
         <section class="panel"><div class="hd"><h2>لم يُصرف حسب مكان المستخلص</h2><span class="muted">اضغط على أي صف لعرض مستخلصاته</span></div><div class="bd" id="hStage"></div></section>
         <section class="panel"><div class="hd"><h2>لم يُصرف حسب الإدارة</h2><span class="muted">اضغط لعرض مستخلصات الإدارة</span></div><div class="bd" id="hDept"></div></section>
@@ -1546,6 +1574,23 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
       <section class="panel" id="insSuggestP" hidden><div class="hd"><h2>مستخلصات تحتاج ملف متابعة</h2><span class="muted">مستخلصات لم تُستخرج شهادتها ولم تُعمل لها تعلية، وليس لها ملف</span></div><div class="bd" id="insSuggest"></div></section>
     </div>
 
+    <div id="v-co" style="display:flex;flex-direction:column;gap:16px" hidden>
+      <div class="ph"><div><h1>مستحقات ما بعد الختامي</h1><div class="sub">رد ضمان الأعمال ثم رد التأمين النهائي لكل مشروع اتصرف مستخلصه الختامي — عشان مفيش مبلغ للشركة يتنسي</div></div>
+        <div class="tools"><button class="btn" id="coXlsx" hidden><svg class="i"><use href="#i-dl"/></svg>Excel</button><button class="btn" id="coHtml" hidden><svg class="i"><use href="#i-print"/></svg>نسخة للطباعة</button></div></div>
+      <div class="kpis co-kpis" id="coKpis"></div>
+      <section class="panel"><div class="hd"><h2>التنبيهات</h2><span class="muted" id="coAlCount"></span></div><div class="bd" id="coAlerts"></div></section>
+      <div class="alerts" id="coChips"></div>
+      <div class="fbar">
+        <input id="coSearch" type="search" placeholder="ابحث باسم المشروع أو رقم العقد…" aria-label="بحث">
+        <label class="fi"><span>الشركة</span><select id="coCompany"></select></label>
+        <label class="fi"><span>جهة الإسناد</span><select id="coDept"></select></label>
+        <label class="fi"><span>الاستحقاق من</span><input type="date" id="coFrom"></label>
+        <label class="fi"><span>الاستحقاق إلى</span><input type="date" id="coTo"></label>
+      </div>
+      <section class="panel"><div class="hd"><h2>كشف مستحقات الشركة بعد الختامي</h2><span class="muted" id="coCount"></span></div><div class="tscroll"><table class="dt co-t" id="coTable"></table></div></section>
+      <p class="hint">التأمين النهائي بيبقى متاح للمطالبة في التاريخ الأبعد بين: مرور سنة من تاريخ المستخلص الختامي (التسليم الابتدائي)، وتاريخ صرف ضمان الأعمال. مستخلصات الرد مش بتتحسب في الأعمال المنفذة ولا نسبة التنفيذ.</p>
+    </div>
+
     <div id="v-mp" style="display:flex;flex-direction:column;gap:16px" hidden>
       <div class="ph"><div><h1>القوة العاملة</h1><div class="sub">كل سطر مربوط بمستخلص مسجل — تقدير مبالغ صندوق العمالة غير المنتظمة وشهادة القوة العاملة</div></div>
         <div class="tools"><button class="btn" id="mpParams"><svg class="i"><use href="#i-gear"/></svg>النسب</button><button class="btn" id="mpXlsx" hidden><svg class="i"><use href="#i-dl"/></svg>Excel</button><button class="btn primary" id="mpNew"><svg class="i"><use href="#i-plus"/></svg>ربط مستخلص بالقوة العاملة</button></div></div>
@@ -1588,7 +1633,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 const LOGO_NAVY = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKIAAAEoCAYAAADbrioRAABJH0lEQVR42u29+ZNc1bXv+dn7nMyaB0mlkgSaAIGgxGCQGQwGCTAggxh87y1339fvRkd3vPaL7o73Q/c/INTxfuzuHzviEtEd4ffu7Y5n3fcMGIEAYUuADQLEZFMYBEIIjaWppBozzzl79w9rnzw7s0pSDVlSlXRWhIyszDyVlbnOd6/hu74r4JLblhDWBnC9gj4FWHLL7RKZAqvkv7nlNqGDzDoCakG+BRrOKNgW5SiYW60Fs4yAWv78XwnsNdCXyMO9RVgZQoeGo+SOmVswO06IgqMh9IVwvABfx9nDG5aCuRZMK3QCd0SZg5If3/nRXI9rbXEJyLZk/MObu4AbIbkDaAb1LcRfQOkQ7B7zbgyTI2SOiDNwwg0BHA+hIYR1Fvo8Z3qsG/QTwH8P+llgDXAGggMQnIRvnONuCWB37oRXoYUzR9MUBXsMbPWO4PvbYPEiiJZAcAeYJ4BN0NAMo4PAu+N//tH8WM4dccrZsIKjARwIoBl4JXHHKrAhhLa7IHkUuB/scqAbgmY5ddUY2BKoHP1ym7YjulgQ4IUIiLKHnlsEY9dC8SYwD4B9BMLb5cdEgDWQxMBZsKNgk/wryG06jqjhVwHs0dBmgXK1E5YfB90L6kbQCyDplMdSsAw0UJCfq7Qr8eSW25QcUYk3vWC8JKQFgqWglkK0FtQTwHNQVBADsYW4LEewNUAjKFeisSqv1OQ2VUdU0KuryzK/KsDhu8A+C+puiQHpAq3kGDY4pys4J0zIPS+3GTii5zy9AZxpBb0YDvcAG0E9A+ENUgmKkRjQxGADUIEc50o7Z8wtt2k5oqsP7o5hm4HedijcA+YRsA+Cvg5YUkmWpQ4dgtXkXZLc6uuIJ3TmZeUFoB6E8FkIbpFWcgIkY2AUAouBIGBuuU0pC77gkaxgpY9qnaB+BMEaeWmcomARbME5Yo6Cuc1q1gwkBbCdoAtgIjBllwkH+UeZ22w5omU8+SABRh0vIZTHlXbPy5Ewt1k5mic6rWNgBBIjjqd07oC5XYIYsbfGyYwSFFVpMXoGvWJl5U9b3m/ObaqIaNUcTkjyctHVk6wwQxScNQdEuIwAWxNyYu1V4YhzzAF7NWyz1VzI3HJHvGS2xQ1n7QlgE7CjlH+duSNeQhRMuZB9CrbFSFUdIeMSQrdx/573tnNHnFScaUFPIZZL56P7AmjWMGiRuqazwnUQtsLZk7DhhDeQlSZluWPmjlgXFNQO6Tzn29AILUuAWyC8zdU3/wilk14cmScuV54jqtpuy2yXS7Qg4Z4A2lKGhffzG3tAPw32aQgWQLJfxlTPfZzFkVtt7pQ5Is4wDtyaZsNeRvxYNwRdoFYhg1mboeFHMoFQBnQjrEugD9iVH8m5I07HzihYn87EaPhV7Aa0nD2yBIpPgX0I6AG1BOxiATqDc9hEyjmXDLVzu8IcUUG/husjJ9SUImALqIVQXArcBfYpUD+FwgJ5PLKQlN2pOwwqyr/W3BGnGG9qCwscc2d9CB0F2J94CYkGboXgUTAbIFgFLAHbkZGDrAFVcMAX5JOBuSNOw4yCg45GtjeSP1s0LOsCey0E10NyD5iHIbgXiu70jSOI09gvQbR0HKrmjpg74pQtcbGgb593gX0M7N8BN4DuFDKuck5oQDITFxjmahG5I87saNZgEhg0Mpp6bDGMroDoNmATqGehQWXD+ZU4MPB4kDnjJnfEmSYmBEAJ7o3gw27gOQh+DmaNZMOByoQkFG4mhuwIzu1Ksss4bWcVqBJsNaC6wG6AcDM03CxyJSaGaBSiCEzKCM8RMEfEzIPq4IQWVCJHM0DYDvFyaMCrCbrh/IoD5pY74qwgoufQSQEoykxMbIAITCPofDowP5qx0DNLGalyR7NxSKfTKcBQaoIE00dBZc+D2nl2nceIF0XHBGwExuaZcO6IE9jW2qfbTEypngCTrsLIY8E8RsztQnFEfsRfHY44l7sjvRr6FWxENiVsy+WWc0S8HCj4G9dG3J1/KlemIypvZiWxcwcVa3cH/tJnA+V2ZSJiMJeOZG825jeJFNx959xVlL9vLEs3qIKcecw4+1nzrJrNHPGyU7ccH3JPAfoK8Evvc9ncDH9aBU03QcNy2NtYHT/mpaY8RqwPAjrbWsPs3tAK7auAdVC8RvQgC19B+TQwIs/5It0dmFvuiFNKQLyJvl4tM9IEsNQIASN9+PYWaLkbkqdAbQDbBuovwCC0fJ5dcrGumRTMLXfEqaBgn5L25VZvYVFvEUpdkCwHbgTuBR6HcK2AnjkJNEDsoWgpP5bntyNalyWPXKJY1E9E9gSwREGfoWpz1uj1YJ8AswnClWAWAF3ymImAc/L8yDuKG3IkzBFxKii4QbtidM2M9M86oLAE1LWCgPYJCDYKHS1dWmQi4CTYs+KIjXlMePkdMQK0mT+S2UMKfqPh/yyksFfthMWfgnoSuBNYIgRd7Tmhcp+R9fYHxvlxnCPiVO164wrSo/A+sjlrZCmwFOwtYDeKIxaWidNFyOYs6/Z26AbQ6easIN8fmDviNDPk35hqxxm7DswzMqCv1gDdMh9jaj8TBcpUs4GUzWvXuSNOJTfxnOf5QBTDmjqhcTXE98nuQO6DQsHFgEA8RmU0Qel8ZceV7Yg1cKIsFM3EDjTdy1sFoVdk/qQJWm8CNkL0OAQ3yLGMc8LKWyp66Je37XJErIfF/u/UBvZHEgfqR2QuPwbikuMxBLLAMt8dmDti3WND4zlV1Ar6ZrA3ZkoRFsmCUwTMWeG5I85+NBAKKlIUvRystzcwR8HcEdOgLmXfqDryEf3rhAZsCVTZ7ZDWLgS000tGcp2dHBGn5+uuhmjHnBOpiROnSTmhyZOY2bNJHE+jNbU0ZbKs1M5g9thaGJvlL9ak04F6hlm5m140FsLcGXNEnG4CU496oDLuJpyN9zdNlM4dsc4x4pw/4r0/ZVtnB8wdMc8cLxdCb9HeZ++FOjki5nZx8HKqZA1qZhfaEECfFmra2gSWJd4wVu6Iuc06CqbMcJNtUs1npWfgiNbOr3jGeDXKy9FESY/hPYFMIPTVrPPtbYL+Blg7XL1TJnfE3OqCgBZ4Xsn2q92OGb7DPbyhE1qXg14Oox3QdAwOfw6c8WJ3kzviJbOUdm+MsLCq0tR65GI2Q/CZdEWs+x9rYcRe3AlR8G8DKAXQnTa5nW1qAB4E9V+BWieLLNUrUD6YOWJP6JDT5I545YCTrVanvRRx4LYEXnDKt5Axw+1i4CbgCbDPQmOrTC8kX0LQlF1q8VVXzQinhzBqnsaIs2Fba7JhAthSqs6Ex64D8yzo+4HrgWtAtcoQYVKWQrm/u3o1oj62NXfEK8xmyRHbtCyx3Ju4ONCzpxaAXgTRtWDvlr0x9j4ouM88MlB2E4KMCkEjz5ovh29MJt6a5lF8qRISHcAtShZZ/ibKfvY97bI70DwM+i5Qy0Avlc87nQ5U2k0HFiU5MV5Kf9zCr3NHzG2yKNswAv/kVMP+bQGe6AJ7DRTWgXrE7Y5ZLYlY5I5hDKiQjIyRCzlNzhGbahDGzkJLSs8SivlZ80yO5/N1Vnz12P2rofgY2CdlmaXpAjrlx6ZPU0VHTctbq1chItbZyf0B++cWQbkb1EqwtwM/A/14phRRTiApOQqa2yFY2Z6V08nmhiMqC4VZ/jJKuJ9hZzgdOgGVbEMjRPeC/VtQd4JuB7uwRikiyNCvskPQTnCj2OpTYYmCLXnWnNuEwKohMG5tm4biMsmGeRIalzqKGLJDMDFuMjBwR3r+8dXXEedjHbFuGbKWDtCZGDYVQF2H1ARbvP2BULVDMPfASXtW/hFMLWOBhYmMT9gOUE2gRmVOOi7LoBbW2yed2xw/ml1cVDX/MQsoq9NsuV6DTwo6FcQWVCTHsNKAm5O28TQc0CHn1V1HvAoQsd5hRElBm3WZkGvP5UfxleSIdfoSa6f1bD1ID+4aiYV+YNDFjLoeR/AFsub8aM5tQofx0dXO1YXm83J3YDj9O7geR2bRU3qws6D0UOVAdubXrX3Pxs696KZXQ49zxvmzO/AqQURlrvBGhsrWbMzPpZWX8XY2wKCte4hYZYFTaLB2Dh9XE2TNU7Et2nEhQ+gtzNeEKY8R5y0CgqBgZSbGsw2NUAyk1121OzBHxIljzeIlQCY1S1OHdVMwmyBrvqgTakG/XUXoLlQ//ORSaOyB4jpoXVG9O3DLnC2054g47+LAPgXbTHUsuEXDh92QXAf2DhGot+cg+IvbmOU2K+3SzNGVv1e4mHvaG7fzpoxxfidMZ2KaNWyIq4/jj1fJsiL9uEwGKgP2zxCfglbvO+7WsMXMxd2BOSLOeQfs1W5vYG0c2Aoti0CvBrse1OOgNkKxQVhA6iiYYjV/cnDOJjLTcETlo0ydfrH5tMOkrKDbaTvOlnjncQsjCn4VwJkQ9hiw5Swm/VUBDt3lxhEeBLUK9GJQDe7tjAHDoMswesUWtHObdRQcVSL9/UJEZTb6+RCe7AJ9DZy4AdRPgI0Q3ClfY4xwJZNE9gbqIXHe8Ep2RDVTsqfLOC/Fdk9jZ0lgs94FDJuVZD4pQDPVicXHK0BtAvsUmFWgF4DplMcSqhnhyu2hrpbPyBHx8gLMPDnzY1dK22qAQfn7Yy0QLAV9LXAX2J9LQlJ0CFi2bjIwlVVpcP3vebc7cJqOaOdwTKfOMxMyQwAfR3owdeqPp9eMa2q6vU0w+mMwT8tIgrkG1OKamRgls9HWgkpqYvZ5xaTPY8TLbla7MpM7hje1A8thZC2oh0A9DeEN4oAJsj01iQXxKpOBdUwc54UjKkvd2Dez9sXW1BENc/c9V/ZBJ1Asy781roPyc8ADUpoxS2tmYkK3tu2KIuLmiDgnEFEZMGWnGnYLMh99l3w9EZCMOlWI0NueekXZFT4qMEbG0K43INa1h50IKvY3gV0GLM6yYUCyk8LUhrJUHiPmNh0LrDt2C5J4JCW34NLNRl/ZMzF6ekhwte+kW+B/BnX4LNK4tsngRBPlu1Hh1bI9NZ9rnjOWKOhKpBti09rgVTMZOEVHLFOnqbhLmZnOcQT3319JgVZ1yIjn3e7AqwER59k6DjtXUdB1bGYHpcPL6BsWBmbZQYI66SPWxnJ7gaVX0+oy7ZhACvoN7E5lb+t2k+dZc24XQkAyh5vdZUS5I84pS2PEuZCkbFFw1KHgF0Bf+TzOWhdkzB0xtxrH2uLdAD4KbmqAuFGSn9GyNx2YH82XPuHxs+/ZWCTUYGHIU6a4lKC4RctwVToXczwVmnKW3AKFZcA5aD0KH52BnmHoNbAL2J3MxClzR8zNmw6snY9O+ZDqFtB3g2kHvgLTIPqQq4bhkyEoDMOGYe/1U9YIv8zaNylD29bx1q+tGaZzJXO2guN9nqVLHRe6bPi0hmZFFSN8i4Y9d8qiIvUYhJ0QnQJGZVQ1XAwEUB6Awg8QfQcMyWt7tYy8Tv5DzxHxqrM+JU6Wzkf7cWBvAMOLQXXBR9eDfgh4FhrXSMs7LoJtkFEE0wZ6pSRX+kto788csSdgiqWtaWhoq3lWIK63dTsUi3FEBTu/tlXs1zCoIQxgQ7n6OB5ZBTwG6n6wt8igll3i8SETiRvVkDt+F8uxbbqAj4AT8sQDOhOFyhGx9vjLDZC9gfjZcDsEXWBXyZoO9ZjbGdgpj0eIRrjWYEdBO0dMyuKM9kbHkVyUoWD7lD/vy7xnpWmWHURb2QSQZrz1RC49D0+GUQW9CrZ5iYq9R5yP+4BrZS7GtnsnqwWcylg6HahiSCIIy0CbrH1jWfZzSgaetxKDbp3U55Qj4hVvvtJDtwGK8Eg7FJdAYQ3Yh8H+DMKbJQ5McLtiEjcFmE4Hph+lAROJM9pRJEZpBbMCftYBDwxmSc8uzSSF9C8D6UE5xzAW+ucTGSF9z/X6DLzrpvXIhlmIwZu8HzYaQrQCis+C/vegngf1t8CqbGegSQGqKHzItKKhEBa5HYNkTJYfKSsOSSuoNRDeJOpjW91jTYEgcB4jzkI4Md9szAOboBuijVB4TmakGxyglY3siZEn1YwkqJpS2BjEERRbIA4QbmCHxIrcBIPfUVEfa7Oi2zOpOtLV4DyqDlsFajsr2kygfTPXlGgRwm1q5nowv4Dgfgn7Ss4RlQZVYOK5GL/Dk8hxHJYhahDUtFYycNaAvgEaW7OXLnWF8ou3iHKG9lVlZiGotVDokDgwPue2pzpa10UJuYnbtBWBbQQa5SzXSIFbrUZg1tmZ0CGizR1xDkO1d9xbqUmW1OwSY62ReoxNw7KCjKie1w+8U0DhNmsNQlMJggacQI8kOcVmYKVzUOT3ONEOfc1MQoNnLjliXuubfUSMgCHJiNOdgVMazoohHJFaoi44p3OvD5QkLYEr9fxiIYQrYHQ5/HQhrC+cJ1ubriP6mi8zvXFLNahQQfE6iQcFNnu/tk57ViqnVM01Z/p+EzU7WXPV56EmSEYmgQ2VvCWCeETEAOIGoEWQtUKC16Bb4b5GMEuQ7a13QPuN0NqSXXdLUMsvmEtZc46IVcfhrH0cUz36bTVmFUbcJtYmUO2SsJgUTALR717YAUkBKXYvB9sGTQeBAblG3zgt72kgovZWf80H36knwvh3cd2u6xwvsHP/BrEJxMOwyIDqABZJcmKRPTGqFbgO7GKwA5CMgLkOuA1oz26AwXHr4/I64tUFttOJH5T32lEIxmAkBL0Q7EJJeNJ2oG0BloPuhOAAlM+BugboBtNxoRt3Go5oPMbJnFMhmOcqFCV3bFo1e46opvJZOskTk56kJyAag1ITqG4IOuTxyuHQIGwd2qFhBEwJTDeoZsdfdHYwfUGl+T9NyZE8nruKLBDwiUdAH4PyqDicWghBKKFaJXktgu2UJGZbAnrM/dsiOa43OOBbbOZQ+eZSaWjPhnVbj5tZ70RtFlF90td1ShHpqWciUD+APQRnRiBokhgxTEHN6VDaghzLtt2515iD0lZgGTQtkBek8y29lew9L2jndrHkFIQMe1CccW8kiEiDV+x2CKdCcTrdKi80kXutBtsNuksWF6U33n49A0SsqvzPNUSria9Gcd0EMy72zm0yMWL6eQ0C+0B/73ymS8o2/mdt3TFuW4BmWO94i8QQaFDLRAe829sNuDhHxNwunpWKewQII9v0QcMheKoD7GpxtpTzUXFI7fQdC3BWO9pY7NzsWtDLYNRzxFE1A0SsSlZUfe/AOZ01u2t3u/8bT7NjU0vWGadmO4uQPdls3LrdNMoKy8ieBf25ZM12FegfgerMHLG2emKANUh8aGPXal4hpZ2gqfq5Wy53spLbHLe0lKSBcxAdlak/vRaSO2Wu2dRWX4wcxzoRtDNK1G81kmXrpTITfZ5INLcrNsaz08iabSYcnwrYqqOghmFTG5h1QI87mm2NnqgjztoydIdOfN4d8YUmsEupookBbM0dMbcLxQ46kH0u8TGw30i7LmgDrodgkUz1ZbMF7qUxMCzk2UEtNcTUQgV0VP/bzBDxKtTQTnVuEk/TUdex14w/s2Jcpj8LzO+Lfm/u90w1ORkE9QmEn8CCIakPqmXQoFzcl2T1Rg0QgToN6hwEASRN2SqOAMmoY88RK1OcKkfEKX2Js3EDzjVp5fQo1YAdAj4B2yfxoXLtu8qIRK1YaRnUACTDUCxIPdGGHoAF50PEOUJ6SCaiPtUhe6xCrTrMrdSqgdWDrpVm3mU7+737i2XNtdkyZ8F+AecOweMLZMzAtsnaDX9fdyVGLEtmzTkIWyBaJBIllefWOGLWc84RMbeJnNU5DUNgD8LuMdCrILldHDENDW2N/9hR4Igcz2PNSOG7sZo4azxWd9Zzzh3xis030jnsKcWIHtsmAtRhMMegtwjB7cCdwILq+qHyYko1DGY/2GNgWtwWrSYvDA5kvKDHjQ1054iY2zhLY0NHcogPgv0IGo9DoQW4HYLrQTeKjEuKcD6DW5XBHIHwtPAP1TWCiBXgC6R8s7gmTuydKiLqubyvJP08J0KBWXjfic24mfWMPettPvP7vDFiyrZxrCJzCvg9qDfh5UE42wWqBwpdbu4lykZQqxKuMSicgFfGQHeDXZEhonHApwvQ6XKTdPi+J0fE3KoQUblh+UHQ78C1n8OGRilimxVSW1R+4ucJz1sFjEAwDBscMcIuq0ZE64iwRTtRTDCHygZXuzVcLv3JGqTUJyRbfiGC1rXAI+JYlWqN8xvlkpoEUQAzx2B0BJqaXalnMdhiTUk0glEni9fnfm6fzRExtzTGU0794Qyoj0WKuLcI5kEIHwDdAlHi2nrewLwKJGZMTgMHoXEUmlyiErQ6KTsfbEowWLMqY9tlRcRLoI9Y17drqycg61WCrd3Fd0lXoDkJMG0F5MwZMO+AfQ3uPwmjS0E/DMWbIWgGYnFE5ZKUlMFtR4B9EHwFh4ah3CqaiWHRCXym/m5AjTmGNtBf2dOSI2KOhmlsWABbEkdsfl+OzXIPcDPoZkeEsNXopl0Cq0ZA94H5WhjcpkNGCQJVs8BK4TaLyr+dmAlDe76Zch/2jDJTO3vZbVrvq+tc81Ter98rPg32Y9h2GoaXg74f7AJRDEsL2MolHDZV4XV8RdMH+lv345dJvdDUVgcMBN6xvDJHxKvkBrxobQd0KFo4UT/wDtg/y3YBHoTCTyFohMgdyePiESWZtB4B9sMrp+D+NlDXAg3VYrFWUaGIjTc9vTt4HKvY1ucmvmi9azrXdaoC9bxmT72m+CbIkOuVNZ+3s2K9LQGhzJOYU5C8Csk/w44TgobqGSisF1kRY7zYMD1ndXYdewLMQbl21woI1gAt1b9eZAVxk7GJ3myOiPW7e+bbW3eOpUOwR8G+Dq+/B892gtkI9m7Q7a52WDvu6m5uE8sSIPsZhMfhVwVRjjU3gW3NjmZjwQwCJ9yIqbP6zazM8Ohom6df5FYyNbC6x42XgBaWsqltBFFJaF6lz+Sx+CFQvwCWTBwbpvF2YMEMgH0b2AnJSTi6EOxtwFpQLRl7mzLYI+LwgeeIJZXPrFyVZtKZEgsNgThishd4E6J9sGk5mJ9B8BOZUS7HcsNVCW26LDsIkQ7MuxB8AjtKCNvmZplNUZ4eoi2DPgrqeB1jxKs5+J8VpKq9bh1j2VqhVm2cUySioU0/8J8hfFU2UJkfgbobwm4nuJkOznuxoU/vtP1gP4e7Trh/uxbsDRC2SemmMs8yJogYHIExDxE7TbqdKlcDm1NH5qxbiMgNhzKDwh9Bvwi/Ow5P3QN6M9jr3bFdW1h3XpV2YBgE/WeIDsg6i95WWaFmF01A8C0BxyE5BkXPEVdeLj6i8tDFWNhvLw2SzTSWS/l9idPr2VLvMsssfQ4JMOwjZFGy2QgofQHqP8P2/ZKg2H8j+1eCLohdK0+m67MaoEo7MANg/wT291A8IrLEo7cIQ0e1eWwbMlaOPQJjh2G954hf2fxovmqsaDIUSFyHpHQCyi9B51vw+EKInwX1cwiXyuMmHs9XNV4HhjFQfwL1EbwyAp3tYO90iUoTxMY9H3kNiWTM6pTbeu+uu3G6iFiZAbHTgJQJrPUSIWI9EaekZjlmrOfvbiByX/aGQDiE9iDYt0C9DP98DgqPg/0HMMvkBDXgAsgJQpP0r6fBfArJQfn/TYtB/cg5YqtrBSYZS8yOgeqHnYPy/PUBNXv68hjxio5ptYFG54irQ+g/ArwCHIDWw/Dz24BnQD8gJZpSJHVFVZMlK+XiygTMCWAPmG9cpoxky+YG2WylkHnoSniQAAMQDGTJz+KZamiXXKxEHdX0L4aaV12JpQ4xrXKMa2OFJwjQoKHxS7D/CcyfYHQt8EtZiRs0Om10/0tNe8oO2UIF9hSY7WD+BeLD8tTeJiHNqmVZSJmm7ImB5ATwrWhqp7YkrR9aP4vK7YpEwxRxotSpIvjtUfm3n60E/SToZ4BrwSRZK3SiS6WdFHsckt2Q7IGdw7CpAYbWgLpNyBGpYCda6F9mRFQi9OdQOJtds30uM7TnQ+lmtlVu68XQ9ueT20KJD884ZPz7Lmh4GNTjEK6VTNpaV67xsmSf8pUkEJ8FvgL1V9iZOtViUA+C/QmwUESXjHPcIAHOAB/Ln8hzxJKp3W6fI+LcSCrqLF2iCi5pcCvKdruYbdMNMPSo1AvNrYj4ekpo8OOslKcYSpYcJWA/Af0WNBz1fuZiUPeBvgVolKPYWigE0qNmGNTnEH8Dr4854DPZTZE74jRN14NtU4NcKdqGNsvIp3Vd1ztOYzzbLI6W7mt+thPGHoTk7yH8kTCuY5vNnYwL9mNxxAJCbDDboeElCE/Jczc0QLAauEVqj9ZJFSsnLWIBdRLUVzB8Qt5fbxF6YlfCyRFxbma3Vbw9NfnX2tSZGjJx9fI5sIdB7YfmQakVJg9D8Skw98lscmKl3WeLNfPt6QhA6GK+08D7EP4xizHva4LWHjA/AX2tm1vxyjsmBnMO+BrUsQyRfwjEEcljxPqh2UzVwJSHiulJVVbZZq+L8ifTWeRI0KuitgAi+/G+1Pr2FUA/Asn/IP8NG4VVY5XUC5Uan+QoJNlIzkL0B9D/AuY7L+vtksXjapOsrYhdtq8Cl6QMSOeFd6B0Ontd53knNXNEnHv+fjEn9GaKAxeLWSAegtJx4DCwQ2p9NED7fRD8AnhIZIMjI0sdKZ5H6cMIGioEVaPfg31H+ITrC3C9gpHVYB8A3SPOl0ROLqcgRNtSGdQHEH4IzaNZbLiyno6o/Iwql+i/LGWZiiZhUb7CMpIU8BIkb0PjPohbwG4G9fcQ3gk0SY/Z6gmcMFV+tVmWzBngU+AjGDsEQwpuKcLQUjB3gbpBkhKDU3MzkiRpJEmxX0HnPvh1SbL23RZeqBH2zBFxHjqgNe7oc2iVAMmgo+n3Aa8CL8OOw/DcIlAPQfB3YB+V4zI2kFwICRO5ti5CNAz8SSRHOJDFeNcsBPsQhBvcNqnYrcZN1R6M261yWND0147gcGICddk55YhDqs4ljNn0BTv72j/FmtlpcBozaYBfdGUR3CzxR0LxV29KiWTHIDx9O0SbgadAr5OjMj4fEvqnfSTZs1LifGwD/SYcG/BO7VXAL6DwACSdWStPuaw7GQNzAOyHQoRNbaWCXlVbO8wRcU7GhQopaI8kwqJO5Yu1lhpdKrwVnxK0oQ+SnTD2Irx1Cp5pgyc3QvKMMGn0WnlNkjiUmsgJrYeETiwp+h70duBt4SkCbNHQtwyGHwLuhWChkx9J3NhAKO+zPATmA1C75WjvDURp9uIjIbkjTjouTut9jVZmVja5zHnGYbJLTmK3wX4kFnRSZUEoW5CvqQCMWLA7JRnRX8DwPtg9IOWU8t9D8DTYO4Cl2fGd1ggnbN85xnYhgKKC0TPAr0H/v3D2SPa8zxZA9Avgb4AuAU+TXttkup6cAf4gFLHmc7DA3T3b4gsdy7kjzg0nT4RY0GjgnFPitx1ugg6Iyg4Fz8iQk/lnGH1N4rbeIjx1K6hHwPZKqy10CYTxZpEnPI4TQTHVLI4UHwXelTjz5a/kOb0BDLZA6Q7g56DvFIeOYqeH7fbqmQTMGKh9oP8Cr5yR128KLxYbzgFH9GNC7YLxeodgwXT5kxewdARS16EvrIxjt0Tuv4FoTtNWARvUd8If5H2wn8LoPnHCXxXgyBPAP0inJLkGTOAVxkMqo5/nQ0JVFDQsDUL4X0D9FvTX3hObILgLkqdA3yYsncqaZeN0bZSIvsd/FUe2x6s/qy2ku1RyRJybWXBaVC6CbhAnHIqhoQz2JESRFKbt7yF+CbZ/4FCqFTbfBUfucEXlXjm2LZCUnNB6kDFmxv1cF3eqJhdDngK7B6JXYPnb8I8xPO8QdO9yMI9C8LAcySbx0DWRxCkoQnkY7AeugD0k9ca9MXRPWmrwCnRENUE/V9WhA5LyBFvczMqHNfXlSceDTmTQeqtlTTOMFmFoRGZA7DugzgB/ES2aNxxKrW+G0afAPAHqTmCFOFM5Rc+i957VxJl/BQk1lEvAG8CLEH0seogvKBHabF8E8b2gHoMgJTXEcl2jXN3QuVBpCHgPwr3wwDAcDWCvmkxsmCPipUdAd0xqV3dL1xYbRz4NNbw/Cps+A30YSgdg5yGh1T9zDZRXQuFusD8D7oewSy4dJ0J2UOEFvk8fCRs9JPwY4t9B8y64+yS86Z5bXAh2IxSfAHOLvMak4ZM7klUof49PSReFP4vM8cvApsJkY8OZOOIsTZ1dqdusrJEvpaKI64rSgSvdcVh23TU7FDuxD/b2Za9f+mNInoDgIWAVsBhor1bq5yJECWtFci6NCcsl4E1QL0LyjmPUeKZvlzmW4D75WbFxR3KYlXuUFnFO+wYEL0L5YPb6tin7SI6Isxb/4SOgzuqAkYHkDJiTEO+XYnSyGzgmT1is4eklEHeDXgNslO5IuK7iB9gY4tg5R3CB7RAOxXRQExN+DPHLoH4PO09kT9/QCk3rofA02J+C7nDrgMuSRCm3g7nC2D4mveimt6FtWBKoF2LombIMde6IdXfCitB0ml4WxQFSJ+KUzIwEf5D1ES1fih4hwFMLQK0Dcz/ohyBYDrYLkoWV/KCi4qUm0e+3xiFhIxTdcBRvQPBbKP0RHjgFO1SGXsV1oP4nCH8qYpsVTc1C9WmYDtjzhWTyv+2Xh/9dCFsUbE1yRLzkRe4Krd4CLnZKeYEG2UsXnRIkMidEOYvdkPwJXjsDm5vhZzdCYQWwGuyPBI3CO2WjbEqxip1mjNJMTGSdAAmDIKsTJkfA7HUlmt/DzlOwkywJ6u6BwrMuDOgQtnVcAuUhoQ5dlpyA3QvsBPXDBO/F5og43mHSLG866Ob9vXaOWbtCLokL9lJndPFfiEw98lfp2fI+FL6GwX5pyQE8vgLsY1B4CLgZ6JCYjAXyeNrBUI47aLk4CpLGpGURYC8CIyOgfiPyInwBhYHqlyxeB/wvEPxUJIdLrrRUcUK3iiplbJdPAS+BegXu8VD180RYNlO3HBGnVHwOXOzTp1xnoVF20xWK2eCcOQXlMxCfhuQHsG+CegcO7xN96c1d8EwPxCuBHwOPifBRsalC2yNCmDKJdWQFFweqydw42olvFiS2iw9JjS95EXbsrn7J/W3QsRYKz0GyWfYxJwbiMeeEQUY5U27hd3xMeslqF2w/JqSfTQ2wo+xE2uezI6qaqbG5Gv8pC/0u9usIhGaP6wVbYGwU1IfAW5B8BPEB4fJ1W1iyHDbfKYTS5BZQS8EulCw4JRwkXmhpC94YwGTY2o6lbUOXJAHmK1D/QY5Q9o9/WftdoP5HCO4XzZoyUhBPnVCyK9kWFWiIBiB4Gfgv0Pxtdp2DM94AmyPipDNgG8iXXFIyK9xqgbOgvoCxdqHV86nEf+YDePUw9BZArYKRNaDWg3kAuBcKi7IWXoJjyCRZKGFTBJyMAzrl19AlFHEstT0OSGml/CK88U11Uf3RhVC4FcLnhDwbtAgSRmOC8hUndAV3pYER4HOIXoPWt2HbaDYMtWvGy5quAkecUWfFpanW8e6SANZoOKldAPiNKOpzUmIv/R387hQ8sQA23QcjD4ich75G4j7TCSysRj9wX3y6PmKy8axDQWIqPEUD8IOUhNTvhDBbOlL9smc7oPQI6H+AcL1sla9CwrTO5Np5OgBTkiTLviZzMNtGq685/SM5R8TzxljWZhsXdODKLm54nDI0l2FHBBu+gZZBSBqFIdNyTtp0z9wGxTuEyWw3QnGNXCON/Yx1NUDj4j/tvnw1OQT0kS0sCD3fAHG/kFLV+0KWXb/DjW06622FkWUQr4dwM9hNMmNS9rPjwEu6XA3UJpDsl7KP/j2MHYMNoSh5Ha3XUvbcEauR0++AKDJHpAH0sAwopZp+u8eA76X2F98K8d1QuB3MaqHR6y5gkSOz+ujnGrTWZ8aoSSKgV6NUWgipITAyBrwK5lWhYRX7x7987FaERPkY6Jsktk1nWFSxGglRUhVIEuAgsAuC7dD0F9g+JoVrgGXJhVjXuSNOOf7zOyCpT0Suj2qPAJ+B2gn2AJQK8GSXHLVJJ6iVENwD5nEIbpXaX1rPjhG0VDWSHkpNcle2jzja1QXdqEASicCR6Qf7F7AvwehO2D0kj7+IIFfrEghuALNJHFHfKYlM7DO3PSS0WvreABwD+wcwOyD4wh3JGr4KnBPWbZHnFB1Rz/IGpkqL0pe+mCEFOh1YV+cpRiuTdUACMjJCPCSK+clLUH4b3nRLEvUa0A/KssTgBlFUsB1OwNw5n+9DqlAT+03290lZOtY7xgtZq9D2C0WMV2WTqD0G1OwwCRaBfRaSx4HzMbd11oXR7oaxuMGoT0D/Jyh8AC+NyMjAVqA7qhcSXiWIGFjRbVGJ1/1wH3Z67KYdkHgYyv3AKeCEjEPyEZT3imrBIz1QWgPBOuCnwMPQ2JQ5X+JQRsWuGKzdsTeZ7Lc2RnXT8j5CG8AOQ3xSnE59CvGbcOZVYe2ktqkB9AIw3VC4D+xz0qkJmjzmthv9VLq6/lgp+5xFeG6vQNMe2HZWHu9rkDh5W1Lvb+oyM7Rb7XkC8Xo7YuTu8FSbxSFC6IChBPAlsEP6wPor0OcgXAj2Fij8a7A/BrtUOh+2U2p/iecklezXQ77JOmAF9Yx3jDsVhhShkxEhK+i3IPkYgu8gPAHv16CgXuDiwL8RcSRzDZUt8pAxt1MPt4lDWRc6mEi6QOofgfecE6bfT5kpULuuVkR0IYPvz2UtiYZtBdUqHRBc9mpPQtnpOidHwb4Pei+Y7yEYcssQ7wT9czCPQfGajLgQ4TQFffRLj7mpxH7OYbV7rfYROhFkMgMyr8K3wvuLfw87Pqm+3OZmOYbjbulVq58Dz0k7LsYt9dHV9ckUeVWYveX4jBTk9YvQ9CZsG5I31NsI22YFCeeAI1pVPdc848SjlvfnEEo1IWS/huzXLRvgY1DbobAH1BEnlbESwp+DWQeskS3sdhnQlSUfteiXOtNk4z9rHPrZLPtN31jqxxZkTOADYejYv0JwEKLToE6Pv2a0QvQO7f3AOlnKqPGm7Ypexk6WSaUZPIiopnoX7P8D6j3nhJU7eraQ8EpBxNQBnQ6MbXVtN88h7CjQD+pLGItlObb9GtRn0ikYOw0NjRCvki9SPQrcB43FLP6LrNTaoKb2pyfhezWxn9ZZ3zhlYCWxQ+gh2X1sB0D9WTo0Zg+8/tX4yz6yBJoXgF0uYwPmCVD3Qtjq2Gix/KlibvtMcZf4JJGb4PtYYsL4TXhtWBKTVxphb2k2kXAGjjhRp6IOye3U34db50XZxVOhm//Qwol7JRBmcXgYzEeSfCRfg/lYgv3wGkjuAv4bKN0gvVYWgl0ishuJ/7u5rHqqtb90SJ7Ei/2KGfKlzRt7APijJCAccKr9J4FzcPbU+OtubgZ+AvYRsHeBXiaqXLRmlQcb4smDebXSsmNYh+4e+QZ4HdRLUO6DN91iluct7Jp1JJyviFg7+9Hgis04vZZ9gn5b08LvEXjGCCPGLoT4HDSMInSrHkERnoTmpix2TBUMorT3q7Mzc9KdD68zodwxrv3Y75z0pu0gqEOSKNk/QfAx/O678ZftLcK5RaDboNAOyVrQj4J9GMLV8jXGKbrZ8cxtmyrABqKNqHC6Od8inMLtsH2X+1kBjDbAL0uZ5s2cdES/BjcTGByXNU/miEt7v1TX/coI0qkdEtT7tbiXj4juykgbFB8Au14Ce7MQVLfEkDE1ozjuS7SVZXJTj/2gOvNNYz/1gxyD9jO5cZLvJCEJB8Cem/jao0shuBO4F5K7QV0jzO2Ut1hp9RYmYG5XKuvyu4bKMa8/kKPYvAWtnvP3WOgriVTIpbNw7iOgn10GoRdXjUJ0RroL8X4wr0C4E3YcFAQpdUG0CPQiKC8BbpXaX/gANLovr4TU1KIoq6XZyfZ+JxP7Wel8ROeAEcl+1adSKFafwtBXrlXoo18AI+3y3oNOIUzY64DbxRGDdZINJy7pSpnbFQRU1XeVUm7BoyPWRofAfAH2d1DYCdtd/LkhhLaiHMeXDgnnSNa8VsFu3HFClQZlpgvtamv+9FsCJAccy+QPkHwJY99nX2p8E8QPg74HuB7iVqCNSu+3KvTRwv1Lv7RJZb9e31eZ8bFfWoLhqHRn1AciI8wphKkzCMG58U4IIvHB7aA3gL4DWC21S9UuHRzIEFzpzMH89219ek/gBD2B0ZOg/1m6MWYfNHjx524DvSV4xVwOb5hDiKgSxjFgtF/jMsJ6jo9JbGPfBvMm/M4tvH56CTxzC9iVEN0G6mHZwt7QVsN8juRaqXKQ0pPo+9Z2PVxnRtfEfomL/Rhx3ZkvQb8D8R7Y8e1EvzT0LoBzztF0J7BKsmC7AbgNioWsaB4DceSVffzM3WZD+2nfHEQqLjkhczO8B/GLsOP97IZfX5DJwR3RpciO57gjal8J1ZLNgDRknQV7BtgtLJDoXQgOyULCDZ3Qth7ijQ5BVgCdUvvTrdVDdZXfeQq93zTzVcZrEYZZAlLhkB4EPpH9xXwL6ntJkhrOQOk8sd/9rTDaI8it1jsnXOAQsEtKLKa2MhFOELum6Jx+hk3ZyaF+cD3pP0DyKZw9WH1/7U2oJkdezY6YaJkOC4KM7g5gRmVw234ndb/oXdl6tOMEPLtCNGC4Q+j33A96VeZnBqExpdlvqnY+WQSsiv3S4rhXcjEDEA9IJm5PAZ/JF83nTihpaOKyS9QBhQ5ZwqhWgL1VZla4G4ot3vSfqwUm3vJuq6s1bazJmDxKywli06z/iHSJ1PuSkLT8Hl5x8WRvEwwaOGFEo+byr5+7zI6YcvsKSPtJZyem1PH6wP4TBK/ByDE4MgqLu+HJX0L0FARrpe9rOwVBlId+tib7nVT9z1bzEtPYT3nvKyUfsAfsH2W9lzkGyQCMDUNhEHaPTFCCCeDcCiisF6dTdwln0bY7BGzxaoDe96Mm2HuYZugVhG7ItgrYNH7+jcxOR/slTNhWru6U3Gv97aBXsSOOo5JFrrF/DpLvZYeb+SOYP8gH27gEblwnBFT7pLS0Gp1jlL0OBckUmM9e7JeijvZQ0OIWG56Tvm8yIur66ltxQvVuFqPW2oZWaO0QRwvbYexaCNdI+Yi7Ibwu613HDsWq5lZqkHui+DT9tWIg6XeLF0+CfQ94EV75oPpGWNAgn3N9uYSXwRG1N0w+k05KWmBNe80qBnMIkj8DfwG2Q3kPjAxC+3UQ/hswD7vlMunkmxdKVv0+egrol8ak6X89zl/gvmAOIUNRfwb1DfC9DMuH7mg+n7WsAH0vmB+DWQNmqevedDgUp4a5XVVsdDeCzeKMCkIHWZhQQejjoN4C+y6oPvks22pmVba5rHibYQ5ugr3MiHhto8QoSb84X/IBmB+kHBMZuPYmGHsCzN9BwSkfVOp/sbdV04ufLsh+sdWljhRVtBfzJ0OuPnkWkpPS8+UzYUGX9sEbE5AO1hdgRTsk7RAvkk3w9lYwd4O6B9Ryee/Wi//S7LfyBrSXPE3QmamKT0ckLo3PSTtQ9QFvQfBHKeBXULlRqj8jRjLiy5cVz2FHNFrqe5vK0HIC+rdDUwC2G8Ifi/xFtAZYKv1f6x3B6Xu3Xi9VTSL7VSbrzKhCVjcMvCPOfg68K/3p4AcZllfDMDoEQ8MTX3tRm8yt2AdkrYRaKnVL2+bmV2piVz/7Var6lKhlZPur8tL4VH1GpTetvhOETk7CjwdEFi617ghW123A6Up0xBj0oNzNO0qCKF1dUFgsRFTzDOh/JTFgBIwiygexnWT9z3r/mWAmpaKVNCzvIRl2LJ1DIkTO2/DdR9BXnjjpONsBhU6J/0w3FK4BcxvwAAT3CuuqMrXnapd+HOpnvxfszOA0cwaBYSmEs186M/xJHPEVLzHqCOC/bZR9yAtdO3RuxYJzwBHT5ES54rUdFScE6LoNdC8kP5G2lloizyu5L1Ljuh+Tqf95jOdK7Kfc8kMvIzcDEvfxoYikq++BM1A+DaMD0BdNfPlSs0zr2QdA3QF6tSPeOua2qo393HuvzMbY7IydiJGdgnziOjO8D+pjSZA4Li1DMwDh6WonBPiNgefdzbN1XulNXkJHrAzlpPWapbD5ZiEf6KfA/CtoWpk5YJIIkqTMhgvOflyA8Zw+nJRc3W9AUJCvXfy3F85+Ae+emOC6AWxqEU2YuFNUsuz1wF2gfiqrJIrF8Z2bxJtZrrpxXEKkGc/ITqyUgJIBUIPidHaf1AGTT6B7X7bJqRIDelzDbiOzxrsve3H6UjnidKb4HBSlR6JtlwJ0crPMVeibhODp99pV4E3gqYvHftZTZPWzSjcXD9/IsZt8CMF+Wd+aDIE6B8dGJr72qgLo6yXpCO4DtQZMl9T9WOS2v1OjWXOB2C8NE2yhKkeRG/QIqI9kaxNfuc7MWSHyfnMOXiuNf3+7PEb6FmCbnY9OeKljRO0RDTpcUbcJ9ApPCWHU0/87nxKqJ9g0UWxlkJ0fyUlxNEaF/aw/krpk/CG81n+e2l8jtC6CpMOViJYAN7vOx09Es+Z8nY+qzs1FYr84Ea3EaFDeXzLgylYfQvAhnPtqPAOm130mS5XQLtss/DLJsqCtzGe7VI6oqtuiNIs4UYoMlapCg8eIVheP/aw3j1xhPMfAX6WmZj+TWQ8GZNbDnIXTF6j9dS6FaCMEPwG7TqR7aQXTLvXL83U+qpTMamO/GlZODHBQSBv2Y1AHgFOg+8Uhlw/A7yagYaX1vy3AvTjHm7cIOEeyZqUzvb0kqm7HTRj7+XW12tgqgvgsqLMiiKS+Bz6Xzkf82fnRb30zLG4RiV7dLAlS3CP0K3M/FJd4zBoXAkRxdeejotoAVQoOVe8vls5MfBbUkBzBtk9YOaW9sPPgBMgcSilrVEGTlT3HL7gbcOsVKXo/E4Z2fYCyQnBQ5+t8GI9tUsh2eyiXHKgDEleZT0B/A/YHyX6TAfhu+Pw/u6sb1I8gvBtYC6xEGM+LQHWOV+xCS+3RvznUeep+aXQRAeqgJETmU7ci7IDQ2TgNO89O/N5qY7+t86IWOB/riNbtiWOCDUle3cPvqaaxVXIcyuek/GPPgPpEZnHHPoGF356nexDAU47vF3VBsBjsGkSG4x7gFigG3h5kx9pWtjr7rdxAfteDmr70CemXx8OSaPCpJCHqEzj2jajG+ndiygdcouC4Q7/nvR0lW7kabBq95tjbQafU9KFQnWczUoVT5+Z9U4RJXGzFToT58j1wzi1LHISmc+dvYT3WKGr9yQan1t8tuoCmRRBQB9XxX4X5bKmm3ifnj/0SgCMi6cv7CCfxlKBfeBaOn61xQmcpH3AL0o7baq9k5JtriHieTDjdaKS97Dc6JckGx6QAbd+CyHESJ7KeIlzXIgQD0+IIpsvB3AlsEOWutGedtnuTxEmw1XQ+KqGIQ7+UL5nGfvFZuRkYBvqBPjC7IXgPXjk8cex3ewDnlPR/+40TP79iY786OeIW4ICHXCUgnEDaY0Y+mCo0xMKrS488k0hQzy7Row72C/oFpwX9zmfXdoK6BeydwG1gbwKzQNTy7cIstrQ1NctUsdXWsLF9RnaanUcAB6TjYT5z6HfAZeanYMeZ88d+zxtYmGbCV3zsNw8QsTKXkm5mKjhWSj/S2tov8RW7YOzjiRnP6wvQ1Art7RB3QcNCsKvA3AysB26XvXITqvV7mjU+cULVxH6kSctpETPnnJuT/lSSEPsZfPMtfFOqDj16i9Cv4XYLxywssBL7zY/e73xwxDrEMCkKgtQSK/PJw6L9bN9wU2ZnYPgM43T/UmtqhbYeKTYHG8FeI0Vy1eTQr+38av1VhU33hMpssMfKsUA0JF0Z844wslW/0MTazsH+Afhmgthvm9vkudEKAl6dsd9cRURvN1ygnZMMSUAfDYD9M+iXhOT56gRtt83NEC8UYkRyjcz8qptFsyZ4UNg6/uyVseOzX7/zMSHb2To29mmIR8AMgd4nu0WSt2H71+eP/Y65rKrfyHhmHvvVyRG3Apu8D7KQtrHUNG5uX3Gg2dvO+QWYnTIUZfeLRFxHaeJLlFdC+AjYe2VeRbUL84XOataLrzxbUWwly3ytx8i2HiM7QZTB7Ceg9opOIoeEilU4Bf2n89jv8iOigoKBckQ1O2EyDuhe7ysOxAch2Sfop3bCjg8njgE7FkK4AAqrgB+J8BD3CB/Q73yYSFQbzhf7pW1Gn5Ftcbvyzoo2oD0F/EVqfnqvLMzZXoPMvyrAQQ03AiUDyyz80s5l9vMVkjWfBnYgClsfVyq+E9ztE2nhWLxGcrYwcewoqH8CXofwOzf0M4F1dENxI2hHudJLpBxj2yfofIQ1sZ+nwlppIQbVrJd0V556F/hAVLnUCWHklAcyvqRvL8TyWUB+7F4WRNxq4CkDtMjR6s9WnC8hSWdtSWt1pyA5BuyG8kvwxgfjX/dMm5Rb7CrQt0LyCHC/sKDTwnYSu83tHsSNi/109f46iyyuiU9J3McI2MOuOP6OyILUxqUT9nzzzPfyxIgbPEfTTZCscPO4yjFdwvFkBZuelymdC0EadoF6GZK9zgkmsGgt6MflCFYrstnfKgR04teVLkdN7JcyngOV8f3KZZEAUe8jw1DfASflfQ2enngWudLzVbDF5pnv5XFE51zd7ovY0AClFRBcC0GjO3HtxEio0yUyiGoXB0WjWr0GjS97K7Sck29ugvI1UFjtNjY9IR2QVAM6jp3qlYd+6esVntKBnxfFMuWmBtxYwH5QfxEEjD6D14+ORz/CbOqtx0jsV+H75Q546R1xi4ajgcRD/Qbua4T2G6F8NxU96UoSUIuEkUMj7XKaz8UBrdMurNrj5i6U9ED4XwMPZNp/VbMfNYoHvgo/Xu0vjf0iJNu1H0n2a76SPXmcESLC6xMUxzcamVNJp9625pnv3EDEg+5M2x3DYwvBPASFB2VAKE7ItARVDRI6+QtzBsxfQW8XJ3x1b7Wj9zVAaQHEayF4FMxzULjBHc+4eRWTHe9VYF2DgLEVVo51SlzmtIyF2r3CzN6xrzppIpCe9Eol8V+3kQ2bu5LZWWaU2zQdcSuytq1SP7xG/iG8B5LW6sH2SmISSc0u1LJOgV0iBmnfBXWYqgm2rQaeWw3R46CeArVWlPB91v242Q+vG5MyX1KlA45LCci8J0dwyvfTZ2HwTI0TIi/qs9BHNd8vd8K55IjOuVa6Oc7NjWCuB3MLhB2ZYn3qMbVImJyW/qv5HUSvw84a6YvnFkG0GsoPixPqjfI2IiAedd4V1sz91u6hs8L7S86APSGxX/KWsF62X4D18rlDP5KMer8194K554iV2DCCF6wseimtBXu7lGwqWWt6JKf7OlyGGg2D+j3YlyHZBQ8cE/pgavc1wdjDEGwCfiILFbUfCzbUzCy79WWpc1akYY4ATutFfymSJeYk3DsA25k4+33ewEa8+C9Hv7mNiAe91HO0RehU9m5JCCLnFFa7VWJuc5FSUpuzn8qqVrMT3jgKb3gO/t61oH8MwbPAoxAsc7Gk2wdCoXpzeqqZrcNsID45AfYo6D+LIxb/CL/1ZlJ+oiX2W6wl+/UZz3ntby6bGn8sbyg6bWcFT98Ayf8K/C1otzxbBdksiQ7ECZNRV597BeKXYMd3VO3neKwbgv8O1DNuV/AiGYInrY6YGvFJtzO4UJB7ZRSwrwKvQ/QpFI9KDXD7QDWyWZW187bYHP3mNSI2eWWLuBO4HsLuDL1qJ+tsIpvTeVMWFq48mDlhbwCj14J5BHhOhtS1y3IrcaYriKedmDQWjBPJvKN+tynK0cPe/L469lsdwohrPW5MdYpz1ss8M68wvMUxlEf93vAS2UWSTs1VVP5TNBuTqTn9jjhi11cSX6ZWWgLJvwb1P4tOTEqzV6q6LJPWH1XsEVIHINkN9v8A/Tzol2H48PjYbySCnhL0xJ7cRu6E8xcRd+kMVboDGFgErAJaqSghKSsIGATCqC6XgfdAvw5Df/W0WRRs6oLoQVBPQ/Bjl3uUyPj2LvOwieMEujlnc1Y0Eu0nov2cvJrNp/QG8O8aMt7fL5O5KjyZ27QccYuCoyqbztvUDsXbRWySdtEytC4Gw2SzxeUTwHYo7aqm8v+sHfQmMH8DqseL4cIaMc0EVEkG3AtKiNjqjxIPJu+DPlg9JLUtkdhvYZ79XrmIeNAjLjS1QOk24DYp2xhHo9eebkZ8ImOtvHFa/r1Xyx63qAd4Quhbqs11SdLXeuOZ6XJCEH4ifwZehOANeO1gloD8sgX6YxGe3Joj4JUbI26tyaTLraBuQgSImoVwSpIlE8kpSF4G889QPpKhKk2geyB4HLgHwi6XHSvPEVOmdrkiWU3SD/F/hOTfS1LSdLg6se8Zg43l/Bi+qrJmLAStkCyX5YlKOb1nslHP5KgUrgf/BKWyJDpbDfyiE8xG1zu+1iOluuumKv/aUfTtCJQPgdkFyW/hjb1Z3bGnCHdrOBDD/xbn/nflO6JDqYPeN510OC1r5W0+ClxlZAD4K/A1/GlQXr/ZoV58k1C4wjsl7ktiQUIbeCvOPAkR8ymoXwO7oOSJEW11qNkL/Dr3wKvEEd3gx2KT1eZUJ9hmT27YsV3MKPAF2D2gT2RIt6cIP78JkkednG+rqxW6wrRyCg4VlYRTotLPKxC9CG+67sjmZqkfjiZSislrgVdRjLjFwdNuVz9c0AFqkRBbrcq6FYFBGM273MZNT82gaTEEfwM8B3Q5EfNUdD0ll6bh3QnZKmr/d1D/X+aEAINluDear/K7uc0IEfu83vIWDR91OHkOna1kqGj+DciEW/vXsD/KVExHVwuzOnClmrjsEND1jrUr/5gjwNugXoSRHU4VVcEzrbB0DP4xzqlYVy0iDnr95j0FFx92VCcylWG8YxD+ANuGYHMC/U2IruBdMuyUalZDtX6MsWCOS4Kj/m8ov1ktzXt2VNjguRPmWTMAbQUYbJdhpZT7pxC9GHMMdB+UBlxCYeDJVhi5H9QGiStNLEiqdYaEIHrR/AF4GZJ34I2SxKLFBiiXLsfG9NzmHCIu8RCxHIqYpW7PsltlJTa0u8G8LWpcqcVLwP5c5H5Vp0M+d13riuCmLFrR9j9A9JbMCiuklVguZbFpbjkiVmwogMYmsI0ChRpXRxwCPoLgExgbzQi0h5YB6yBc5PQGXb0xKIAuyiSd3SMjA4V34bVBF1c2wa6xHAlz8xxxxEPEgtOJtoUq0MSOyqra44dE4bShUVRXuRFoq76kdbMrARAfAv4ZzMvw8qA83mPhaLolM7fcJkLExDGudUFivVQXmgEIBjzp3WaIbwd+DKrRIV+q6uCO5eQo2Deh9Ca8dVQQdnMT7Co7JMwTk9yq4M6zRuWcqVHqiAmiDcj3sj6ignoLZBcdDwCLXJknkQQn1CJkaf4Fkv/oyAwu9W6KnVxb7oS5XQgRy9pxA4tAUcgO5gTo70G78QEs2MUIM2e1PD9OROhdWYTX3ycTfCffl33MmxqgzW2XJz+Sc7sYIoJjy4SOlFCWPSHqe2RFq5Wyi14hc8iFNLN23RczDMkXbpKvr1pFv8fmcWFuk3TEwCm62grzFfRR2ZZUHpJsuaMbzHWSpFgjJRutIQzFcc17wC5oP+n0ZLTsjUuP59xym5QjqogK99CWZV7YHoG2YdjVLDvq1Fq3nV1XNr/K+MkA8C7oj6X7MuTNJ+fjnLlN2hFDb6mNBI1C+yr2C02/pRVMD5ibJKEx6fqH2O0Z/gvwZVaqud7FoLmaam5TcsTRlD3tVk+oCDgNi0/K46rNrQ67Xko4IEmKGYD4fRn3LHhyb4NGtGVyy21q5RsDlKQoDZLh6lE3IqogbAGWQ7DQ7UZRkrAwJruQC+9AYcTFhsrp5+SW22TKN/3+1oBY1k2YYZdXWKp2nCStwBIoFDM9dwWyE28vDOyD3SXodVs8X8jLNblNFhGbPEcciMEOyV5hcKTYEpX6YdTits7bTPkhOQd8K0sad4/J8/p1hqi55TYpR2zzHLEzgiBddOj0beKRrOwSdFAhHWpkHWzyMah3ZA+Jb1vyUk1uU3HEHg+1emIoOke0Y5I1h07kfEMIprMmvByE5FMwe6B91DFrUg3C3HKbiiP6A0pbDRQHZLiJAbDDoFxrL3SzLLboXmrkGDdfQ/RX2aPX4ziI/bkIUm7Tzprd31tGgZPueB51I6EWmhfIDrxUmQENagTUD1A+LbXCXe4aG3NEzG3KjugEljY4J3ohEuUFBiRjjtOR0k6ZZbFFR/NCVsdyLCO4djsl2VwWJLdpI+IJHx3PuXHRMWFb9wZgGqXco0IZFY3GQB0F44bsUdWDWLnlNjVHtNL9WOf/8xBwBNQpIcmeaQXjyLKkUsIHZKeyGqZKkzDvpOQ2dTvPeotgFNQBkZHTETS0ivIDDfIniYBvQH0DDaP5x5hbnRxxq4X1vhb1IKgvXUJyBgqNEHW6Sb0WYWubb0B/C2eGs9e15avCcptpjHi9l+mGw6D2QfAFBI7wYFslWdEBMCisbXsYdqc78qiuSeaW29QdsYY9fXhM5IMbvoPFZ2AslRxuci8ZgeAwDJ+UrHuDK2Tn2XJuM0ZE34E2J5CMyALHFyKgJELr4HS0Y1n2nZZtTvginLnlNiNH9Ox5C9/4oaQVZ6ScsXKsl6Qs1tCbl25yq7sjKugIZEYljf9M5HiK7v8nF9hen1tudXFEgIKtjvm0cUcyZOME7rEmK33m/GjOre6O2OA5VZNxo6XDogxmR4WTmFtus+qIW6kmzBZjUOeAE8hu5LNkFG3vNbnlVndE9AmzZ2PnfCek7ccw45dx55Zb3R3RCqewcjTHEJ4VAXc7IBxFYyZ22txyqysiVlkCalBoX/qMIKLKtQ1zuxSOuNtDuW0JDI6APQXWcRUDT9dmf54x5zZriJgeva5WGJWQWZYhyaC199rW3Alzm60YscIvdI64uySZsxqWjNl6FLLuHBFzm5GFF39Kn8qcMxkAdUgWQ1q3VQoLvzF5kyW32UxWlOuYpHYOgu9B/wDJWIaW+X6U3GYdEX0bjaDlLFDINgjkltvM7f8H82O+dKGCYG0AAAAASUVORK5CYII=";
 const DEF_CFG = {title:"كشف متابعة المستخلصات الجارية", currency:"ج.م", lateDays:30, depts:[], stages:[], types:["مستخلص أعمال"], companies:[], mpPct:0.03, defWage:0.2, mpBase:"الصافي",
   insStatuses:["مطلوب الدفع","تم الدفع – منتظر التسوية","جاري تسوية الملف","مطلوب رفع مستخلص","اعتراض مقدم","مطلوب معرفة الموقف","لا توجد مديونية","تم استخراج الشهادة"]};
-const state = { projects:[], invoices:[], cfg:{...DEF_CFG}, canWrite:true, tab:"home", loaded:{p:false,i:false}, invLimit:60, sel:new Set(), activity:[], ins:[], insFilter:{status:""}, invPaid:"", invCol:new Set(), psel:new Set(), dense:false, pHealth:"", pView:"cards", invSort:{k:"order",d:-1}, invNew:true,
+const state = { projects:[], invoices:[], cfg:{...DEF_CFG}, canWrite:true, tab:"home", loaded:{p:false,i:false}, invLimit:60, sel:new Set(), activity:[], ins:[], insFilter:{status:""}, closeout:[], coFilter:{cat:"open"}, coAlAll:false, invPaid:"", invCol:new Set(), psel:new Set(), dense:false, pHealth:"", pView:"cards", invSort:{k:"order",d:-1}, invNew:true,
   satFilter:{dept:"",stage:"",company:"",loc:"",type:"",group:"dept",short:true,alert:""}, mv:{per:"30",stage:"",kind:"",q:"",limit:80}, mxOpen:false };
 let db=null, downloads=null, user=null, myId=null;
 const names = new Map();
@@ -1717,6 +1762,7 @@ function renderHome(){
   const late = un.filter(([v,k])=>k.late), noIns = un.filter(([v,k])=>insBad(k));
   const cur = `<small>${esc(cfg.currency||"")}</small>`;
   $("#homeSub").textContent = `${state.projects.length} مشروع · ${state.invoices.length} مستخلص · تحديث ${dmy(today())}`;
+  { const cl=coAll(); $("#hCoP").hidden=!cl.length; $("#hCo").innerHTML=coKpisHtml(cl); }
   $("#homeKpis").innerHTML = `
     <div class="kpi lead"><span class="lbl">${ico("money")}إجمالي غير المصروف</span><span class="val">${money(sum(un,([v,k])=>k.net))}${cur}</span><span class="sub">${un.length} مستخلص على ${new Set(un.map(([v])=>v.projectId)).size} مشروع</span></div>
     ${(()=>{ const pd=all.filter(([v])=>v.paid==="نعم"); return `<div class="kpi"><span class="lbl">${ico("check")}إجمالي المصروف</span><span class="val">${money(sum(pd,([v,k])=>k.net))}${cur}</span><span class="sub">${pd.length} مستخلص${paidM.length?` · منها ${paidM.length} هذا الشهر`:""}</span></div>`; })()}
@@ -1853,7 +1899,7 @@ function render(){
   memo.clear();
   $("#brandSub").textContent = (state.cfg.title||"").replace(/^كشف متابعة المستخلصات الجارية\s*[–-]?\s*/,"") || "كشف المتابعة";
   $("#footDate").textContent = `آخر تحديث ${dmy(today())}`;
-  ["home","sat","moves","inv","proj","ins","mp"].forEach(t => { $("#v-"+t).hidden = state.tab!==t; });
+  ["home","sat","moves","inv","proj","ins","co","mp"].forEach(t => { $("#v-"+t).hidden = state.tab!==t; });
   document.querySelectorAll(".nav button").forEach(b => { if(b.dataset.tab===state.tab) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   { const nb=document.querySelector(`.nav button[data-tab="${state.tab}"] .lbl`); $("#mbPage").textContent = nb ? nb.textContent : ""; }
   ["#btnNew","#btnNewInv","#btnNewProject","#btnNewIns","#btnSettings","#fab","#insNew","#mpNew"].forEach(s => $(s).disabled = !state.canWrite || !db);
@@ -1865,7 +1911,7 @@ function render(){
   $("#cMp").textContent = state.invoices.filter(v=>v.showMp).length;
   $("#cIns").textContent = state.ins.length;
   $("#dlContracts").innerHTML = state.projects.map(p=>`<option value="${esc(p.contractNo)}">${esc(pName(p,true))}</option>`).join("");
-  renderHome(); renderSat(); renderMoves(); renderInv(); renderProj(); renderIns(); renderMp(); renderBulk();
+  renderHome(); renderSat(); renderMoves(); renderInv(); renderProj(); renderIns(); renderCo(); renderMp(); renderBulk();
 }
 
 const deptOrder = () => [...(state.cfg.depts||[]).map(d=>d.name), "غير محدد"];
@@ -2293,6 +2339,7 @@ function invDialog(v, projectId){
           ${sfld("vType","النوع",cfg.types||["مستخلص أعمال"],d.type||"مستخلص أعمال")}
           ${fld("vGross","القيمة الإجمالية (تراكمي حتى تاريخه)",d.gross,"number")}
           ${fld("vDate","تاريخ المستخلص",d.date,"date")}
+          <div class="f wide" id="vDateRsnF" hidden><label for="vDateRsn">سبب تعديل تاريخ المستخلص الختامي (مطلوب — بيتسجل في سجل المراجعة وبيعيد حساب موعد التأمين النهائي)</label><input id="vDateRsn" placeholder="مثال: تصحيح حسب محضر التسليم الابتدائي"></div>
         </div>
         <div id="vProjCard"></div>
         <div class="calcs" id="vCalc"></div>
@@ -2325,6 +2372,7 @@ function invDialog(v, projectId){
         ${v&&state.canWrite?`<div><button type="button" class="btn sm" data-move="${esc(v.id)}">${ico("route")}تسجيل حركة جديدة</button></div>`:""}
         ${v?timelineHtml(v,true):""}
       </section>
+      ${v&&(isFinalInv(v)||v.type===CO_WG||v.type===CO_FI)?(()=>{ const cs=coState(proj(v.projectId)||{id:""}); return cs?`<section class="sec"><h3>${ico("money")}مستحقات ما بعد الختامي<span class="r"><button type="button" class="btn sm" data-co="${esc(v.projectId)}">${ico("up")}فتح المتابعة</button></span></h3><div class="coinv">${v.type===CO_WG?coToneChip(cs.wg.tone,"رد ضمان الأعمال: "+cs.wg.status):v.type===CO_FI?coToneChip(cs.fi.tone,"رد التأمين النهائي: "+cs.fi.status):`${coToneChip(cs.wg.tone,"ضمان الأعمال: "+cs.wg.status)} ${coToneChip(cs.fi.tone,"التأمين النهائي: "+cs.fi.status)}`}${cs.avail?` <span class="sub2">متاح للمطالبة من <span class="dte">${dmy(cs.avail)}</span></span>`:cs.due?` <span class="sub2">مرور السنة <span class="dte">${dmy(cs.due)}</span></span>`:""}</div>${(v.dateLog||[]).length?`<p class="hint">تعديلات التاريخ: ${v.dateLog.map(x=>`${dmy(x.from)} ← ${dmy(x.to)} (${esc(x.reason)} — ${esc(who(x.by))})`).join("، ")}</p>`:""}</section>`:""; })():""}
       <section class="sec"><h3>${ico("sat")}الكشوف والملاحظات</h3>
         <div class="fields">
           <label class="chk"><input type="checkbox" id="vSat" ${d.showSat?"checked":""}> عرض في كشف المتابعة</label>
@@ -2350,6 +2398,8 @@ function invDialog(v, projectId){
         mpStatus:val("vMp"), mpEstimate:nval("vMpEst"), stage:val("vStage"), stageDate:val("vStageDate"), notes:val("vNotes"), company:val("vCompany"),
         showSat:form.querySelector("#vSat").checked, showMp:form.querySelector("#vShowMp").checked, updatedAt:new Date().toISOString()});
       if(!data.certNo && isWork(data.type)){ toast("اكتب رقم المستخلص"); return; }
+      if(v && v.date && data.date!==v.date && isFinalInv(v)){ const rsn=val("vDateRsn").trim(); if(!rsn){ toast("اكتب سبب تعديل تاريخ المستخلص الختامي"); form.querySelector("#vDateRsn").focus(); return; }
+        data.dateLog=[...(v.dateLog||[]), {from:v.date, to:data.date, reason:rsn, by:myId||"", at:new Date().toISOString()}]; }
       if(data.paid==="نعم" && !data.paidDate) data.paidDate = today();
       if(data.stage && data.stage!==origStage){ if(!data.stageDate) data.stageDate=today(); data.stageLog=[...(d.stageLog||[]), {stage:data.stage, date:data.stageDate, from:origStage, by:myId||"", at:new Date().toISOString()}]; }
       data.materials = (d.materials||[]).filter(m=>m.name||num(m.qty)).map(m=>({name:m.name||"",qty:num(m.qty),price:num(m.price)}));
@@ -2358,7 +2408,7 @@ function invDialog(v, projectId){
       data.updatedBy = myId||"";
       const ref = v ? db.collection("invoices").doc(v.id) : db.collection("invoices").doc();
       if(await save(ref, data)){ dlg.close(); toast(v?"تم حفظ المستخلص":"تم تسجيل المستخلص");
-        const ch=[]; if(v){ if((v.log||[]).length!==(data.log||[]).length) ch.push("متابعة جديدة"); if((v.stage||"")!==(data.stage||"")) ch.push(`المكان ← ${data.stage||"غير محدد"}`); if((v.paid||"")!==(data.paid||"")) ch.push(data.paid==="نعم"?"تم الصرف":`الصرف ← ${data.paid==="لا"?"لم يُصرف":"لم يُحدَّث"}`); if((v.insStatus||"")!==(data.insStatus||"")) ch.push(`التأمينات ← ${data.insStatus||"لم يُحدَّث"}`); if((v.mpStatus||"")!==(data.mpStatus||"")) ch.push(`القوة العاملة ← ${data.mpStatus||"لم يُحدَّث"}`); if(num(v.gross)!==num(data.gross)) ch.push(`القيمة ← ${fmt(data.gross)}`); if(num(v.bankExpected)!==num(data.bankExpected)) ch.push("المتوقع للبنك"); if((v.notes||"")!==(data.notes||"")) ch.push("الملاحظات"); if(JSON.stringify(v.materials||[])!==JSON.stringify(data.materials)) ch.push("الخامات"); if(!!v.showSat!==!!data.showSat) ch.push(data.showSat?"أُضيف لكشف المتابعة":"أُزيل من كشف المتابعة"); }
+        const ch=[]; if(v){ if((v.date||"")!==(data.date||"")) ch.push(`التاريخ ${dmy(v.date)||"—"} ← ${dmy(data.date)||"—"}${data.dateLog&&data.dateLog.length>(v.dateLog||[]).length?` (السبب: ${data.dateLog.at(-1).reason})`:""}`); if((v.log||[]).length!==(data.log||[]).length) ch.push("متابعة جديدة"); if((v.stage||"")!==(data.stage||"")) ch.push(`المكان ← ${data.stage||"غير محدد"}`); if((v.paid||"")!==(data.paid||"")) ch.push(data.paid==="نعم"?"تم الصرف":`الصرف ← ${data.paid==="لا"?"لم يُصرف":"لم يُحدَّث"}`); if((v.insStatus||"")!==(data.insStatus||"")) ch.push(`التأمينات ← ${data.insStatus||"لم يُحدَّث"}`); if((v.mpStatus||"")!==(data.mpStatus||"")) ch.push(`القوة العاملة ← ${data.mpStatus||"لم يُحدَّث"}`); if(num(v.gross)!==num(data.gross)) ch.push(`القيمة ← ${fmt(data.gross)}`); if(num(v.bankExpected)!==num(data.bankExpected)) ch.push("المتوقع للبنك"); if((v.notes||"")!==(data.notes||"")) ch.push("الملاحظات"); if(JSON.stringify(v.materials||[])!==JSON.stringify(data.materials)) ch.push("الخامات"); if(!!v.showSat!==!!data.showSat) ch.push(data.showSat?"أُضيف لكشف المتابعة":"أُزيل من كشف المتابعة"); }
         const lab = `${certLabel(data)} · ${pName(p,true)}`;
         logAct(v ? `عدّل ${lab}${ch.length?" — "+ch.join("، "):""}` : `سجّل مستخلص جديد: ${lab}`, ref.id, p.id); }
     },
@@ -2384,6 +2434,7 @@ function invDialog(v, projectId){
         form.querySelectorAll("#addMat,[data-quickmat]").forEach(b=>b.disabled = !k.work);
       };
       ["vContract","vType","vGross","vStageDate","vPaid"].forEach(id=>form.querySelector("#"+id).addEventListener("input",refresh));
+      if(v && v.date && isFinalInv(v)){ const sh=()=>{ form.querySelector("#vDateRsnF").hidden = val("vDate")===v.date; }; form.querySelector("#vDate").addEventListener("input",sh); form.querySelector("#vDate").addEventListener("change",sh); }
       form.querySelector("#vStage").addEventListener("change", e => { if(e.target.value!==origStage) form.querySelector("#vStageDate").value = today(); refresh(); });
       form.querySelector("#vIns").addEventListener("change", e => { const on=e.target.value==="تعلية"; form.querySelectorAll(".raisef").forEach(x=>x.hidden=!on); if(on && !val("vRaiseDate")) form.querySelector("#vRaiseDate").value=today(); });
       form.querySelector("#vPaid").addEventListener("change", e => { if(e.target.value==="نعم" && !val("vPaidDate")) form.querySelector("#vPaidDate").value=today(); });
@@ -2411,6 +2462,7 @@ function projDialog(p){
         ${vs.length?`<div class="tscroll"><table class="dt"><thead><tr><th>المستخلص</th><th class="n">الإجمالي</th><th class="n">الصافي</th><th>التنفيذ</th><th>الصرف</th></tr></thead><tbody>${
           vs.map(v=>{const k=calc(v); return `<tr data-inv="${esc(v.id)}"><td><span class="cert ${k.work?"":"ret"}">${esc(certLabel(v))}</span></td><td class="n">${money(v.gross)}</td><td class="n"><b>${money(k.net)}</b></td><td style="min-width:120px">${progHtml(k.exec)}</td><td>${paidChip(v)}</td></tr>`;}).join("")}</tbody></table></div>`:`<p class="hint">لا توجد مستخلصات بعد.</p>`}
       </section>`:""}
+      ${p?(()=>{ const cs=coState(p); return `<section class="sec"><h3>${ico("money")}ضمانات ومستحقات ما بعد الختامي${cs?`<span class="r"><button type="button" class="btn sm" data-co="${esc(p.id)}">${ico("up")}فتح متابعة المستحقات</button></span>`:""}</h3>${coSummaryHtml(cs)}</section>`; })():""}
       <section class="sec"><h3>${ico("bld")}بيانات المشروع</h3>
       <div class="fields">
         ${fld("jNo","رقم العقد",d.contractNo)}
@@ -3282,6 +3334,282 @@ function insDialog(r, preId){
     }
   });
 }
+
+/* =====================================================================
+   مستحقات ما بعد الختامي: رد ضمان الأعمال ثم رد التأمين النهائي
+   - المتابعة بتظهر لوحدها لأي مشروع اتصرف مستخلصه الختامي
+   - التأمين النهائي متاح = الأبعد بين (تاريخ الختامي/التسليم الابتدائي + سنة) و(تاريخ صرف ضمان الأعمال)
+   - بيانات المتابعة في مجموعة closeout (مستند لكل مشروع، رقمه = رقم المشروع)
+   ===================================================================== */
+const CO_WG = "رد ضمان أعمال", CO_FI = "رد تأمين نهائي";
+const isFinalInv = v => isWork(v.type) && /ختامي/.test(v.certNo||"");
+const isoDate = d => { const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(d||"")); return m && !isNaN(Date.UTC(+m[1],+m[2]-1,+m[3])) ? m[0] : ""; };
+const addYear = d => { d=isoDate(d); if(!d) return ""; const [y,m,dd]=d.split("-").map(Number); const t=new Date(Date.UTC(y+1,m-1,dd)); if(t.getUTCMonth()!==m-1) t.setUTCDate(0); return t.toISOString().slice(0,10); };
+const coDocOf = pid => state.closeout.find(c=>c.projectId===pid) || null;
+
+function coCompute(p, doc){
+  if(!p) return null;
+  const vs = state.invoices.filter(v=>v.projectId===p.id).sort((a,b)=>num(b.order)-num(a.order));
+  const finals = vs.filter(isFinalInv);
+  const fin = (doc?.finalInvoiceId && vs.find(v=>v.id===doc.finalInvoiceId)) || finals[0] || null;
+  if(!fin) return null;
+  const finPaid = fin.paid==="نعم";
+  const handover = isoDate(doc?.handoverDate) || isoDate(fin.date);
+  const part = (pre, type) => {
+    const key = pre+"InvoiceId";
+    const inv = doc && key in doc ? (doc[key] ? vs.find(v=>v.id===doc[key])||null : null) : (vs.find(v=>v.type===type && v.paid!=="نعم") || vs.find(v=>v.type===type) || null);
+    const amount = has(doc?.[pre+"Amount"]) ? num(doc[pre+"Amount"]) : inv ? num(calc(inv).net) : 0;
+    const pays = (doc?.[pre+"Payments"]||[]).filter(x=>num(x.amount)>0);
+    let collected = pays.reduce((s,x)=>s+num(x.amount),0);
+    let paidDate = pays.length ? pays.map(x=>x.date||"").sort().at(-1) : "";
+    if(!pays.length && inv?.paid==="نعم"){ collected = amount; paidDate = inv.paidDate||""; }
+    const settled = !!doc?.[pre+"Settled"];
+    const done = settled || (amount>0 ? collected >= amount-0.5 : inv?.paid==="نعم");
+    const partial = !done && collected>0;
+    const submitted = doc?.[pre+"Submitted"] || (inv ? inv.date||"" : "");
+    return {inv, amount, collected, remaining: done ? 0 : Math.max(0, amount-collected), pays, paidDate, settled, done, partial, submitted,
+      note: doc?.[pre+"Note"]||"", place: inv ? calc(inv).stage : "", amountKnown: amount>0};
+  };
+  const wg = part("wg", CO_WG), fi = part("fi", CO_FI);
+  const due = handover ? addYear(handover) : "";
+  const avail = !due || !wg.done ? "" : (wg.paidDate && wg.paidDate > due ? wg.paidDate : due);
+  const t = today();
+  const finPaidDate = fin.paidDate || "";
+  const sinceFin = finPaidDate ? dayDiff(finPaidDate, t) : null;
+  wg.status = wg.done ? (wg.settled ? "تسوية معتمدة" : "تم الصرف") : wg.partial ? "صرف جزئي" : wg.inv ? "قيد الصرف" : "مطلوب المتابعة";
+  wg.tone = wg.done ? "ok" : wg.partial ? "warn" : wg.inv ? "info" : "bad";
+  const dueIn = due ? dayDiff(t, due) : null;
+  if(fi.done){ fi.status = fi.settled ? "تسوية معتمدة" : "تم الصرف"; fi.tone="ok"; }
+  else if(fi.partial){ fi.status = "صرف جزئي"; fi.tone="warn"; }
+  else if(fi.inv){ fi.status = "قيد الصرف"; fi.tone="info"; }
+  else if(!handover){ fi.status = "بيانات ناقصة"; fi.tone="mute"; }
+  else if(avail && t >= avail){ fi.status = "مستحق — لم يُطالب به"; fi.tone="bad"; }
+  else if(t >= due){ fi.status = "حل موعده — في انتظار صرف الضمان"; fi.tone="warn"; }
+  else if(dueIn <= 30){ fi.status = `يحل موعده خلال ${dueIn} يوم`; fi.tone="warn"; }
+  else { fi.status = "لم يحل موعده"; fi.tone="mute"; }
+  const remaining = wg.remaining + fi.remaining;
+  return {p, doc, fin, finals, finPaid, finPaidDate, sinceFin, handover, due, dueIn, avail, wg, fi, remaining, closed: wg.done && fi.done, missing: !handover};
+}
+const coState = p => { const doc = coDocOf(p.id); const s = coCompute(p, doc); return s && (s.finPaid || doc) ? s : null; };
+const coAll = () => state.projects.map(coState).filter(Boolean);
+
+/* التنبيهات: كل واحد بيفتح ملف المشروع */
+function coAlerts(s){
+  const out = [], L = num(state.cfg.lateDays||30), t = today();
+  const add = (sev, tag, title, detail) => out.push({sev, tag, title, detail, s});
+  if(s.missing) add("mute","بيانات ناقصة","المستخلص الختامي بدون تاريخ","لازم تاريخ الختامي (التسليم الابتدائي) عشان موعد التأمين النهائي يتحسب");
+  if(!s.wg.done){
+    if(!s.wg.inv) add(s.sinceFin!=null && s.sinceFin>L ? "bad" : "warn", s.sinceFin!=null && s.sinceFin>L ? "عاجل" : "متابعة", "ضمان أعمال مطلوب رده", `الختامي اتصرف${s.finPaidDate?` بتاريخ ${dmy(s.finPaidDate)}`:""} ولم يُسجل مستخلص رد الضمان`);
+    else if(s.wg.partial) add("warn","صرف جزئي","ضمان أعمال صُرف جزئيًا",`متبقي ${fmt(s.wg.remaining)} من ${fmt(s.wg.amount)}`);
+    else { const d = s.wg.submitted ? dayDiff(s.wg.submitted, t) : null; add(d!=null && d>L ? "bad" : "info", d!=null && d>L ? "متأخر" : "قيد الصرف", d!=null && d>L ? "ضمان أعمال مقدم ولم يُصرف" : "ضمان أعمال قيد الصرف", `${certLabel(s.wg.inv)}${s.wg.place&&s.wg.place!=="—"?` · في ${s.wg.place}`:""}${d!=null?` · مقدم من ${d} يوم`:""}`); }
+  }
+  if(!s.fi.done && s.handover){
+    if(s.fi.partial) add("warn","صرف جزئي","تأمين نهائي صُرف جزئيًا",`متبقي ${fmt(s.fi.remaining)} من ${fmt(s.fi.amount)}`);
+    else if(s.fi.inv){ const d = s.fi.submitted ? dayDiff(s.fi.submitted, t) : null; if(s.avail && t>=s.avail) add(d!=null && d>L ? "bad" : "info", d!=null && d>L ? "متأخر" : "قيد الصرف", d!=null && d>L ? "تأمين نهائي مقدم ولم يُصرف" : "تأمين نهائي قيد الصرف", `${certLabel(s.fi.inv)}${d!=null?` · مقدم من ${d} يوم`:""}`); }
+    else if(s.avail && t>=s.avail) add("bad","عاجل","تأمين نهائي مستحق ولم يُطالب به",`متاح من ${dmy(s.avail)} · ${dayDiff(s.avail,t)} يوم`);
+    else if(t>=s.due) add("warn","في انتظار الضمان","حل موعد التأمين النهائي",`السنة خلصت ${dmy(s.due)} لكن ضمان الأعمال لم يُصرف بالكامل بعد`);
+    else if(s.dueIn<=30) add("warn","قرب الاستحقاق","تأمين نهائي يستحق خلال 30 يوم",`موعد مرور السنة ${dmy(s.due)} · باقي ${s.dueIn} يوم${s.wg.done?"":" (وضمان الأعمال لسه)"}`);
+  }
+  return out;
+}
+const SEV_ORD = {bad:0, warn:1, info:2, mute:3};
+const coToneChip = (tone, text) => `<span class="cos ${tone}">${esc(text)}</span>`;
+
+function coKpisHtml(list){
+  const cur = `<small>${esc(state.cfg.currency||"")}</small>`;
+  const wgOpen = list.filter(s=>!s.wg.done), wgVal = wgOpen.reduce((a,s)=>a+s.wg.remaining,0), wgUnknown = wgOpen.filter(s=>!s.wg.amountKnown).length;
+  const soon = list.filter(s=>!s.fi.done && !s.fi.inv && s.due && s.dueIn!=null && s.dueIn>=0 && s.dueIn<=30);
+  const avail = list.filter(s=>!s.fi.done && s.avail && today()>=s.avail), availVal = avail.reduce((a,s)=>a+s.fi.remaining,0);
+  const tot = list.reduce((a,s)=>a+s.remaining,0), unknown = list.filter(s=>(!s.wg.done&&!s.wg.amountKnown)||(!s.fi.done&&!s.fi.amountKnown)).length;
+  return `
+    <button type="button" class="kpi lead" data-cof="open"><span class="lbl">${ico("money")}إجمالي مستحقات الشركة بعد الختامي</span><span class="val">${money(tot)}${cur}</span><span class="sub">على ${list.filter(s=>!s.closed).length} مشروع${unknown?` · ${unknown} مشروع قيمته لسه متسجلتش`:""}</span></button>
+    <button type="button" class="kpi ${wgOpen.length?"wn":""}" data-cof="wg"><span class="lbl">${ico("shield")}ضمان أعمال مطلوب رده</span><span class="val num">${wgOpen.length}</span><span class="sub">مشروع</span></button>
+    <button type="button" class="kpi" data-cof="wg"><span class="lbl">${ico("money")}قيمة ضمانات الأعمال غير المحصلة</span><span class="val">${money(wgVal)}${cur}</span><span class="sub">${wgUnknown?`${wgUnknown} مشروع بدون قيمة مسجلة`:"مبالغ لم تُحصّل"}</span></button>
+    <button type="button" class="kpi ${soon.length?"wn":""}" data-cof="soon"><span class="lbl">${ico("clock")}تأمينات نهائية اقترب موعدها</span><span class="val num">${soon.length}</span><span class="sub">خلال 30 يوم</span></button>
+    <button type="button" class="kpi ${avail.length?"hl":""}" data-cof="avail"><span class="lbl">${ico("note")}تأمينات نهائية مستحقة</span><span class="val num">${avail.length}</span><span class="sub">${availVal?`لم يتم تحصيلها · ${fmt(availVal)}`:"لم يتم تحصيلها"}</span></button>`;
+}
+const CO_CATS = [["","كل المشروعات"],["open","مستحقات مفتوحة"],["wg","ضمان أعمال مطلوب"],["soon","تأمين قرب موعده"],["avail","تأمين مستحق"],["running","قيد الصرف"],["partial","صرف جزئي"],["missing","بيانات ناقصة"],["closed","مغلق"]];
+const coCat = (s, c) => c==="" ? true : c==="open" ? !s.closed : c==="wg" ? !s.wg.done : c==="soon" ? (!s.fi.done && !s.fi.inv && s.due && s.dueIn>=0 && s.dueIn<=30) :
+  c==="avail" ? (!s.fi.done && s.avail && today()>=s.avail) : c==="running" ? ((s.wg.inv&&!s.wg.done&&!s.wg.partial)||(s.fi.inv&&!s.fi.done&&!s.fi.partial)) :
+  c==="partial" ? (s.wg.partial||s.fi.partial) : c==="missing" ? s.missing : c==="closed" ? s.closed : true;
+function coFiltered(){
+  const f = state.coFilter, q = ($("#coSearch").value||"").trim().toLowerCase(), co = $("#coCompany").value, dp = $("#coDept").value, fr = $("#coFrom").value, to = $("#coTo").value;
+  return coAll().filter(s=>{ const p=s.p, dd = s.avail || s.due;
+    return coCat(s, f.cat) && (!co || (p.company||"غير محدد")===co) && (!dp || (p.dept||"غير محدد")===dp) && (!fr || (dd && dd>=fr)) && (!to || (dd && dd<=to)) &&
+      (!q || `${p.name} ${p.shortName} ${p.contractNo} ${p.boqNo} ${p.location}`.toLowerCase().includes(q)); })
+    .sort((a,b)=> (a.closed-b.closed) || ((a.avail||a.due||"9999") > (b.avail||b.due||"9999") ? 1 : -1));
+}
+function renderCo(){
+  if(!state.loaded.i){ $("#coKpis").innerHTML=skelKpis(4); return; }
+  const all = coAll();
+  fillSel("#coCompany", uniq(all.map(s=>s.p.company||"غير محدد")), "الكل");
+  fillSel("#coDept", uniq(all.map(s=>s.p.dept||"غير محدد")), "الكل");
+  $("#coKpis").innerHTML = coKpisHtml(all);
+  const al = all.flatMap(coAlerts).sort((a,b)=>SEV_ORD[a.sev]-SEV_ORD[b.sev]);
+  $("#coAlCount").textContent = al.length ? `${al.length} تنبيه` : "";
+  const shown = state.coAlAll ? al : al.slice(0,8);
+  $("#coAlerts").innerHTML = al.length ? `<div class="coal">${shown.map(a=>`<button type="button" class="coa ${a.sev}" data-co="${esc(a.s.p.id)}"><span class="coa-t">${esc(a.tag)}</span><span class="coa-b"><b>${esc(a.title)}</b><span>${esc(pName(a.s.p,true))}${realId(a.s.p.contractNo)?` · عقد ${esc(a.s.p.contractNo)}`:""} — ${esc(a.detail)}</span></span>${ico("up")}</button>`).join("")}</div>${al.length>8?`<div class="more" style="padding:10px 0 0"><button type="button" class="btn sm" id="coAlToggle">${state.coAlAll?"عرض أقل":`عرض كل التنبيهات (${al.length})`}</button></div>`:""}`
+    : `<div class="empty">${ico("check")}<div>لا توجد تنبيهات على مستحقات ما بعد الختامي.</div></div>`;
+  const f = state.coFilter;
+  $("#coChips").innerHTML = CO_CATS.map(([k,l])=>{ const n = all.filter(s=>coCat(s,k)).length; return `<button type="button" class="alert st" data-cocat="${k}" aria-pressed="${f.cat===k}" ${n||f.cat===k||k===""?"":"hidden"}>${esc(l)} <b class="num">${n}</b></button>`; }).join("");
+  const rows = coFiltered();
+  $("#coCount").textContent = `${rows.length} مشروع`;
+  $("#coTable").innerHTML = rows.length ? `<thead><tr><th>المشروع</th><th>المستخلص الختامي</th><th>رد ضمان الأعمال</th><th>رد التأمين النهائي</th><th class="n">المتبقي للشركة</th></tr></thead><tbody>${rows.map(s=>{ const p=s.p;
+    return `<tr class="cor" style="--cc:${coVar(p.company)};cursor:pointer" data-co="${esc(p.id)}">
+      <td><b>${esc(pName(p,true))}</b><div class="sub2">${coTag(p.company)}${realId(p.contractNo)?` · عقد <span class="code">${esc(p.contractNo)}</span>`:""}${p.dept?` · ${esc(p.dept)}`:""}</div></td>
+      <td><span class="certp">${esc(certLabel(s.fin))}</span><div class="sub2">${s.handover?`التسليم <span class="dte">${dmy(s.handover)}</span>`:`<span class="warnline small">بدون تاريخ</span>`}</div><div class="sub2">${s.finPaid?`اتصرف${s.finPaidDate?` <span class="dte">${dmy(s.finPaidDate)}</span>`:""}`:"لم يُصرف"}</div></td>
+      <td>${coToneChip(s.wg.tone, s.wg.status)}<div class="sub2">${s.wg.amountKnown?`${fmt(s.wg.amount)}${s.wg.collected&&!s.wg.done?` · حُصّل ${fmt(s.wg.collected)}`:""}`:"القيمة لم تُسجل"}</div>${s.wg.paidDate&&s.wg.done?`<div class="sub2">صُرف <span class="dte">${dmy(s.wg.paidDate)}</span></div>`:""}</td>
+      <td>${coToneChip(s.fi.tone, s.fi.status)}<div class="sub2">${s.due?`مرور السنة <span class="dte">${dmy(s.due)}</span>`:""}${s.avail&&s.avail!==s.due?` · متاح <span class="dte">${dmy(s.avail)}</span>`:""}</div><div class="sub2">${s.fi.amountKnown?`${fmt(s.fi.amount)}${s.fi.collected&&!s.fi.done?` · حُصّل ${fmt(s.fi.collected)}`:""}`:"القيمة لم تُسجل"}</div></td>
+      <td class="n">${s.closed?`<span class="cos ok">مغلق</span>`:coRemTxt(s)}</td></tr>`; }).join("")}</tbody><tfoot><tr><td colspan="4">الإجمالي · ${rows.length} مشروع</td><td class="n"><b class="num">${fmt(rows.reduce((a,s)=>a+s.remaining,0))}</b></td></tr></tfoot>`
+    : `<tbody><tr><td><div class="empty">${ico("check")}<div>${all.length?"لا توجد مشروعات بالفلاتر الحالية.":"لا يوجد مشروع اتصرف مستخلصه الختامي بعد."}</div></div></td></tr></tbody>`;
+  const nAl = all.flatMap(coAlerts).filter(a=>a.sev==="bad").length;
+  $("#cCo").textContent = all.filter(s=>!s.closed).length; $("#aCo").hidden = !nAl; $("#aCo").textContent = nAl;
+}
+
+const coUnknown = s => (!s.wg.done && !s.wg.amountKnown) || (!s.fi.done && !s.fi.amountKnown);
+const coRemTxt = s => `<b class="num">${fmt(s.remaining)}</b>${coUnknown(s)?`<div class="sub2">+ قيمة لم تُسجل</div>`:""}`;
+/* ملخص صغير جوه ملف المشروع */
+function coSummaryHtml(s){
+  if(!s) return `<p class="hint">لا يوجد مستخلص ختامي مصروف لهذا المشروع بعد — المتابعة بتبدأ لوحدها أول ما الختامي يتصرف.</p>`;
+  return `<div class="tscroll"><table class="dt cosum"><thead><tr><th>البيان</th><th>الحالة</th><th>التاريخ</th></tr></thead><tbody>
+    <tr><td>المستخلص الختامي (${esc(certLabel(s.fin))})</td><td>${coToneChip(s.finPaid?"ok":"warn", s.finPaid?"تم الصرف":"لم يُصرف")}</td><td>${s.finPaidDate?`<span class="dte">${dmy(s.finPaidDate)}</span>`:"—"}</td></tr>
+    <tr><td>التسليم الابتدائي</td><td>${coToneChip(s.handover?"ok":"mute", s.handover?"مسجل":"بيانات ناقصة")}</td><td>${s.handover?`<span class="dte">${dmy(s.handover)}</span>`:"—"}</td></tr>
+    <tr><td>رد ضمان الأعمال</td><td>${coToneChip(s.wg.tone, s.wg.status)}</td><td>${s.wg.paidDate?`<span class="dte">${dmy(s.wg.paidDate)}</span>`:"—"}</td></tr>
+    <tr><td>رد التأمين النهائي</td><td>${coToneChip(s.fi.tone, s.fi.status)}</td><td>${s.fi.paidDate&&s.fi.done?`<span class="dte">${dmy(s.fi.paidDate)}</span>`:s.avail?`متاح <span class="dte">${dmy(s.avail)}</span>`:s.due?`<span class="dte">${dmy(s.due)}</span>`:"—"}</td></tr>
+  </tbody></table></div>`;
+}
+
+/* نافذة المتابعة */
+function coDialog(pid){
+  const p = proj(pid); if(!p) return;
+  const doc0 = coDocOf(pid);
+  const s0 = coCompute(p, doc0);
+  if(!s0){ toast("المشروع ده مفيهوش مستخلص ختامي مسجل"); return; }
+  const d = doc0 ? clone(doc0) : {projectId:pid};
+  d.wgPayments ||= []; d.fiPayments ||= []; d.log ||= [];
+  const vs = state.invoices.filter(v=>v.projectId===pid).sort((a,b)=>num(b.order)-num(a.order));
+  const optInv = (list, cur, none) => `<option value="">${none}</option>` + list.map(v=>`<option value="${esc(v.id)}" ${v.id===cur?"selected":""}>${esc(certLabel(v))} · ${fmt(calc(v).net)}${v.paid==="نعم"?" · اتصرف":""}</option>`).join("");
+  const payHtml = pre => { const arr=d[pre+"Payments"]; return arr.length ? `<div class="mrow mh" aria-hidden="true" style="grid-template-columns:150px minmax(0,1fr) minmax(0,1.4fr) auto"><span>التاريخ</span><span>المبلغ</span><span>ملاحظة</span><span></span></div>` + arr.map((x,i)=>`<div class="mrow" data-pay="${pre}" data-pi="${i}" style="grid-template-columns:150px minmax(0,1fr) minmax(0,1.4fr) auto"><input class="cell" type="date" data-pf="date" value="${esc(x.date||"")}" aria-label="تاريخ التحصيل"><input class="cell num" data-pf="amount" inputmode="decimal" value="${esc(x.amount??"")}" placeholder="المبلغ" aria-label="المبلغ المحصل"><input class="cell" data-pf="note" value="${esc(x.note||"")}" placeholder="شيك / تحويل…" aria-label="ملاحظة"><button type="button" class="link bad" data-rmpay="${pre}:${i}" aria-label="حذف">${ico("x")}</button></div>`).join("") : `<p class="hint">لم يُسجل تحصيل بعد.${pre==="wg"&&s0.wg.inv?.paid==="نعم"||pre==="fi"&&s0.fi.inv?.paid==="نعم"?" المستخلص متعلّم «اتصرف» فبيتحسب متحصل بالكامل.":""}</p>`; };
+  const logHtml = () => d.log.length ? `<div class="feed">${d.log.slice().reverse().map(x=>{ const n=who(x.by); return `<div class="feed-i"><span class="dot">${esc(initials(n))}</span><div><b>${esc(n)}</b><div class="txt pre">${esc(x.text)}</div></div><span class="when dte">${dmy(x.at)}</span></div>`; }).join("")}</div>` : `<p class="hint">لا توجد تعديلات مسجلة.</p>`;
+  const sec = (pre, title, type, icon) => { const s=s0[pre]; return `<section class="sec"><h3>${ico(icon)}${title}</h3>
+      <div class="fields">
+        <div class="f"><label for="co_${pre}Inv">مستخلص ${title}</label><select id="co_${pre}Inv">${optInv(vs.filter(v=>v.type===type), s.inv?.id||"", vs.some(v=>v.type===type)?"لم يُسجل بعد":`لا يوجد مستخلص «${type}» على المشروع`)}</select></div>
+        ${fld(`co_${pre}Amt`, "القيمة المستحقة", has(d[pre+"Amount"])?d[pre+"Amount"]:"", "number", `placeholder="${s.inv?fmt(calc(s.inv).net):"اكتب القيمة"}"`)}
+        ${fld(`co_${pre}Sub`, "تاريخ تقديم المستخلص", d[pre+"Submitted"]||"", "date")}
+        <div class="f"><label>مكان المستخلص الحالي</label><div class="calcs"><div id="co_${pre}Place"><b>—</b></div></div></div>
+      </div>
+      ${pre==="fi"?`<div class="pinfo" id="coFiDates" style="margin-top:12px"></div>`:""}
+      <h4 class="coh4">التحصيل (يدعم الصرف الجزئي) <button type="button" class="btn sm" data-addpay="${pre}">${ico("plus")}إضافة تحصيل</button></h4>
+      <div id="co_${pre}Pays" style="display:flex;flex-direction:column;gap:8px">${payHtml(pre)}</div>
+      <div class="co-tot" id="co_${pre}Tot"></div>
+      <label class="chk" style="margin-top:10px"><input type="checkbox" id="co_${pre}Set" ${d[pre+"Settled"]?"checked":""}> إغلاق بتسوية معتمدة (من غير تحصيل كامل)</label>
+      <div class="f wide" style="margin-top:10px"><label for="co_${pre}Note">ملاحظات</label><textarea id="co_${pre}Note" placeholder="أي تفاصيل عن المطالبة أو الصرف">${esc(d[pre+"Note"]||"")}</textarea></div>
+    </section>`; };
+  openDlg({ title: `مستحقات ما بعد الختامي — ${esc(pName(p,true))}`,
+    sub: `عقد <span class="code">${esc(p.contractNo||"")}</span>${doc0?.updatedAt?` · آخر تعديل ${esc(ago(doc0.updatedAt))}${doc0.updatedBy?` بواسطة ${esc(who(doc0.updatedBy))}`:""}`:""}`,
+    body: `<fieldset class="bare" ${state.canWrite?"":"disabled"}>
+      <section class="sec"><h3>${ico("list")}الموقف</h3><div id="coSum"></div></section>
+      <section class="sec"><h3>${ico("doc")}المستخلص الختامي والتسليم الابتدائي</h3>
+        <div class="fields">
+          <div class="f"><label for="coFin">المستخلص الختامي</label><select id="coFin">${s0.finals.map(v=>`<option value="${esc(v.id)}" ${v.id===s0.fin.id?"selected":""}>${esc(certLabel(v))} · ${v.paid==="نعم"?"اتصرف":"لم يُصرف"}${v.date?` · ${dmy(v.date)}`:""}</option>`).join("")}</select></div>
+          ${fld("coHand","تاريخ التسليم الابتدائي", s0.handover, "date")}
+          <div class="f wide" id="coRsnF" hidden><label for="coRsn">سبب تعديل التاريخ (مطلوب — بيتسجل في سجل المراجعة)</label><input id="coRsn" placeholder="مثال: تصحيح حسب محضر التسليم"></div>
+        </div>
+        <p class="hint">حسب دورة العمل: تاريخ التسليم الابتدائي = تاريخ المستخلص الختامي. لو ساعات بيختلف عدّله هنا واكتب السبب.</p>
+      </section>
+      ${sec("wg","رد ضمان الأعمال",CO_WG,"shield")}
+      ${sec("fi","رد التأمين النهائي",CO_FI,"money")}
+      <section class="sec"><h3>${ico("clock")}سجل المراجعة</h3><div id="coLog">${logHtml()}</div></section>
+    </fieldset>`,
+    foot: footBtns("حفظ المتابعة"),
+    onSubmit: async () => {
+      if(!state.canWrite) return;
+      const fin = vs.find(v=>v.id===val("coFin")) || s0.fin;
+      const hand = val("coHand"), handDefault = fin.date || "";
+      const prevHand = s0.handover;
+      if(prevHand && hand !== prevHand && !val("coRsn").trim()){ toast("اكتب سبب تعديل تاريخ التسليم"); form.querySelector("#coRsn").focus(); return; }
+      const pays = pre => d[pre+"Payments"].map(x=>({date:x.date||"", amount:has(x.amount)&&String(x.amount).trim()!==""?num(x.amount):"", note:(x.note||"").trim()})).filter(x=>num(x.amount)>0);
+      const data = {...stripId(d), projectId:pid, finalInvoiceId: fin.id, handoverDate: hand && hand!==handDefault ? hand : "",
+        wgInvoiceId: val("co_wgInv"), wgAmount: nval("co_wgAmt"), wgSubmitted: val("co_wgSub"), wgPayments: pays("wg"), wgSettled: form.querySelector("#co_wgSet").checked, wgNote: val("co_wgNote").trim(),
+        fiInvoiceId: val("co_fiInv"), fiAmount: nval("co_fiAmt"), fiSubmitted: val("co_fiSub"), fiPayments: pays("fi"), fiSettled: form.querySelector("#co_fiSet").checked, fiNote: val("co_fiNote").trim(),
+        updatedAt: new Date().toISOString(), updatedBy: myId||""};
+      // سجل المراجعة: أي تغيير في التواريخ أو القيم
+      const s1 = coCompute(p, data), ch = [];
+      const cmp = (lab, a, b, f=x=>x) => { if(String(a??"")!==String(b??"")) ch.push(`${lab}: ${a!==""&&a!=null?f(a):"—"} ← ${b!==""&&b!=null?f(b):"—"}`); };
+      cmp("تاريخ التسليم الابتدائي", prevHand, s1.handover, dmy);
+      if(s0.fin.id!==s1.fin.id) ch.push(`المستخلص الختامي ← ${certLabel(s1.fin)}`);
+      for(const [pre, lab] of [["wg","ضمان الأعمال"],["fi","التأمين النهائي"]]){
+        if((s0[pre].inv?.id||"")!==(s1[pre].inv?.id||"")) ch.push(`مستخلص ${lab} ← ${s1[pre].inv?certLabel(s1[pre].inv):"بدون"}`);
+        cmp(`قيمة ${lab}`, s0[pre].amount||"", s1[pre].amount||"", fmt);
+        cmp(`تاريخ تقديم ${lab}`, s0[pre].submitted, s1[pre].submitted, dmy);
+        cmp(`المحصل من ${lab}`, s0[pre].collected||"", s1[pre].collected||"", fmt);
+        if(s0[pre].settled!==s1[pre].settled) ch.push(`${lab}: ${s1[pre].settled?"إغلاق بتسوية معتمدة":"إلغاء التسوية"}`);
+      }
+      if(ch.length) data.log = [...(d.log||[]), {at:new Date().toISOString(), by:myId||"", text: ch.join("\n") + (val("coRsn").trim() ? `\nالسبب: ${val("coRsn").trim()}` : "")}];
+      if(await save(db.collection("closeout").doc(pid), data)){
+        dlg.close(); toast("تم حفظ متابعة المستحقات");
+        if(ch.length) logAct(`عدّل مستحقات ما بعد الختامي — ${pName(p,true)}: ${ch.join("، ")}`, "", pid);
+      }
+    },
+    onMount: () => {
+      const cur = () => { const fin = vs.find(v=>v.id===val("coFin")) || s0.fin, hand=val("coHand");
+        return coCompute(p, {...d, finalInvoiceId:fin.id, handoverDate: hand && hand!==(fin.date||"") ? hand : "",
+          wgInvoiceId:val("co_wgInv"), wgAmount:nval("co_wgAmt"), wgSubmitted:val("co_wgSub"), wgSettled:form.querySelector("#co_wgSet").checked,
+          fiInvoiceId:val("co_fiInv"), fiAmount:nval("co_fiAmt"), fiSubmitted:val("co_fiSub"), fiSettled:form.querySelector("#co_fiSet").checked}); };
+      const refresh = () => { const s = cur();
+        form.querySelector("#coSum").innerHTML = coSummaryHtml(s) + (s.closed ? `<p class="hint" style="color:var(--ok);font-weight:600">${ico("check")} المستحقات اتقفلت بالكامل.</p>` : `<p class="hint">المتبقي للشركة: <b class="num">${fmt(s.remaining)}</b> ${esc(state.cfg.currency||"")}${coUnknown(s)?" — وفيه قيمة لسه متسجلتش (اكتبها تحت عشان تدخل في الحساب)":""}</p>`);
+        for(const pre of ["wg","fi"]){ const x=s[pre];
+          form.querySelector(`#co_${pre}Place`).innerHTML = x.inv ? `<b>${esc(x.place==="—"?"جهة بدون مراحل":x.place)}</b>` : "<b>—</b>";
+          form.querySelector(`#co_${pre}Tot`).innerHTML = `<span>المستحق <b class="num">${fmt(x.amount)}</b></span><span>المحصل <b class="num">${fmt(x.collected)}</b></span><span>المتبقي <b class="num">${fmt(x.remaining)}</b></span>${coToneChip(x.tone,x.status)}`; }
+        form.querySelector("#coFiDates").innerHTML = `<div><span>بداية السنة (التسليم الابتدائي)</span>${s.handover?`<span class="dte">${dmy(s.handover)}</span>`:"بيانات ناقصة"}</div><div><span>موعد مرور السنة</span>${s.due?`<span class="dte">${dmy(s.due)}</span>`:"—"}</div><div><span>تاريخ صرف ضمان الأعمال</span>${s.wg.done?(s.wg.paidDate?`<span class="dte">${dmy(s.wg.paidDate)}</span>`:"اتصرف (التاريخ غير مسجل)"):"لم يُصرف بعد"}</div><div><span>تاريخ إتاحة المطالبة</span>${s.avail?`<b class="dte">${dmy(s.avail)}</b>`:"بعد صرف ضمان الأعمال"}</div>`;
+        const hand=val("coHand"); form.querySelector("#coRsnF").hidden = !(s0.handover && hand!==s0.handover);
+      };
+      form.querySelector("#coFin").addEventListener("change", ()=>{ const fin=vs.find(v=>v.id===val("coFin")); if(fin && !d.handoverDate) form.querySelector("#coHand").value = fin.date||""; refresh(); });
+      for(const pre of ["wg","fi"]){
+        const box=form.querySelector(`#co_${pre}Pays`);
+        box.addEventListener("input", e=>{ const r=e.target.closest("[data-pi]"); if(r){ d[pre+"Payments"][+r.dataset.pi][e.target.dataset.pf]=e.target.value; refresh(); } });
+        box.addEventListener("click", e=>{ const b=e.target.closest("[data-rmpay]"); if(b){ d[pre+"Payments"].splice(+b.dataset.rmpay.split(":")[1],1); box.innerHTML=payHtml(pre); refresh(); } });
+      }
+      form.querySelectorAll("[data-addpay]").forEach(b=>b.onclick=()=>{ const pre=b.dataset.addpay; d[pre+"Payments"].push({date:today(),amount:"",note:""}); const box=form.querySelector(`#co_${pre}Pays`); box.innerHTML=payHtml(pre); box.querySelector("[data-pi]:last-child [data-pf=amount]")?.focus(); });
+      ["coHand","co_wgInv","co_wgAmt","co_wgSub","co_wgSet","co_fiInv","co_fiAmt","co_fiSub","co_fiSet"].forEach(id=>{ const el=form.querySelector("#"+id); el.addEventListener("input",refresh); el.addEventListener("change",refresh); });
+      refresh();
+    }
+  });
+}
+
+/* كشف مستحقات الشركة بعد الختامي (Excel + طباعة) */
+function coAoa(){
+  return coFiltered().map((s,i)=>{ const p=s.p; return [i+1, pName(p,false), p.contractNo||"", p.company||"", p.dept||"", certLabel(s.fin), s.finPaidDate||"", s.handover||"",
+    s.wg.amount||"", s.wg.status, s.wg.inv?certLabel(s.wg.inv):"", s.wg.paidDate||"", s.wg.collected||"", s.wg.remaining||"",
+    s.fi.amount||"", s.due||"", s.avail||"", s.fi.status, s.fi.inv?certLabel(s.fi.inv):"", s.fi.collected||"", s.fi.remaining||"", s.remaining||""]; });
+}
+const CO_HEAD = ["م","اسم المشروع","رقم العقد","الشركة","جهة الإسناد","المستخلص الختامي","تاريخ صرف الختامي","تاريخ التسليم الابتدائي","قيمة ضمان الأعمال","موقف رد ضمان الأعمال","مستخلص رد الضمان","تاريخ صرف الضمان","المحصل من الضمان","المتبقي من الضمان","قيمة التأمين النهائي","موعد مرور السنة","موعد إتاحة التأمين النهائي","موقف التأمين النهائي","مستخلص رد التأمين","المحصل من التأمين","المتبقي من التأمين","إجمالي المتبقي للشركة"];
+async function exportCoXlsx(){
+  let X; try{ X=await loadXLSX(); }catch{ toast("تعذر تحميل مكتبة Excel"); return; }
+  memo.clear();
+  const aoa=[["كشف مستحقات الشركة بعد الختامي"],[`تحديث بتاريخ: ${dmy(today())}`],[],CO_HEAD,...coAoa()];
+  const wb=newWb(X); X.utils.book_append_sheet(wb, sheetOf(X,aoa,[5,40,16,18,22,12,13,13,14,18,20,13,14,14,14,13,13,24,20,14,14,16]), "مستحقات ما بعد الختامي");
+  await offer(`كشف مستحقات ما بعد الختامي ${today()}.xlsx`, new Uint8Array(X.write(wb,{bookType:"xlsx",type:"array"})));
+}
+function exportCoHtml(){
+  memo.clear();
+  const rows=coFiltered(), d=x=>x?dmy(x):"—", n=x=>x?fmt(x):"—";
+  const tot=rows.reduce((a,s)=>a+s.remaining,0);
+  const html = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>كشف مستحقات الشركة بعد الختامي</title><style>
+@page{size:A4 landscape;margin:10mm}body{font-family:"Segoe UI",Tahoma,Arial,sans-serif;font-size:11px;color:#111;margin:0;padding:10px}
+h1{font-size:18px;margin:0}.sub{color:#444}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border:1px solid #777;padding:5px 6px;text-align:right;vertical-align:top}
+th{background:#dde3f2}td.n{direction:ltr;text-align:left;white-space:nowrap}.c{text-align:center}small{color:#555}tfoot td{font-weight:700;background:#f1f3f8}@media screen{body{max-width:1300px;margin:auto}}</style></head><body>
+<div style="display:flex;gap:14px;align-items:center"><img src="${LOGO_NAVY}" alt="" style="height:56px"><div><h1>كشف مستحقات الشركة بعد الختامي</h1><div class="sub">رد ضمان الأعمال ورد التأمين النهائي · تحديث بتاريخ ${dmy(today())} · ${rows.length} مشروع · إجمالي المتبقي ${fmt(tot)} ${esc(state.cfg.currency||"")}</div></div></div>
+<table><thead><tr><th>م</th><th>المشروع</th><th>الختامي والتسليم</th><th>رد ضمان الأعمال</th><th>رد التأمين النهائي</th><th>المتبقي للشركة</th></tr></thead><tbody>
+${rows.map((s,i)=>`<tr><td class="c">${i+1}</td><td><b>${esc(pName(s.p,false))}</b><br><small>عقد ${esc(s.p.contractNo||"—")} · ${esc(s.p.company||"")} · ${esc(s.p.dept||"")}</small></td>
+<td>${esc(certLabel(s.fin))} — ${s.finPaid?"اتصرف":"لم يُصرف"} ${d(s.finPaidDate)}<br><small>التسليم الابتدائي: ${d(s.handover)}</small></td>
+<td><b>${esc(s.wg.status)}</b><br><small>القيمة ${n(s.wg.amount)} · المحصل ${n(s.wg.collected)} · صُرف ${d(s.wg.paidDate)}</small></td>
+<td><b>${esc(s.fi.status)}</b><br><small>مرور السنة ${d(s.due)} · الإتاحة ${d(s.avail)} · القيمة ${n(s.fi.amount)} · المحصل ${n(s.fi.collected)}</small></td>
+<td class="n">${s.closed?"مغلق":fmt(s.remaining)}</td></tr>`).join("")}
+</tbody><tfoot><tr><td colspan="5">الإجمالي</td><td class="n">${fmt(tot)}</td></tr></tfoot></table><p style="color:#666">للطباعة أو الحفظ PDF: افتح الملف في المتصفح واضغط Ctrl+P.</p></body></html>`;
+  offer(`كشف مستحقات ما بعد الختامي ${today()}.html`, html);
+}
+
 function insAoa(){
   return insFiltered().map(([r,p],i)=>{ p=p||{}; const iv=insInv(r); return [i+1, p.contractNo||"", p.boqNo||"", pName(p,false)+(iv?` — ${certLabel(iv)}`:""), r.fileNo||"", (r.requests||[]).filter(x=>x.no).map(x=>x.no+(x.subject?` (${x.subject})`:"")).join("\n"), r.status||"", r.statusText||"", has(r.amountDue)?num(r.amountDue):"", r.required||"", r.owner||"", r.nextDate||"", (r.log||[]).at(-1)?.text||"", iv?calc(iv).insLabel:"غير مربوط"]; });
 }
@@ -3371,6 +3699,8 @@ $("#sideTog").onclick=()=>{ state.sideMini=!document.body.classList.contains("si
 addEventListener("resize", applySide); $("#fab").onclick=()=>invDialog();
 $("#btnSettings").onclick=()=>settingsDialog(); $("#mSettings").onclick=()=>settingsDialog();
 $("#btnBackup").onclick=exportBackup;
+$("#coXlsx").onclick=exportCoXlsx; $("#coHtml").onclick=exportCoHtml;
+["#coSearch","#coCompany","#coDept","#coFrom","#coTo"].forEach(x=>$(x).addEventListener("input",()=>{ memo.clear(); renderCo(); }));
 $("#insXlsx").onclick=exportInsXlsx; $("#insHtml").onclick=exportInsHtml; $("#insNew").onclick=()=>insDialog();
 $("#insSuggest").addEventListener("click", e=>{ if(e.target.closest("#insSugToggle")){ state.insSugAll=!state.insSugAll; memo.clear(); renderIns(); } });
 ["#nSearch","#nOwner","#nSort"].forEach(x=>$(x).addEventListener("input",()=>{ memo.clear(); renderIns(); }));
@@ -3385,7 +3715,7 @@ $("#mvKind").onchange=e=>{ state.mv.kind=e.target.value; mvChanged(); };
 $("#mvQ").oninput=e=>{ state.mv.q=e.target.value; mvChanged(); };
 $("#mvXlsx").onclick=exportMovesXlsx;
 $("#mxToggle").onclick=()=>{ state.mxOpen=!state.mxOpen; renderSat(); };
-form.addEventListener("click", e=>{ const u=e.target.closest("[data-undo]"); if(u){ undoMove(u); return; } const mv=e.target.closest("[data-move]"); if(mv){ moveDialog(mv.dataset.move); } });
+form.addEventListener("click", e=>{ const coL=e.target.closest("[data-co]"); if(coL){ coDialog(coL.dataset.co); return; } const u=e.target.closest("[data-undo]"); if(u){ undoMove(u); return; } const mv=e.target.closest("[data-move]"); if(mv){ moveDialog(mv.dataset.move); } });
 const satChanged = () => { clearSel(); saveFilters(); memo.clear(); renderSat(); };
 Object.entries(satMap).forEach(([id,k])=>$("#"+id).addEventListener("change",e=>{ state.satFilter[k]=e.target.value; satChanged(); }));
 $("#sGroup").onclick=e=>{ const b=e.target.closest("button"); if(b){ state.satFilter.group=b.dataset.v; satChanged(); } };
@@ -3493,12 +3823,16 @@ document.addEventListener("click",e=>{
   const mx=e.target.closest("[data-mx-d]"); if(mx){ state.satFilter.dept=mx.dataset.mxD; state.satFilter.stage=mx.dataset.mxS; satChanged(); $("#satList").scrollIntoView({behavior:"smooth",block:"start"}); return; }
   const iv=e.target.closest("[data-inv]"); if(iv){ const v=state.invoices.find(x=>x.id===iv.dataset.inv); if(v) invDialog(v); return; }
   const mpr=e.target.closest("[data-mp]"); if(mpr){ const v=state.invoices.find(x=>x.id===mpr.dataset.mp); if(v) mpDialog(v); return; }
+  const cof=e.target.closest("[data-cof]"); if(cof){ state.coFilter.cat=cof.dataset.cof; state.tab="co"; render(); document.querySelector("#coChips")?.scrollIntoView({block:"start"}); return; }
+  const coc=e.target.closest("[data-cocat]"); if(coc){ state.coFilter.cat = state.coFilter.cat===coc.dataset.cocat ? "" : coc.dataset.cocat; renderCo(); return; }
+  if(e.target.closest("#coAlToggle")){ state.coAlAll=!state.coAlAll; renderCo(); return; }
+  const cor=e.target.closest("[data-co]"); if(cor){ coDialog(cor.dataset.co); return; }
   const inn=e.target.closest("[data-ins-new]"); if(inn){ insDialog(null, inn.dataset.insNew); return; }
   const ir=e.target.closest("[data-ins]"); if(ir){ const r=state.ins.find(x=>x.id===ir.dataset.ins); if(r) insDialog(r); return; }
   const pr=e.target.closest("[data-proj]"); if(pr){ const p=proj(pr.dataset.proj); if(p) projDialog(p); }
 });
 form.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches("input")) e.preventDefault(); });
-try{ const t=localStorage.getItem("tab"); if(["home","sat","inv","proj","ins","mp"].includes(t)) state.tab=t; const f=JSON.parse(localStorage.getItem("satFilter2")||"null"); state.dense=localStorage.getItem("dense")==="1"; state.sideMini=localStorage.getItem("sideMini")==="1"; const pv=localStorage.getItem("pView"); if(pv==="table"||pv==="cards") state.pView=pv; if(f) Object.assign(state.satFilter,f); }catch{}
+try{ const t=localStorage.getItem("tab"); if(["home","sat","moves","inv","proj","ins","co","mp"].includes(t)) state.tab=t; const f=JSON.parse(localStorage.getItem("satFilter2")||"null"); state.dense=localStorage.getItem("dense")==="1"; state.sideMini=localStorage.getItem("sideMini")==="1"; const pv=localStorage.getItem("pView"); if(pv==="table"||pv==="cards") state.pView=pv; if(f) Object.assign(state.satFilter,f); }catch{}
 applySide();
 render();
 
@@ -3507,7 +3841,7 @@ render();
   if(!window.claude?.use){ showGate(); return; }
   const [d,u,dl] = await Promise.all([claude.use("db"),claude.use("user"),claude.use("downloads")]);
   db=d; downloads=dl;
-  ["#btnBackup","#invXlsx","#satXlsx","#satHtml","#mpXlsx","#insXlsx","#insHtml"].forEach(s=>$(s).hidden=!downloads);
+  ["#btnBackup","#invXlsx","#satXlsx","#satHtml","#mpXlsx","#insXlsx","#insHtml","#coXlsx","#coHtml"].forEach(s=>$(s).hidden=!downloads);
   if(!db){ showGate(); return; }
   user=u;
   if(u){ try{ const me=await u.me(); const nm=(me&&me.name)||"أنت"; $("#meName").textContent=nm; $("#meAv").textContent=initials(nm); }catch{} } else { $("#meName").textContent="زائر"; }
@@ -3521,6 +3855,7 @@ render();
     const nm=new Map(state.invoices.map(v=>[v.id,v.updatedAt||""])); if(prevUpd && !s.metadata.hasPendingWrites){ nm.forEach((u,id)=>{ if(prevUpd.get(id)!==u) flashIds.add(id); }); } if(!s.metadata.hasPendingWrites) prevUpd=nm; if(!s.metadata.fromCache) state.loaded.i=true; done(); }, fail);
   db.doc("config/main").onSnapshot(s=>{ if(s.exists) state.cfg={...DEF_CFG,...s.data()}; render(); }, ()=>{});
   db.collection("insurance").onSnapshot(s=>{ state.ins=s.docs.map(x=>({id:x.id,...x.data()})); memo.clear(); render(); }, ()=>{});
+  db.collection("closeout").onSnapshot(s=>{ state.closeout=s.docs.map(x=>({id:x.id,...x.data()})); memo.clear(); render(); }, ()=>{});
   db.collection("activity").orderBy("at","desc").limit(300).onSnapshot(async s=>{ state.activity=s.docs.map(x=>({id:x.id,...x.data()})); await resolveNames(); memo.clear(); renderHome(); }, ()=>{});
 })();
 /* ===== اختيار رقم العقد بالبحث (بدل القائمة اللي كانت بتطلع كلها) ===== */
