@@ -1096,6 +1096,25 @@ body.nodb .fab,body.nodb .bulk{display:none!important}
 #insTable td.inx,#insTable td.inx .sub2{white-space:nowrap}
 #insTable td.inx .sub2{margin-top:4px}
 @media (max-width:900px){ #insTable{width:1000px} #insTable td.pj{width:auto;min-width:0;max-width:none} }
+
+/* اختيار رقم العقد */
+.cpick{position:absolute;top:calc(100% + 4px);inset-inline-start:0;z-index:30;width:max(100%,380px);max-width:min(520px,86vw);max-height:320px;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 34px rgba(10,20,60,.18);padding:4px}
+.cp-o{padding:8px 10px;border-radius:8px;cursor:pointer;line-height:1.45}
+.cp-o:hover,.cp-o.on{background:var(--accent-soft)}
+.cp-t{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.cp-t b{font-size:.92rem}
+.cp-n{font-size:.84rem;color:var(--fg);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cp-s{font-size:.72rem;color:var(--muted)}
+.cp-e{padding:12px;color:var(--muted);font-size:.85rem;text-align:center}
+/* خانات التاريخ */
+.dwrap{position:relative;display:flex;align-items:center;min-width:0}
+.dwrap .dtxt{flex:1;width:100%;min-width:0;padding-inline-end:34px;text-align:right}
+.dwrap .dtxt::placeholder{direction:rtl}
+.dwrap .dtxt.bad{outline:2px solid var(--bad);outline-offset:-1px}
+.dwrap .dhid{position:absolute;inset-inline-end:0;bottom:0;width:1px;height:1px;opacity:0;pointer-events:none;padding:0;border:0}
+.dwrap .dcal{position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:6px;display:grid;place-items:center}
+.dwrap .dcal:hover{color:var(--accent-strong);background:var(--accent-soft)}
+.dwrap .dtxt:disabled~.dcal{display:none}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -1996,7 +2015,7 @@ function invDialog(v, projectId){
     body: `<fieldset class="bare" ${ro?"disabled":""}>
       <section class="sec"><h3>${ico("doc")}بيانات المستخلص</h3>
         <div class="fields">
-          <div class="f"><label for="vContract">رقم العقد</label><input id="vContract" list="dlContracts" value="${esc(p0?.contractNo||"")}" placeholder="اكتب أو اختار" autocomplete="off"></div>
+          <div class="f"><label for="vContract">رقم العقد</label><input id="vContract" data-cpick="1" value="${esc(p0?.contractNo||"")}" placeholder="اكتب أو اختار" autocomplete="off"></div>
           ${fld("vCert","رقم المستخلص",d.certNo,"text",'placeholder="جاري 1 / ختامي"')}
           ${sfld("vType","النوع",cfg.types||["مستخلص أعمال"],d.type||"مستخلص أعمال")}
           ${fld("vGross","القيمة الإجمالية (تراكمي حتى تاريخه)",d.gross,"number")}
@@ -2300,7 +2319,7 @@ function mpDialog(v0){
     sub: v0 ? esc(pName(p0,true)) : "اختر العقد ثم المستخلص المسجل اللي عايز تتابع قوته العاملة",
     body: `<fieldset class="bare" ${state.canWrite?"":"disabled"}>
       <section class="sec"><h3>${ico("users")}المستخلص</h3><div class="fields">
-        <div class="f"><label for="mContract">رقم العقد</label><input id="mContract" list="dlContracts" value="${esc(p0?.contractNo||"")}" ${v0?"disabled":""} autocomplete="off" placeholder="اكتب أو اختار"></div>
+        <div class="f"><label for="mContract">رقم العقد</label><input id="mContract" data-cpick="1" value="${esc(p0?.contractNo||"")}" ${v0?"disabled":""} autocomplete="off" placeholder="اكتب أو اختار"></div>
         <div class="f"><label for="mInv">المستخلص المربوط</label><select id="mInv" ${v0?"disabled":""}></select></div>
       </div><div id="mCalc"></div></section>
       <section class="sec"><h3>${ico("shield")}الشهادة والسداد</h3><div class="fields">
@@ -2844,7 +2863,7 @@ function insDialog(r, preId){
     sub: r ? `عقد <span class="code">${esc(p0?.contractNo||"")}</span>${r.updatedAt?` · آخر تعديل ${esc(ago(r.updatedAt))}${r.updatedBy?` بواسطة ${esc(who(r.updatedBy))}`:""}`:""}` : "اختر رقم العقد وستظهر بيانات المشروع ومستخلصاته تلقائيًا",
     body: `<fieldset class="bare" ${state.canWrite?"":"disabled"}>
       <section class="sec"><h3>${ico("shield")}بيانات الملف</h3><div class="fields">
-        <div class="f"><label for="nContract">رقم العقد</label><input id="nContract" list="dlContracts" value="${esc(p0?.contractNo||"")}" ${r?"disabled":""} autocomplete="off" placeholder="اكتب أو اختار"></div>
+        <div class="f"><label for="nContract">رقم العقد</label><input id="nContract" data-cpick="1" value="${esc(p0?.contractNo||"")}" ${r?"disabled":""} autocomplete="off" placeholder="اكتب أو اختار"></div>
         <div class="f"><label for="nInvSel">المستخلص المربوط بالملف</label><select id="nInvSel"></select></div>
         ${fld("nFile","رقم ملف التأمينات",d.fileNo)}
         <div class="f"><label for="nStatus">الحالة</label><select id="nStatus">${opts(uniq([...(cfg.insStatuses||[]), d.status]), d.status, "اختر الحالة")}</select></div>
@@ -2892,8 +2911,8 @@ function insDialog(r, preId){
         { const sel=form.querySelector("#nInvSel"), cur=sel.value||d.invoiceId||"";
           sel.innerHTML = `<option value="">${p?(list.length?"اختر المستخلص":"لا توجد مستخلصات على العقد ده — سجّل المستخلص الأول"):"اختر رقم العقد أولًا"}</option>` + list.map(v=>{ const used=state.ins.find(x=>x.invoiceId===v.id && x.id!==r?.id); const k=calc(v); return `<option value="${esc(v.id)}" ${used?"disabled":""}>${esc(certLabel(v))} · ${fmt(k.net)}${k.insLabel==="تم عمل تعلية"?" · تعلية":k.insLabel==="تم استخراج الشهادة"?" · الشهادة اتطلعت":""}${used?" (له ملف)":""}</option>`; }).join("");
           sel.value = list.some(v=>v.id===cur) ? cur : ""; sel.disabled = !p || !list.length; }
-        form.querySelector("#nInv").innerHTML = list.length ? `<div class="tscroll"><table class="dt"><thead><tr><th>المستخلص</th><th class="n">الصافي</th><th>الصرف</th><th>شهادة التأمينات</th></tr></thead><tbody>${list.map(v=>{ const k=calc(v); return `<tr data-inv="${esc(v.id)}" class="${v.id===(form.querySelector("#nInvSel").value||d.invoiceId)?"linked":""}"><td><span class="cert ${k.work?"":"ret"}">${esc(certLabel(v))}</span></td><td class="n">${money(k.net)}</td><td>${paidChip(v)}</td><td>${insChip(k)}</td></tr>`; }).join("")}</tbody></table></div><p class="hint" style="margin-top:6px">اضغط على أي مستخلص لفتحه وتعديل موقف شهادته.</p>` : `<p class="hint">${p?"لا توجد مستخلصات لهذا المشروع.":"اختر رقم العقد أولًا."}</p>`;
-        form.querySelectorAll("#nInv tr[data-inv]").forEach(tr=>tr.onclick=()=>{ const v=state.invoices.find(x=>x.id===tr.dataset.inv); if(v) invDialog(v); });
+        form.querySelector("#nInv").innerHTML = list.length ? `<div class="tscroll"><table class="dt"><thead><tr><th>المستخلص</th><th class="n">الصافي</th><th>الصرف</th><th>شهادة التأمينات</th></tr></thead><tbody>${list.map(v=>{ const k=calc(v); return `<tr data-linv="${esc(v.id)}" style="cursor:pointer" class="${v.id===(form.querySelector("#nInvSel").value||d.invoiceId)?"linked":""}"><td><span class="cert ${k.work?"":"ret"}">${esc(certLabel(v))}</span></td><td class="n">${money(k.net)}</td><td>${paidChip(v)}</td><td>${insChip(k)}</td></tr>`; }).join("")}</tbody></table></div><p class="hint" style="margin-top:6px">اضغط على المستخلص لربطه بالملف. لتعديل موقف شهادته افتحه من سجل المستخلصات بعد حفظ الملف.</p>` : `<p class="hint">${p?"لا توجد مستخلصات لهذا المشروع.":"اختر رقم العقد أولًا."}</p>`;
+        form.querySelectorAll("#nInv tr[data-linv]").forEach(tr=>tr.onclick=()=>{ if(!state.canWrite) return; const sel=form.querySelector("#nInvSel"), o=[...sel.options].find(x=>x.value===tr.dataset.linv); if(!o||o.disabled){ toast("المستخلص ده له ملف تأمينات بالفعل"); return; } sel.value=tr.dataset.linv; d.invoiceId=sel.value; refresh(); toast(`اتربط الملف بـ ${o.textContent.split(" · ")[0]}`); });
       };
       form.querySelector("#nContract").addEventListener("input", refresh);
       form.querySelector("#nInvSel").addEventListener("change", e=>{ d.invoiceId=e.target.value; refresh(); });
@@ -3148,5 +3167,81 @@ render();
   db.collection("insurance").onSnapshot(s=>{ state.ins=s.docs.map(x=>({id:x.id,...x.data()})); memo.clear(); render(); }, ()=>{});
   db.collection("activity").orderBy("at","desc").limit(300).onSnapshot(async s=>{ state.activity=s.docs.map(x=>({id:x.id,...x.data()})); await resolveNames(); memo.clear(); renderHome(); }, ()=>{});
 })();
+/* ===== اختيار رقم العقد بالبحث (بدل القائمة اللي كانت بتطلع كلها) ===== */
+{
+  const norm = s => String(s||"").toLowerCase().replace(/[\s\/\\\-_.]+/g," ").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").trim();
+  const find = q => { q=norm(q); const ws=q.split(" ").filter(Boolean);
+    return state.projects.map(p=>{ const c=norm(p.contractNo), hay=[c,norm(p.name),norm(p.boqNo),norm(p.unifiedCode),norm(p.location)].join(" | ");
+      if(!ws.length) return [p,3]; if(!ws.every(w=>hay.includes(w))) return null;
+      return [p, c===q?0 : c.startsWith(q)?1 : c.includes(q)?2 : 3]; }).filter(Boolean).sort((a,b)=>a[1]-b[1]||norm(a[0].contractNo).localeCompare(norm(b[0].contractNo),"ar",{numeric:true})).map(x=>x[0]); };
+  let box=null, inp=null, hits=[], act=-1;
+  const close = () => { box?.remove(); box=null; inp=null; act=-1; };
+  const pick = p => { const el=inp; close(); if(!el||!p) return; el.value=p.contractNo; el.dispatchEvent(new Event("input",{bubbles:true})); el.dispatchEvent(new Event("change",{bubbles:true})); };
+  const draw = () => {
+    if(!inp) return;
+    hits = find(inp.value).slice(0,40);
+    if(!box){ box=document.createElement("div"); box.className="cpick"; box.setAttribute("role","listbox");
+      box.addEventListener("mousedown", e=>{ e.preventDefault(); const o=e.target.closest("[data-pi]"); if(o) pick(hits[+o.dataset.pi]); });
+      inp.parentElement.style.position="relative"; inp.insertAdjacentElement("afterend", box); }
+    box.innerHTML = hits.length ? hits.map((p,i)=>`<div class="cp-o ${i===act?"on":""}" data-pi="${i}" role="option"><div class="cp-t"><b class="num">${esc(p.contractNo||"بدون رقم")}</b>${coTag(p.company)}</div><div class="cp-n">${esc(p.name||"")}</div>${p.boqNo?`<div class="cp-s">مقايسة <span class="num">${esc(p.boqNo)}</span>${p.location?` · ${esc(p.location)}`:""}</div>`:""}</div>`).join("")
+      : `<div class="cp-e">لا يوجد مشروع بالرقم أو الاسم ده</div>`;
+    box.querySelector(".on")?.scrollIntoView({block:"nearest"});
+  };
+  document.addEventListener("focusin", e=>{ const el=e.target.closest?.("input[data-cpick]"); if(!el||el.disabled) return; if(inp!==el){ close(); inp=el; act=-1; } draw(); });
+  document.addEventListener("input", e=>{ if(e.target===inp && e.isTrusted){ act=-1; draw(); } });
+  document.addEventListener("focusout", e=>{ if(e.target!==inp) return; const el=inp;
+    // لو المكتوب جزء من رقم عقد واحد بس، كمّله لوحده
+    const ex=state.projects.some(p=>p.contractNo.trim()===el.value.trim()); if(!ex && el.value.trim()){ const h=find(el.value); const lead=h.filter(p=>norm(p.contractNo).startsWith(norm(el.value))); const one=lead.length===1?lead[0]:h.length===1?h[0]:null; if(one){ inp=el; pick(one); return; } }
+    close(); });
+  document.addEventListener("keydown", e=>{ if(e.target!==inp||!box) return;
+    if(e.key==="ArrowDown"||e.key==="ArrowUp"){ e.preventDefault(); act=Math.max(0,Math.min(hits.length-1, act+(e.key==="ArrowDown"?1:-1))); draw(); }
+    else if(e.key==="Enter"){ if(hits.length && (act>=0||hits.length===1)){ e.preventDefault(); pick(hits[Math.max(act,0)]); } }
+    else if(e.key==="Escape"){ e.preventDefault(); e.stopPropagation(); close(); } }, true);
+}
+
+/* ===== خانات التاريخ: كتابة يوم/شهر/سنة بحرية + زرار التقويم ===== */
+{
+  const desc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value");
+  const pad = n => String(n).padStart(2,"0");
+  const show = iso => { const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||""); return m?`${m[3]}/${m[2]}/${m[1]}`:""; };
+  const parse = s => { s=String(s||"").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).trim(); if(!s) return "";
+    let d,m,y, p=s.split(/[^\d]+/).filter(Boolean);
+    if(p.length===1 && /^\d{6}$|^\d{8}$/.test(p[0])){ const x=p[0]; p=[x.slice(0,2),x.slice(2,4),x.slice(4)]; }
+    if(p.length===2){ p.push(String(new Date().getFullYear())); }
+    if(p.length!==3) return null;
+    if(p[0].length===4){ [y,m,d]=p; } else { [d,m,y]=p; }
+    d=+d; m=+m; y=+y; if(y<100) y+=2000;
+    if(y<1990||y>2100||m<1||m>12||d<1) return null;
+    const dt=new Date(y,m-1,d); if(dt.getMonth()!==m-1) return null;
+    return `${y}-${pad(m)}-${pad(d)}`; };
+  const enhance = o => {
+    if(o.dataset.dx) return; o.dataset.dx="1";
+    const w=document.createElement("span"); w.className="dwrap"; if(o.style.cssText) w.style.cssText=o.style.cssText;
+    const t=document.createElement("input"); t.type="text"; t.className=o.className+" dtxt"; t.inputMode="numeric"; t.dir="ltr"; t.autocomplete="off";
+    t.placeholder="يوم/شهر/سنة"; t.setAttribute("aria-label", o.getAttribute("aria-label")||o.closest(".f")?.querySelector("label")?.textContent||"تاريخ");
+    t.disabled=o.disabled; t.readOnly=o.readOnly;
+    const b=document.createElement("button"); b.type="button"; b.className="dcal"; b.tabIndex=-1; b.setAttribute("aria-label","اختيار من التقويم");
+    b.innerHTML=`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`;
+    o.parentNode.insertBefore(w,o); w.append(t,o,b); o.classList.add("dhid"); o.tabIndex=-1;
+    if(o.id){ const lb=document.querySelector(`label[for="${o.id}"]`); if(lb){ t.id=o.id+"__t"; lb.htmlFor=t.id; } }
+    t.value=show(desc.get.call(o));
+    Object.defineProperty(o,"value",{configurable:true, get(){ return desc.get.call(o); }, set(v){ desc.set.call(o,v); t.value=show(v); t.classList.remove("bad"); }});
+    const fire = () => { o.dispatchEvent(new Event("input",{bubbles:true})); o.dispatchEvent(new Event("change",{bubbles:true})); };
+    let own=false;
+    const commit = final => { const raw=t.value.trim();
+      if(!final && raw && !/^\d{1,2}\D+\d{1,2}\D+\d{4}$|^\d{4}\D+\d{1,2}\D+\d{1,2}$|^\d{8}$/.test(raw.replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)))) return;
+      const iso=parse(raw);
+      if(iso===null){ if(final) t.classList.add("bad"); return; }
+      t.classList.remove("bad"); if(iso!==desc.get.call(o)){ desc.set.call(o,iso); own=true; try{ fire(); }finally{ own=false; } } if(final) t.value=show(iso); };
+    ["input","change","keydown"].forEach(ev=>t.addEventListener(ev, e=>{ e.stopPropagation(); if(ev==="input") commit(false); if(ev==="keydown" && e.key==="Enter"){ commit(true); } }));
+    t.addEventListener("blur", ()=>commit(true));
+    o.addEventListener("change", ()=>{ if(own) return; t.value=show(desc.get.call(o)); t.classList.remove("bad"); });
+    b.addEventListener("click", ()=>{ if(t.disabled||t.readOnly) return; try{ o.showPicker(); }catch{ o.focus(); } });
+    new MutationObserver(()=>{ t.disabled=o.disabled; t.readOnly=o.readOnly; }).observe(o,{attributes:true,attributeFilter:["disabled","readonly"]});
+  };
+  const scan = root => root.querySelectorAll?.('input[type="date"]:not([data-dx])').forEach(enhance);
+  scan(document);
+  new MutationObserver(ms=>{ for(const m of ms) for(const n of m.addedNodes){ if(n.nodeType!==1) continue; if(n.matches?.('input[type="date"]')) enhance(n); else scan(n); } }).observe(document.body,{childList:true,subtree:true});
+}
 })();
 </script>
