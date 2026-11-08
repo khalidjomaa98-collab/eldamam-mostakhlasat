@@ -505,7 +505,8 @@ fieldset.bare{border:0;padding:0;margin:0;min-width:0;display:flex;flex-directio
   body.side-mini .nav .sect:first-child{display:none}
   body.side-mini .ficons{flex-direction:column}
   body.side-mini .ficons .lnk{width:50px;height:40px;flex:none}
-  body.side-mini .newmenu{inset-inline-start:0;inset-inline-end:auto;width:220px}
+  body.side-mini .side>*,body.side-mini .side .sbtn{flex-shrink:0}
+  body.side-mini .newmenu{position:fixed;top:var(--nm-top,120px);inset-inline-start:90px;inset-inline-end:auto;width:250px;z-index:80}
   body.side-mini .me{justify-content:center}
 }
 /* ===== phone: tables as cards, compact bars ===== */
@@ -3004,7 +3005,7 @@ async function exportBackup(){
 document.querySelector(".nav").onclick=e=>{const b=e.target.closest("button[data-tab]"); if(b){clearSel(); state.tab=b.dataset.tab; try{localStorage.setItem("tab",state.tab)}catch{} render(); window.scrollTo(0,0); markEnter();}};
 const newMenu=$("#newMenu");
 const closeNew=()=>{ newMenu.hidden=true; $("#btnNew").setAttribute("aria-expanded","false"); };
-$("#btnNew").onclick=e=>{ e.stopPropagation(); const o=newMenu.hidden; newMenu.hidden=!o; $("#btnNew").setAttribute("aria-expanded", String(o)); if(o) newMenu.querySelector("button")?.focus(); };
+$("#btnNew").onclick=e=>{ e.stopPropagation(); const o=newMenu.hidden; newMenu.hidden=!o; if(o) newMenu.style.setProperty("--nm-top", $("#btnNew").getBoundingClientRect().top+"px"); $("#btnNew").setAttribute("aria-expanded", String(o)); if(o) newMenu.querySelector("button")?.focus(); };
 document.addEventListener("click", e=>{ if(!newMenu.hidden && !e.target.closest(".newwrap")) closeNew(); }, true);
 document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !newMenu.hidden) closeNew(); });
 $("#btnNewProject").onclick=()=>{ closeNew(); projDialog(); };

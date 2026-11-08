@@ -100,6 +100,7 @@ body.auth-out .app,body.auth-out .fab,body.auth-out .bulk,body.auth-out .toast{d
 .lg-note{font-size:.76rem;color:var(--faint,#8a99a1);text-align:center;margin:6px 0 0}
 .syncpill{display:flex;align-items:center;gap:7px;font-size:.74rem;font-weight:600;border-radius:999px;padding:4px 10px;background:rgba(255,255,255,.08);color:var(--side-fg,#dde3f5)}
 .syncpill::before{content:"";width:8px;height:8px;border-radius:50%;flex:none;background:#3fbf7f}
+body.side-mini .syncpill{font-size:0;gap:0;padding:7px;justify-content:center}
 .syncpill.busy::before{background:#e8b74a}
 .syncpill.off::before{background:#9aa6c4}
 .syncpill.warn::before{background:#e5655b}

@@ -515,7 +515,8 @@ fieldset.bare{border:0;padding:0;margin:0;min-width:0;display:flex;flex-directio
   body.side-mini .nav .sect:first-child{display:none}
   body.side-mini .ficons{flex-direction:column}
   body.side-mini .ficons .lnk{width:50px;height:40px;flex:none}
-  body.side-mini .newmenu{inset-inline-start:0;inset-inline-end:auto;width:220px}
+  body.side-mini .side>*,body.side-mini .side .sbtn{flex-shrink:0}
+  body.side-mini .newmenu{position:fixed;top:var(--nm-top,120px);inset-inline-start:90px;inset-inline-end:auto;width:250px;z-index:80}
   body.side-mini .me{justify-content:center}
 }
 /* ===== phone: tables as cards, compact bars ===== */
@@ -1146,6 +1147,7 @@ body.auth-out .app,body.auth-out .fab,body.auth-out .bulk,body.auth-out .toast{d
 .lg-note{font-size:.76rem;color:var(--faint,#8a99a1);text-align:center;margin:6px 0 0}
 .syncpill{display:flex;align-items:center;gap:7px;font-size:.74rem;font-weight:600;border-radius:999px;padding:4px 10px;background:rgba(255,255,255,.08);color:var(--side-fg,#dde3f5)}
 .syncpill::before{content:"";width:8px;height:8px;border-radius:50%;flex:none;background:#3fbf7f}
+body.side-mini .syncpill{font-size:0;gap:0;padding:7px;justify-content:center}
 .syncpill.busy::before{background:#e8b74a}
 .syncpill.off::before{background:#9aa6c4}
 .syncpill.warn::before{background:#e5655b}
@@ -1331,7 +1333,7 @@ body.auth-out .app,body.auth-out .fab,body.auth-out .bulk,body.auth-out .toast{d
     else if(syncing){ cls = "busy"; txt = "جارٍ المزامنة…"; }
     else if(lastErr){ cls = "warn"; txt = lastErr; }
     else if(n){ cls = "busy"; txt = `${n} تعديل منتظر الإرسال`; }
-    el.className = "syncpill " + cls; el.textContent = txt; el.title = "آخر مزامنة: " + (lastSync ? new Date(lastSync).toLocaleString("ar-EG") : "لسه");
+    el.className = "syncpill " + cls; el.textContent = txt; el.title = txt + " — آخر مزامنة: " + (lastSync ? new Date(lastSync).toLocaleString("ar-EG") : "لسه");
   }
   const toastSafe = m => { try{ if(typeof window.toast === "function") window.toast(m); else console.log(m); }catch{} };
 
@@ -3354,7 +3356,7 @@ async function exportBackup(){
 document.querySelector(".nav").onclick=e=>{const b=e.target.closest("button[data-tab]"); if(b){clearSel(); state.tab=b.dataset.tab; try{localStorage.setItem("tab",state.tab)}catch{} render(); window.scrollTo(0,0); markEnter();}};
 const newMenu=$("#newMenu");
 const closeNew=()=>{ newMenu.hidden=true; $("#btnNew").setAttribute("aria-expanded","false"); };
-$("#btnNew").onclick=e=>{ e.stopPropagation(); const o=newMenu.hidden; newMenu.hidden=!o; $("#btnNew").setAttribute("aria-expanded", String(o)); if(o) newMenu.querySelector("button")?.focus(); };
+$("#btnNew").onclick=e=>{ e.stopPropagation(); const o=newMenu.hidden; newMenu.hidden=!o; if(o) newMenu.style.setProperty("--nm-top", $("#btnNew").getBoundingClientRect().top+"px"); $("#btnNew").setAttribute("aria-expanded", String(o)); if(o) newMenu.querySelector("button")?.focus(); };
 document.addEventListener("click", e=>{ if(!newMenu.hidden && !e.target.closest(".newwrap")) closeNew(); }, true);
 document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !newMenu.hidden) closeNew(); });
 $("#btnNewProject").onclick=()=>{ closeNew(); projDialog(); };

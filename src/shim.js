@@ -176,7 +176,7 @@
     else if(syncing){ cls = "busy"; txt = "جارٍ المزامنة…"; }
     else if(lastErr){ cls = "warn"; txt = lastErr; }
     else if(n){ cls = "busy"; txt = `${n} تعديل منتظر الإرسال`; }
-    el.className = "syncpill " + cls; el.textContent = txt; el.title = "آخر مزامنة: " + (lastSync ? new Date(lastSync).toLocaleString("ar-EG") : "لسه");
+    el.className = "syncpill " + cls; el.textContent = txt; el.title = txt + " — آخر مزامنة: " + (lastSync ? new Date(lastSync).toLocaleString("ar-EG") : "لسه");
   }
   const toastSafe = m => { try{ if(typeof window.toast === "function") window.toast(m); else console.log(m); }catch{} };
 
