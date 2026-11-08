@@ -1135,6 +1135,13 @@ body.nodb .fab,body.nodb .bulk{display:none!important}
 .icalc-res{padding:8px 12px;border-radius:10px;background:var(--accent-soft);color:var(--accent-strong);font-weight:800;font-size:1.1rem;white-space:nowrap;text-align:center}
 .icalc-f{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
 @media (max-width:700px){ .icalc-g{flex-direction:column;align-items:stretch} .icalc-op{display:none} }
+
+/* رد التعلية */
+.rbl{display:flex;gap:4px;align-items:flex-start;font-size:.72rem;font-weight:600;color:var(--warn);margin-top:4px;line-height:1.4}
+.rbl svg.i{width:12px;height:12px;flex:none;margin-top:2px}
+.rbl.ok{color:var(--ok)}
+.iraise{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.iraise b{font-size:.84rem;margin-inline-start:6px}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -1761,7 +1768,7 @@ function rowHtml(v,k,o){
   const amt = `${o.proj?`<span class="certp ${k.work?"":"ret"}">${esc(certLabel(v))}</span>`:""}<b class="num amtv">${fmt(k.net)}</b>
       ${k.exec!=null?`<div class="pg"><span class="pgb"><i style="width:${Math.min(100,k.exec*100)}%"></i></span><span class="num">${pctTxt(k.exec)}</span></div>`:""}
       ${o.extra&&k.work&&Math.abs(num(v.gross)-num(k.net))>0.5?`<div class="amx">الإجمالي التراكمي <span class="num">${fmt(v.gross)}</span></div>`:""}${k.mat?`<div class="amx">بعد الخامات <span class="num">${fmt(k.afterMat)}</span></div>`:""}${has(v.bankExpected)?`<div class="amx">المتوقع للبنك <span class="num">${fmt(v.bankExpected)}</span></div>`:""}`;
-  const note = v.notes?`<div class="nt2" title="${esc(v.notes)}">${ico("msg")}<span>${esc(v.notes)}</span></div>`:"";
+  const note = (isRaiseRef(v)&&v.paid!=="نعم"?`<div class="rbl ${raiseReady(v)?"ok":""}">${ico(raiseReady(v)?"check":"clock")}<span>${esc(raiseTxt(v))}</span></div>`:"") + (v.notes?`<div class="nt2" title="${esc(v.notes)}">${ico("msg")}<span>${esc(v.notes)}</span></div>`:"");
   const first = o.proj
     ? `<td class="pj"><button type="button" class="pname" data-inv="${esc(v.id)}" title="${esc(p.name||"")}">${esc(pName(p,o.short))}</button>
       <div class="pjm">${esc(p.location||"—")} · ${coTag(k.company)}</div>${idChips(p)}${note}</td>`
@@ -2272,14 +2279,14 @@ const lvOrd = L => (a,b) => { const ia=L.order.indexOf(a), ib=L.order.indexOf(b)
 /* ---------- الصرف والشهادات (نافذة صغيرة) ---------- */
 const stState = (v,k) => ({
   paid: v.paid==="نعم" ? "y" : "n",
-  ins: k.insLabel==="تم استخراج الشهادة" ? "y" : k.insLabel==="تم عمل تعلية" ? "r" : (k.insLabel==="لا حاجة"||k.insLabel==="لا يوجد") ? "na" : "n",
+  ins: isRaiseRef(v) ? (raiseReady(v) ? "y" : "n") : k.insLabel==="تم استخراج الشهادة" ? "y" : k.insLabel==="تم عمل تعلية" ? "r" : (k.insLabel==="لا حاجة"||k.insLabel==="لا يوجد") ? "na" : "n",
   mp: v.mpStatus==="تم الاستخراج" ? "y" : v.mpStatus==="لا حاجة" ? "na" : "n"
 });
 function statusBtn(v,k){
   const s=stState(v,k);
   const tP = v.paid==="نعم" ? `تم الصرف${v.paidDate?` بتاريخ ${dmy(v.paidDate)}`:""}` : v.paid==="لا" ? "لم يُصرف" : "الصرف لم يُحدَّث";
   const it = (c,l,t) => `<span class="sq ${c}" title="${esc(t)}"><i>${ico(c==="y"?"check":c==="na"?"minus":c==="r"?"up":"clock")}</i><small>${c==="r"?"تعلية":l}</small></span>`;
-  const inner = it(s.paid,"صرف",tP) + it(s.ins,"تأمينات",k.insLabel==="تم عمل تعلية" ? `تأمينات: تم عمل تعلية${num(v.insRaise)?` بمبلغ ${fmt(v.insRaise)}`:""} — يمكن الصرف` : `شهادة التأمينات: ${k.insLabel}`) + it(s.mp,"ق.ع",`القوة العاملة: ${v.mpStatus||"لم يُحدَّث"}`);
+  const inner = it(s.paid,"صرف",tP) + it(s.ins,"تأمينات",isRaiseRef(v) ? raiseTxt(v) : k.insLabel==="تم عمل تعلية" ? `تأمينات: تم عمل تعلية${num(v.insRaise)?` بمبلغ ${fmt(v.insRaise)}`:""} — يمكن الصرف` : `شهادة التأمينات: ${k.insLabel}`) + it(s.mp,"ق.ع",`القوة العاملة: ${v.mpStatus||"لم يُحدَّث"}`);
   return `<span class="stb ro">${inner}</span>`;
 }
 let stPopId=null, stPopBtn=null;
@@ -2816,6 +2823,21 @@ const insDone = r => insTone(r.status)==="ok";
 const insFor = pid => state.ins.find(r=>r.projectId===pid);
 const insForInv = vid => state.ins.find(r=>r.invoiceId===vid);
 const insInv = r => r.invoiceId ? state.invoices.find(v=>v.id===r.invoiceId) : null;
+/* رد التعلية: مستخلص بيتعمل للمبلغ اللي اتحجز لما المستخلص الأصلي اتصرف بتعلية، ومبيتصرفش غير لما تأمينات الأصلي تتدفع */
+const RAISE_T = "تعلية تأمينات اجتماعية";
+const isRaiseRef = v => !!v && v.type===RAISE_T;
+const certNum = v => { const m=String(v?.certNo||"").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).match(/(\d+)\s*$/); return m?+m[1]:null; };
+function raiseOrigGuess(rv){
+  const sib=state.invoices.filter(x=>x.projectId===rv.projectId && isWork(x.type)); const n=certNum(rv);
+  const byN = n!=null ? sib.filter(x=>/جاري/.test(x.certNo||"") && certNum(x)===n) : [];
+  if(byN.length===1) return byN[0];
+  return sib.filter(x=>num(x.order)<num(rv.order)).sort((a,b)=>num(b.order)-num(a.order))[0] || sib.sort((a,b)=>num(b.order)-num(a.order))[0] || null; }
+const raiseFile = rv => state.ins.find(f=>f.raiseInvoiceId===rv.id);
+const raiseOrig = rv => { const f=raiseFile(rv); return f ? (insInv(f)||null) : raiseOrigGuess(rv); };
+const raiseRefFor = (orig, f) => f?.raiseInvoiceId ? state.invoices.find(v=>v.id===f.raiseInvoiceId)||null
+  : orig ? state.invoices.find(rv=>isRaiseRef(rv) && rv.projectId===orig.projectId && !raiseFile(rv) && raiseOrigGuess(rv)?.id===orig.id)||null : null;
+const raiseReady = rv => { const o=raiseOrig(rv); const f=raiseFile(rv)||(o&&insForInv(o.id)); return !!((o && calc(o).insLabel==="تم استخراج الشهادة") || (f && insDone(f))); };
+const raiseTxt = rv => { const o=raiseOrig(rv), on=o?certLabel(o):"المستخلص الأصلي"; return rv.paid==="نعم" ? "اتصرف" : raiseReady(rv) ? `جاهز للصرف — تأمينات ${on} اتدفعت` : `لا يُصرف قبل دفع تأمينات ${on}`; };
 const needsCert = v => { const k=calc(v); return k.insLabel==="لم يتم استخراج الشهادة" || k.insLabel==="لم يُحدَّث"; };
 const missingCert = pid => state.invoices.filter(v=>v.projectId===pid && calc(v).insLabel==="لم يتم استخراج الشهادة");
 function insFiltered(){
@@ -2857,7 +2879,7 @@ function renderIns(){
         return `<tr class="r insr ${i%2?"zb":""}" style="--sc:${coVar(p.company)};cursor:pointer" data-ins="${esc(r.id)}">
         <td class="c idx num">${i+1}</td>
         <td class="pj"><span class="pname" title="${esc(p.name||"")}">${esc(pName(p,true))}</span><div class="sub2">${coTag(p.company)} · ${esc(p.location||"—")}</div>${idChips(p)}</td>
-        <td class="iinv">${iv?`<span class="certp ${ik.work?"":"ret"}">${esc(certLabel(iv))}</span><div class="ist">${statusBtn(iv,ik)}</div>${ik.insLabel==="تم عمل تعلية"&&num(iv.insRaise)?`<div class="sub2">تعلية <span class="num">${fmt(iv.insRaise)}</span></div>`:""}`:`<div class="warnline small">غير مربوط بمستخلص</div><div class="sub2">افتح الملف واختر المستخلص</div>`}</td>
+        <td class="iinv">${iv?`<span class="certp ${ik.work?"":"ret"}">${esc(certLabel(iv))}</span><div class="ist">${statusBtn(iv,ik)}</div>${(()=>{ const rv=raiseRefFor(iv,r); return rv?`<div class="iraise"><span class="certp ret">${esc(certLabel(rv))}</span><b class="num">${fmt(calc(rv).net)}</b><div class="rbl ${rv.paid==="نعم"||raiseReady(rv)?"ok":""}">${ico(rv.paid==="نعم"||raiseReady(rv)?"check":"clock")}<span>${esc(raiseTxt(rv))}</span></div></div>`:""; })()}${ik.insLabel==="تم عمل تعلية"&&num(iv.insRaise)?`<div class="sub2">تعلية <span class="num">${fmt(iv.insRaise)}</span></div>`:""}`:`<div class="warnline small">غير مربوط بمستخلص</div><div class="sub2">افتح الملف واختر المستخلص</div>`}</td>
         <td class="n idue">${num(r.amountDue)?`<div class="iamt num">${fmt(r.amountDue)}</div><div class="sub2">لصرف المستخلص</div>`:`<span class="faint small">لا يوجد مبلغ</span>`}</td>
         <td class="ifile"><b class="num">${esc(r.fileNo||"—")}</b>${reqs.slice(0,3).map(x=>`<span class="reqn" title="${esc(x.subject||"")}">${esc(x.no)}</span>`).join("")}${reqs.length>3?`<span class="sub2">+ ${reqs.length-3} طلب</span>`:""}</td>
         <td class="ins-txt">${r.status?`<span class="stgt" style="--sc:${toneColor(tone)}">${esc(r.status)}</span>`:`<span class="faint small">بدون حالة</span>`}${r.statusText?`<div class="sub2 pre">${esc(r.statusText)}</div>`:""}</td>
@@ -2886,7 +2908,8 @@ function insDialog(r, preId){
     body: `<fieldset class="bare" ${state.canWrite?"":"disabled"}>
       <section class="sec"><h3>${ico("shield")}بيانات الملف</h3><div class="fields">
         <div class="f"><label for="nContract">رقم العقد</label><input id="nContract" data-cpick="1" value="${esc(p0?.contractNo||"")}" ${r?"disabled":""} autocomplete="off" placeholder="اكتب أو اختار"></div>
-        <div class="f"><label for="nInvSel">المستخلص المربوط بالملف</label><select id="nInvSel"></select></div>
+        <div class="f"><label for="nInvSel">المستخلص الأصلي المربوط بالملف</label><select id="nInvSel"></select></div>
+        <div class="f"><label for="nRaiseSel">مستخلص رد التعلية</label><select id="nRaiseSel"></select></div>
         ${fld("nFile","رقم ملف التأمينات",d.fileNo)}
         <div class="f"><label for="nStatus">الحالة</label><select id="nStatus">${opts(uniq([...(cfg.insStatuses||[]), d.status]), d.status, "اختر الحالة")}</select></div>
         ${fld("nDue","المبلغ المطلوب دفعه",d.amountDue,"number")}
@@ -2929,9 +2952,10 @@ function insDialog(r, preId){
       const invId = val("nInvSel");
       if(!invId){ toast("اختر المستخلص اللي الملف ده خاص بيه"); form.querySelector("#nInvSel").focus(); return; }
       const other = state.ins.find(x=>x.invoiceId===invId && x.id!==r?.id);
+      const rid = val("nRaiseSel"); if(rid && state.ins.some(x=>x.raiseInvoiceId===rid && x.id!==r?.id)){ toast("مستخلص رد التعلية ده مربوط بملف تاني"); return; }
       if(other){ toast("المستخلص ده له ملف تأمينات بالفعل"); return; }
       const pending = val("nNote").trim(); if(pending) d.log.push({date:today(), by:myId||"", text:pending});
-      const data = {...stripId(d), projectId:p.id, invoiceId:invId, fileNo:val("nFile").trim(), status:val("nStatus"), amountDue:nval("nDue"), owner:val("nOwnerF").trim(), nextDate:val("nNext"), calcBase:cNum(val("cBase")), calcTax:cNum(val("cTax")), calcWage:cNum(val("cWage")),
+      const data = {...stripId(d), projectId:p.id, invoiceId:invId, fileNo:val("nFile").trim(), status:val("nStatus"), amountDue:nval("nDue"), owner:val("nOwnerF").trim(), nextDate:val("nNext"), raiseInvoiceId:val("nRaiseSel"), calcBase:cNum(val("cBase")), calcTax:cNum(val("cTax")), calcWage:cNum(val("cWage")),
         statusText:val("nStatusText").trim(), required:val("nReq").trim(),
         requests:d.requests.filter(x=>(x.no||"").trim()||(x.subject||"").trim()).map(x=>({no:(x.no||"").trim(), date:x.date||"", subject:(x.subject||"").trim()})),
         updatedAt:new Date().toISOString(), updatedBy:myId||""};
@@ -2944,21 +2968,29 @@ function insDialog(r, preId){
       }
     },
     onMount: () => {
+      let raiseTouched = !!(r && r.raiseInvoiceId);
       const refresh = () => {
         const p = r ? proj(d.projectId) : state.projects.find(x=>x.contractNo.trim()===val("nContract").trim());
         d.projectId = p?.id || d.projectId;
         form.querySelector("#nProj").innerHTML = !p ? (val("nContract").trim()?`<div class="warnline">⚠ رقم العقد غير موجود في المشاريع</div>`:"") :
           `<div class="pinfo"><div class="w">${esc(p.name)}</div><div><span>رقم العقد</span><span class="code">${esc(p.contractNo)}</span></div><div><span>رقم المقايسة</span><span class="code">${esc(p.boqNo||"—")}</span></div><div><span>كود العقد الموحد</span><span class="num">${esc(p.unifiedCode||"—")}</span></div><div><span>الشركة</span>${esc(p.company||"—")}</div><div><span>جهة الإسناد</span>${esc(p.dept||"—")}</div><div><span>نسبة الأجور</span>${num(p.wageRatio)>0?pctTxt(num(p.wageRatio)):"—"}</div></div>`;
         if(!r && p && !val("nFile")) form.querySelector("#nFile").value = p.insFileNo||"";
-        const list = p ? state.invoices.filter(v=>v.projectId===p.id).sort((a,b)=>num(a.order)-num(b.order)) : [];
+        const all = p ? state.invoices.filter(v=>v.projectId===p.id).sort((a,b)=>num(a.order)-num(b.order)) : [];
+        const list = all.filter(v=>!isRaiseRef(v)), refs = all.filter(isRaiseRef);
         { const sel=form.querySelector("#nInvSel"), cur=sel.value||d.invoiceId||"";
           sel.innerHTML = `<option value="">${p?(list.length?"اختر المستخلص":"لا توجد مستخلصات على العقد ده — سجّل المستخلص الأول"):"اختر رقم العقد أولًا"}</option>` + list.map(v=>{ const used=state.ins.find(x=>x.invoiceId===v.id && x.id!==r?.id); const k=calc(v); return `<option value="${esc(v.id)}" ${used?"disabled":""}>${esc(certLabel(v))} · ${fmt(k.net)}${k.insLabel==="تم عمل تعلية"?" · تعلية":k.insLabel==="تم استخراج الشهادة"?" · الشهادة اتطلعت":""}${used?" (له ملف)":""}</option>`; }).join("");
           sel.value = list.some(v=>v.id===cur) ? cur : ""; sel.disabled = !p || !list.length; }
-        form.querySelector("#nInv").innerHTML = list.length ? `<div class="tscroll"><table class="dt"><thead><tr><th>المستخلص</th><th class="n">الصافي</th><th>الصرف</th><th>شهادة التأمينات</th></tr></thead><tbody>${list.map(v=>{ const k=calc(v); return `<tr data-linv="${esc(v.id)}" style="cursor:pointer" class="${v.id===(form.querySelector("#nInvSel").value||d.invoiceId)?"linked":""}"><td><span class="cert ${k.work?"":"ret"}">${esc(certLabel(v))}</span></td><td class="n">${money(k.net)}</td><td>${paidChip(v)}</td><td>${insChip(k)}</td></tr>`; }).join("")}</tbody></table></div><p class="hint" style="margin-top:6px">اضغط على المستخلص لربطه بالملف. لتعديل موقف شهادته افتحه من سجل المستخلصات بعد حفظ الملف.</p>` : `<p class="hint">${p?"لا توجد مستخلصات لهذا المشروع.":"اختر رقم العقد أولًا."}</p>`;
+        { const rs=form.querySelector("#nRaiseSel"), orig=list.find(v=>v.id===form.querySelector("#nInvSel").value);
+          if(!raiseTouched){ const g = d.raiseInvoiceId && refs.some(v=>v.id===d.raiseInvoiceId) ? d.raiseInvoiceId : (raiseRefFor(orig,null)?.id||""); d.raiseInvoiceId=g; }
+          rs.innerHTML = `<option value="">${refs.length?"لا يوجد":"لا يوجد مستخلص رد تعلية على العقد ده"}</option>` + refs.map(v=>{ const used=state.ins.find(x=>x.raiseInvoiceId===v.id && x.id!==r?.id); return `<option value="${esc(v.id)}" ${used?"disabled":""}>${esc(certLabel(v))} · ${fmt(calc(v).net)}${v.paid==="نعم"?" · اتصرف":""}${used?" (مربوط بملف تاني)":""}</option>`; }).join("");
+          rs.value = refs.some(v=>v.id===d.raiseInvoiceId) ? d.raiseInvoiceId : ""; rs.disabled = !refs.length; }
+        form.querySelector("#nInv").innerHTML = list.length ? `<div class="tscroll"><table class="dt"><thead><tr><th>المستخلص</th><th class="n">الصافي</th><th>الصرف</th><th>شهادة التأمينات</th></tr></thead><tbody>${all.map(v=>{ const k=calc(v), rf=isRaiseRef(v); return `<tr ${rf?`data-lraise="${esc(v.id)}"`:`data-linv="${esc(v.id)}"`} style="cursor:pointer" class="${v.id===(form.querySelector("#nInvSel").value||d.invoiceId)||(rf&&v.id===form.querySelector("#nRaiseSel").value)?"linked":""}"><td><span class="cert ${k.work?"":"ret"}">${esc(certLabel(v))}</span>${rf?`<div class="sub2">مستخلص رد تعلية</div>`:""}</td><td class="n">${money(k.net)}</td><td>${paidChip(v)}</td><td>${rf?`<span class="rbl ${raiseReady(v)||v.paid==="نعم"?"ok":""}" style="margin:0">${esc(raiseTxt(v))}</span>`:insChip(k)}</td></tr>`; }).join("")}</tbody></table></div><p class="hint" style="margin-top:6px">اضغط على المستخلص الأصلي لربطه بالملف، أو على مستخلص رد التعلية لربطه كرد تعلية. لتعديل موقف الشهادة افتح المستخلص من سجل المستخلصات بعد حفظ الملف.</p>` : `<p class="hint">${p?"لا توجد مستخلصات لهذا المشروع.":"اختر رقم العقد أولًا."}</p>`;
         form.querySelectorAll("#nInv tr[data-linv]").forEach(tr=>tr.onclick=()=>{ if(!state.canWrite) return; const sel=form.querySelector("#nInvSel"), o=[...sel.options].find(x=>x.value===tr.dataset.linv); if(!o||o.disabled){ toast("المستخلص ده له ملف تأمينات بالفعل"); return; } sel.value=tr.dataset.linv; d.invoiceId=sel.value; refresh(); toast(`اتربط الملف بـ ${o.textContent.split(" · ")[0]}`); });
+        form.querySelectorAll("#nInv tr[data-lraise]").forEach(tr=>tr.onclick=()=>{ if(!state.canWrite) return; const rs=form.querySelector("#nRaiseSel"), o=[...rs.options].find(x=>x.value===tr.dataset.lraise); if(!o||o.disabled){ toast("مستخلص رد التعلية ده مربوط بملف تاني"); return; } raiseTouched=true; d.raiseInvoiceId=tr.dataset.lraise; refresh(); toast(`اتربط ${o.textContent.split(" · ")[0]} كرد تعلية`); });
       };
       form.querySelector("#nContract").addEventListener("input", refresh);
       form.querySelector("#nInvSel").addEventListener("change", e=>{ d.invoiceId=e.target.value; refresh(); });
+      form.querySelector("#nRaiseSel").addEventListener("change", e=>{ raiseTouched=true; d.raiseInvoiceId=e.target.value; refresh(); });
       { // حاسبة التأمينات
         const bI=form.querySelector("#cBase"), wI=form.querySelector("#cWage");
         let bTouched=has(d.calcBase), wTouched=has(d.calcWage);
