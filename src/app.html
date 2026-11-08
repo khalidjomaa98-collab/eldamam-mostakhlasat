@@ -818,7 +818,6 @@ select.stg,.stgt{background:var(--sunk);border:1px solid var(--line);color:var(-
 .sg .cot{font-size:.8rem}
 /* منع سكرول الخلفية */
 html.dlg-open{overflow:hidden}
-html.dlg-open body{position:fixed;inset-inline:0;width:100%;overflow:hidden}
 dialog,.dw-b{overscroll-behavior:contain}
 /* اختيار كشوف التقرير */
 .rpsel{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
@@ -1155,6 +1154,20 @@ body.nodb .fab,body.nodb .bulk{display:none!important}
 #insTable .iinv>.certp{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 #insTable td.ins-txt .sub2.pre{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 #insTable .ireq{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+/* نافذة متصغرة */
+html{scrollbar-gutter:stable}
+.dw-hb{display:flex;gap:4px;align-items:flex-start}
+.dstash{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:85;display:flex;align-items:stretch;background:var(--side,#0b1550);color:#fff;border-radius:14px;box-shadow:0 12px 32px rgba(5,10,40,.35);overflow:hidden;animation:popIn .2s ease}
+.dstash button{border:0;background:none;color:inherit;font:inherit;cursor:pointer}
+.ds-open{display:flex;align-items:center;gap:10px;padding:10px 16px;text-align:start}
+.ds-open:hover,.ds-x:hover{background:rgba(255,255,255,.1)}
+.ds-open span{display:flex;flex-direction:column;line-height:1.3}
+.ds-open b{font-size:.88rem;max-width:min(60vw,360px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ds-open small{font-size:.72rem;opacity:.75}
+.ds-x{padding:0 12px;border-inline-start:1px solid rgba(255,255,255,.15)!important}
+.dstash svg.i{width:18px;height:18px}
+@media (max-width:900px){ .dstash{bottom:86px} }
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -1995,20 +2008,50 @@ function renderMp(){
 /* ---------- الدرج الجانبي ---------- */
 const dlg=$("#dlg"), form=$("#dlgForm");
 function openDlg({title, sub, body, foot, onSubmit, onMount}){
-  form.innerHTML = `<div class="dw-h"><div><h2>${title}</h2>${sub?`<div class="sub">${sub}</div>`:""}</div><button type="button" class="btn sm ghost x" data-close aria-label="إغلاق">${ico("x")}</button></div><div class="dw-b">${body}</div>${foot?`<div class="dw-f">${foot}</div>`:""}`;
+  form.innerHTML = `<div class="dw-h"><div><h2>${title}</h2>${sub?`<div class="sub">${sub}</div>`:""}</div><div class="dw-hb"><button type="button" class="btn sm ghost x" data-min title="تصغير — اللي كتبته هيفضل محفوظ وترجعله من الزرار اللي تحت" aria-label="تصغير النافذة">${ico("minus")}</button><button type="button" class="btn sm ghost x" data-close aria-label="إغلاق">${ico("x")}</button></div></div><div class="dw-b">${body}</div>${foot?`<div class="dw-f">${foot}</div>`:""}`;
   form.onsubmit = async e => { e.preventDefault(); await onSubmit?.(e); };
   form.querySelector("[data-close]").onclick=()=>dlg.close();
+  form.querySelector("[data-min]").onclick=()=>minimizeDlg();
   form.querySelector("[data-cancel]")?.addEventListener("click",()=>dlg.close());
+  formDirty=false;
   onMount && onMount();
   if(!dlg.open){ dlg.showModal(); lockScroll(true); }
   form.querySelector(".dw-b").scrollTop = 0;
 }
-dlg.addEventListener("click", e=>{ if(e.target===dlg) dlg.close(); });
+/* تصغير النافذة: المحتوى بيتشال على جنب بكل اللي اتكتب فيه، وترجعله من الزرار اللي تحت */
+let formDirty=false, dlgStash=null;
+form.addEventListener("input", ()=>{ formDirty=true; });
+form.addEventListener("change", ()=>{ formDirty=true; });
+function minimizeDlg(){
+  if(!dlg.open) return;
+  if(dlgStash){ toast("فيه نافذة متصغّرة بالفعل — ارجعلها أو اقفلها الأول"); return; }
+  const title=form.querySelector(".dw-h h2")?.textContent||"نافذة";
+  const frag=document.createDocumentFragment(); while(form.firstChild) frag.appendChild(form.firstChild);
+  dlgStash={frag, onsubmit:form.onsubmit, dirty:formDirty, title};
+  form.onsubmit=null; dlg.close(); drawStash();
+}
+function restoreDlg(){
+  if(!dlgStash) return;
+  if(dlg.open){ toast("اقفل النافذة المفتوحة الأول"); return; }
+  form.replaceChildren(dlgStash.frag); form.onsubmit=dlgStash.onsubmit; formDirty=dlgStash.dirty; dlgStash=null; drawStash();
+  dlg.showModal(); lockScroll(true);
+}
+function drawStash(){
+  let el=$("#dlgStash");
+  if(!dlgStash){ el?.remove(); return; }
+  if(!el){ el=document.createElement("div"); el.id="dlgStash"; el.className="dstash"; document.body.appendChild(el); }
+  el.innerHTML=`<button type="button" class="ds-open" title="رجوع للنافذة">${ico("doc")}<span><b>${esc(dlgStash.title)}</b><small>متصغّرة — اضغط للرجوع</small></span></button><button type="button" class="ds-x" title="إلغاء النافذة دي" aria-label="إلغاء">${ico("x")}</button>`;
+  el.querySelector(".ds-open").onclick=restoreDlg;
+  el.querySelector(".ds-x").onclick=()=>{ if(dlgStash.dirty && !confirm("هتلغي اللي كتبته في النافذة دي؟")) return; dlgStash=null; drawStash(); };
+}
+// الضغط برا النافذة أو Esc: لو فيه كتابة، النافذة بتتصغر بدل ما تتقفل وتضيع
+dlg.addEventListener("click", e=>{ if(e.target===dlg){ if(formDirty && state.canWrite && !dlgStash) minimizeDlg(); else dlg.close(); } });
+dlg.addEventListener("cancel", e=>{ if(formDirty && state.canWrite && !dlgStash){ e.preventDefault(); minimizeDlg(); } });
 let _scrollY=0;
 function lockScroll(on){
   const b=document.body;
-  if(on){ if(document.documentElement.classList.contains("dlg-open")) return; _scrollY=window.scrollY; document.documentElement.classList.add("dlg-open"); b.style.top=`-${_scrollY}px`; }
-  else { if(!document.documentElement.classList.contains("dlg-open")) return; document.documentElement.classList.remove("dlg-open"); b.style.top=""; window.scrollTo(0,_scrollY); }
+  // بنقفل سكرول الصفحة بس من غير ما نحرّك الـ body، عشان القائمة الجانبية متتزحزحش
+  document.documentElement.classList.toggle("dlg-open", !!on);
 }
 dlg.addEventListener("close", ()=>lockScroll(false));
 const fld = (id,label,v,type="text",extra="") => `<div class="f${/\bwide\b/.test(extra)?" wide":""}"><label for="${id}">${label}</label><input id="${id}" type="${type==="number"?"text":type}" value="${esc(v??"")}" ${type==="number"?'inputmode="decimal" autocomplete="off" data-numf="1"':""} ${extra.replace(/\bwide\b/,"")}></div>`;
