@@ -3042,7 +3042,7 @@ const WA_FIELDS = [
   ["bank","المتوقع للبنك",0,v=>has(v.bankExpected)?`${fmt(v.bankExpected)} ${cur()}`:""],
   ["g","المتابعة"],
   ["stage","المكان الحالي",1,(v,k)=>v.paid==="نعم"&&!v.stage?"":k.hs&&v.stage?`${v.stage}${k.days!=null&&v.paid!=="نعم"?` (من ${daysAr(k.days)})`:""}`:""],
-  ["steps","مراحل المتابعة",1,(v,k)=>invSteps(v,k).map(x=>`${x.st==="y"?"✅":x.st==="na"?"➖":"⏳"} ${x.label}`).join(" · ")],
+  ["steps","مراحل المتابعة",1,(v,k)=>invSteps(v,k).map((x,i)=>`   ${i+1}. ${x.label}: ${x.st==="y"?"تم":x.st==="na"?"لا حاجة":"لسه"}`)],
   ["paid","الصرف",0,v=>v.paid==="نعم"?`تم الصرف${v.paidDate?` بتاريخ ${dmy(v.paidDate)}`:""}`:"لم يُصرف بعد"],
   ["lastlog","آخر متابعة",0,v=>{ const l=(v.log||[]).at(-1); return l?`${dmy(l.date)}: ${l.text}`:""; }],
   ["notes","ملاحظات",0,v=>v.notes||""]
@@ -3051,15 +3051,15 @@ const cur = () => state.cfg.currency||"ج.م";
 const daysAr = n => n===0?"النهارده":n===1?"يوم":n===2?"يومين":n<=10?`${n} أيام`:`${n} يوم`;
 function waText(vs, keys, o){
   const F=WA_FIELDS.filter(f=>f[0]!=="g" && keys.includes(f[0])), L=[];
-  if(o.head) L.push(`*${o.title||"بيان مستخلصات"}*`, `بتاريخ ${dmy(today())} · ${vs.length} ${vs.length===1?"مستخلص":"مستخلصات"}`, "");
+  if(o.head) L.push(`*${o.title||"بيان مستخلصات"}*`, `بتاريخ ${dmy(today())} - ${vs.length} ${vs.length===1?"مستخلص":"مستخلصات"}`, "");
   vs.forEach((v,i)=>{ const k=calc(v), p=k.p||{};
     const titleF=F.find(f=>f[0]==="proj"), t = titleF ? titleF[3](v,k,p,o) : certLabel(v);
     L.push(`*${vs.length>1?`${i+1}) `:""}${t}*`);
-    F.filter(f=>f[0]!=="proj").forEach(f=>{ const x=String(f[3](v,k,p,o)??"").trim(); if(x) L.push(`▪️ ${f[1]}: ${x}`); });
+    F.filter(f=>f[0]!=="proj").forEach(f=>{ const r=f[3](v,k,p,o); if(Array.isArray(r)){ if(r.length) L.push(`- ${f[1]}:`, ...r); return; } const x=String(r??"").trim(); if(x) L.push(`- ${f[1]}: ${x}`); });
     L.push(""); });
   if(o.tot && vs.length>1){ const net=vs.reduce((a,v)=>a+num(calc(v).net),0), am=vs.reduce((a,v)=>{ const k=calc(v); return a+num(k.afterMat??k.net); },0);
-    L.push(`*الإجمالي:* ${vs.length} مستخلص`, `▪️ صافي المستخلصات: ${fmt(net)} ${cur()}`); if(Math.abs(am-net)>0.5) L.push(`▪️ بعد خصم الخامات: ${fmt(am)} ${cur()}`); }
-  return L.join("\n").replace(/[\u200e\u200f]/g,"").replace(/\n{3,}/g,"\n\n").trim();
+    L.push(`*الإجمالي:* ${vs.length} مستخلص`, `- صافي المستخلصات: ${fmt(net)} ${cur()}`); if(Math.abs(am-net)>0.5) L.push(`- بعد خصم الخامات: ${fmt(am)} ${cur()}`); }
+  return L.join("\n").replace(/[\u200e\u200f\ufe0f]/g,"").replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,"").replace(/\n{3,}/g,"\n\n").trim();
 }
 function waDialog(ids){
   const vs=(ids||[...state.sel]).map(id=>state.invoices.find(v=>v.id===id)).filter(Boolean).sort((a,b)=>(num(calc(a).p?.order)-num(calc(b).p?.order))||(num(a.order)-num(b.order)));
