@@ -1657,6 +1657,85 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{transition:border-c
 @media (max-width:820px){ .wa-grid{grid-template-columns:minmax(0,1fr)} .wa-pv{position:static} .wa-phone{max-height:none} }
 
 .dw-h h2 svg.i{width:20px;height:20px;margin-inline-end:8px;vertical-align:-3px;color:#1fa855}
+
+/* =====================================================================
+   التصميم الزجاجي (Glassmorphism)
+   خلفية ألوانها ناعمة + أسطح نصف شفافة بحدود مضيئة.
+   البيانات الكثيفة (الجداول) على سطح أصلب عشان القراءة.
+   الـ blur على الأسطح الكبيرة الثابتة بس (القائمة، النوافذ، الشريط) عشان السرعة.
+   ===================================================================== */
+:root{
+  --g-bg1:rgba(56,178,196,.55); --g-bg2:rgba(99,112,232,.45); --g-bg3:rgba(196,140,236,.42); --g-bg4:rgba(72,196,150,.40);
+  --glass:rgba(255,255,255,.5); --glass-2:rgba(255,255,255,.72); --glass-3:rgba(255,255,255,.86);
+  --glass-brd:rgba(255,255,255,.75); --glass-line:rgba(20,40,60,.08);
+  --glass-sh:0 1px 0 rgba(255,255,255,.7) inset,0 10px 30px -14px rgba(15,35,70,.22),0 2px 6px -2px rgba(15,35,70,.06);
+  --blur:saturate(170%) blur(18px);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --g-bg1:rgba(30,150,170,.38); --g-bg2:rgba(70,80,220,.34); --g-bg3:rgba(150,80,210,.30); --g-bg4:rgba(30,160,110,.26);
+  --glass:rgba(22,34,44,.5); --glass-2:rgba(20,32,42,.72); --glass-3:rgba(18,28,38,.88);
+  --glass-brd:rgba(255,255,255,.09); --glass-line:rgba(255,255,255,.06);
+  --glass-sh:0 1px 0 rgba(255,255,255,.06) inset,0 14px 36px -16px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  --g-bg1:rgba(30,150,170,.38); --g-bg2:rgba(70,80,220,.34); --g-bg3:rgba(150,80,210,.30); --g-bg4:rgba(30,160,110,.26);
+  --glass:rgba(22,34,44,.5); --glass-2:rgba(20,32,42,.72); --glass-3:rgba(18,28,38,.88);
+  --glass-brd:rgba(255,255,255,.09); --glass-line:rgba(255,255,255,.06);
+  --glass-sh:0 1px 0 rgba(255,255,255,.06) inset,0 14px 36px -16px rgba(0,0,0,.6);
+}
+/* الخلفية */
+body{background:var(--bg)}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(38vmax 38vmax at 6% 10%,var(--g-bg1),transparent 70%),
+    radial-gradient(34vmax 34vmax at 70% 4%,var(--g-bg2),transparent 70%),
+    radial-gradient(40vmax 40vmax at 82% 88%,var(--g-bg3),transparent 70%),
+    radial-gradient(36vmax 36vmax at 22% 92%,var(--g-bg4),transparent 70%),
+    radial-gradient(28vmax 28vmax at 45% 50%,color-mix(in srgb,var(--g-bg2) 50%,transparent),transparent 70%),
+    var(--bg)}
+.app,.main{background:transparent}
+/* الأسطح */
+.panel,.kpi:not(.lead),.fbar,.qbar,.pc2,.pc,.ph-card,.banner{background:var(--glass)!important;border:1px solid var(--glass-brd)!important;box-shadow:var(--glass-sh)!important}
+.panel:has(table.rt),.panel:has(table.dt),.panel:has(.acl),.panel.sumx{background:var(--glass-2)!important}
+.rt th,.dt th{background:color-mix(in srgb,var(--sunk) 55%,transparent)!important}
+.rt td,.dt td{border-bottom-color:var(--glass-line)}
+.kpi.lead{background:linear-gradient(140deg,color-mix(in srgb,var(--accent) 55%,var(--side)),var(--side) 70%)!important;border:1px solid rgba(255,255,255,.14)!important;box-shadow:0 1px 0 rgba(255,255,255,.18) inset,0 16px 34px -14px color-mix(in srgb,var(--side) 80%,transparent)!important}
+.sx-nums>*,.sx-sec,.sx-alerts{background:transparent}
+.pipe .pstep{background:color-mix(in srgb,var(--surface) 45%,transparent)}
+.fbar select,.fbar input,.seg{background:color-mix(in srgb,var(--surface) 70%,transparent)}
+.btn:not(.primary):not(.danger):not(.wa-send){background:color-mix(in srgb,var(--surface) 72%,transparent);border-color:var(--glass-brd);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.btn:not(.primary):not(.danger):not(.wa-send):hover{background:color-mix(in srgb,var(--surface) 92%,transparent)}
+/* القائمة الجانبية: زجاج داكن */
+.side{background:linear-gradient(180deg,color-mix(in srgb,var(--side) 74%,transparent),color-mix(in srgb,var(--side) 88%,transparent))!important;-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-inline-start:1px solid rgba(255,255,255,.08)}
+.mbar{background:color-mix(in srgb,var(--side) 82%,transparent)!important;-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+/* النوافذ */
+dialog.drawer{background:color-mix(in srgb,var(--bg) 72%,transparent)!important;-webkit-backdrop-filter:saturate(160%) blur(28px);backdrop-filter:saturate(160%) blur(28px);border:1px solid var(--glass-brd)!important}
+dialog.drawer::backdrop{background:radial-gradient(120% 120% at 50% 40%,rgba(11,21,80,.22),rgba(6,12,30,.48));-webkit-backdrop-filter:blur(10px) saturate(130%);backdrop-filter:blur(10px) saturate(130%)}
+.dw-h{background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 80%,transparent),color-mix(in srgb,var(--surface) 55%,transparent))!important;border-bottom:1px solid var(--glass-line)}
+.dw-b{background:transparent!important}
+.dw-f{background:color-mix(in srgb,var(--surface) 70%,transparent)!important;border-top:1px solid var(--glass-line)}
+.dw .sec{background:var(--glass-3)!important;border:1px solid var(--glass-brd)!important;box-shadow:var(--glass-sh)!important}
+.dw .sec.dz{background:color-mix(in srgb,var(--bad) 5%,var(--glass-3))!important}
+dialog.cmd{background:color-mix(in srgb,var(--surface) 80%,transparent);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid var(--glass-brd)}
+/* الشريط اللي تحت والتنبيهات */
+.bulk{background:color-mix(in srgb,var(--side) 78%,transparent)!important;-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid rgba(255,255,255,.12)}
+.dstash{background:color-mix(in srgb,var(--side) 80%,transparent);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+.acd{background:color-mix(in srgb,var(--surface) 70%,transparent)!important;border-color:var(--glass-brd)!important}
+.stpop{-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+/* لمعة خفيفة على الكروت */
+.panel,.kpi,.pc2{position:relative}
+.kpi:not(.lead)::after,.pc2::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.35),transparent 38%);opacity:.6}
+:root[data-theme="dark"] .kpi:not(.lead)::after,:root[data-theme="dark"] .pc2::after{opacity:.12}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .kpi:not(.lead)::after,:root:not([data-theme="light"]) .pc2::after{opacity:.12}}
+.pc2:hover{transform:translateY(-3px)}
+.pc2{border-top:4px solid var(--hc)!important}
+.panel>.hd{border-bottom-color:var(--glass-line)}
+/* متصفحات من غير blur: أسطح أصلب */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .side{background:var(--side)!important} dialog.drawer{background:var(--bg)!important} .bulk{background:var(--side)!important}
+  .panel,.kpi:not(.lead),.fbar,.qbar,.pc2{background:var(--glass-3)!important}
+}
+@media print{ body::before{display:none} }
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
