@@ -1785,6 +1785,30 @@ dialog.cmd{background:color-mix(in srgb,var(--surface) 80%,transparent);-webkit-
 .pl-ib{display:flex;flex-direction:column;gap:6px;width:170px}
 .pl-ib .btn{justify-content:center}
 @media (max-width:640px){ .pl-in{flex-direction:column} .pl-ib{width:auto;flex-direction:row} .pl-ib>*{flex:1} }
+
+/* ===== الكشوفات بالطابع الزجاجي ===== */
+.rt tr.ghd td{background:linear-gradient(270deg,color-mix(in srgb,var(--side) 84%,transparent),color-mix(in srgb,color-mix(in srgb,var(--accent) 40%,var(--side)) 78%,transparent))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.08)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.rt tbody+tbody tr.ghd td,.rt tbody tr.ghd:not(:first-child) td{border-top-color:transparent!important}
+.rt tr.gh2 td{background:linear-gradient(270deg,color-mix(in srgb,var(--accent) 16%,transparent),color-mix(in srgb,var(--accent) 6%,transparent))!important;border-color:var(--glass-line)!important;box-shadow:inset -4px 0 0 color-mix(in srgb,var(--accent) 80%,transparent)!important}
+.rt tr.gh3 td{background:color-mix(in srgb,var(--surface) 30%,transparent)!important;border-color:var(--glass-line)!important}
+.rt tbody[style*="--gc"] tr.ghd td{background:linear-gradient(270deg,color-mix(in srgb,var(--gc) 86%,transparent),color-mix(in srgb,var(--gc) 62%,transparent))!important}
+.rt tbody[style*="--gc"] tr.gh2 td{background:color-mix(in srgb,var(--gc) 12%,transparent)!important;box-shadow:inset -4px 0 0 var(--gc)!important}
+.rt tbody[style*="--gc"] tr.gh3 td{background:color-mix(in srgb,var(--gc) 5%,transparent)!important}
+.rt tr.coh td{background:linear-gradient(270deg,color-mix(in srgb,var(--cc) 14%,transparent),color-mix(in srgb,var(--cc) 4%,transparent))!important;box-shadow:inset -4px 0 0 color-mix(in srgb,var(--cc) 85%,transparent)!important}
+.rt tr.ghd.coh td{background:linear-gradient(270deg,color-mix(in srgb,color-mix(in srgb,var(--cc) 80%,#000) 86%,transparent),color-mix(in srgb,var(--cc) 60%,transparent))!important}
+.rt tr.r td,.rt tr.r.zb td,.rt tr.zb td,.rt tr.r td.pj{background:transparent!important}
+.rt tr.r.zb td{background:color-mix(in srgb,var(--surface) 28%,transparent)!important}
+.rt tr.r:hover td{background:color-mix(in srgb,var(--accent) 7%,transparent)!important}
+.rt tr.r.picked td{background:color-mix(in srgb,var(--accent) 13%,transparent)!important}
+.rt tr.phd td{background:color-mix(in srgb,var(--surface) 40%,transparent)!important}
+.rt tfoot td{background:color-mix(in srgb,var(--surface) 55%,transparent)!important}
+.rt thead th{background:color-mix(in srgb,var(--surface) 45%,transparent)!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.rt td,.rt th{border-color:var(--glass-line)}
+.isp i{background:color-mix(in srgb,var(--surface) 70%,transparent)}
+.isp.y i{background:var(--ok)} .isp.cur i{background:var(--accent-soft)} .isp.na i{background:color-mix(in srgb,var(--sunk) 70%,transparent)}
+.stgl,.dbg,.idc,.certp{-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.idc{background:color-mix(in srgb,var(--sunk) 55%,transparent)!important}
+.dbg{background:color-mix(in srgb,var(--sunk) 60%,transparent)}
 </style>
 <style>
 [hidden]{display:none!important}
