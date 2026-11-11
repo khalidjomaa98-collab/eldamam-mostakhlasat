@@ -1641,6 +1641,32 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{transition:border-c
 .sec.dz>h3{color:var(--bad);border-bottom-color:color-mix(in srgb,var(--bad) 18%,var(--line2))}
 .sec.dz .dz-b{display:flex;gap:8px;flex-wrap:wrap}
 .sec.dz .btn.danger{min-width:140px;justify-content:center}
+
+/* إرسال واتساب */
+.bulk .bk-wa{background:#1fa855;border-color:#1fa855;color:#fff}
+.bulk .bk-wa:hover{background:#18904a}
+.wa-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
+.wa-chips{display:flex;flex-wrap:wrap;gap:6px}
+.wa-g{flex-basis:100%;font-size:.74rem;font-weight:700;color:var(--muted);margin-top:6px}
+.wa-g:first-child{margin-top:0}
+.wa-c{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px 5px 10px;font-size:.82rem;cursor:pointer;user-select:none;transition:background-color .15s,border-color .15s,color .15s}
+.wa-c input{position:absolute;opacity:0;pointer-events:none}
+.wa-c span::before{content:"";display:inline-block;width:14px;height:14px;margin-inline-end:6px;vertical-align:-2px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface)}
+.wa-c:has(input:checked){background:color-mix(in srgb,#1fa855 12%,var(--surface));border-color:color-mix(in srgb,#1fa855 55%,var(--line));color:var(--fg);font-weight:600}
+.wa-c:has(input:checked) span::before{background:#1fa855 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E") center/10px no-repeat;border-color:#1fa855}
+.wa-c:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.wa-opts{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;border-top:1px solid var(--line2);padding-top:12px}
+.wa-opts .f.wide{flex-basis:100%;display:flex;flex-direction:column;gap:4px}
+.wa-pv{position:sticky;top:0}
+.wa-phone{background:#e9e2d7 radial-gradient(circle at 20% 20%,rgba(255,255,255,.35),transparent 40%);border-radius:14px;padding:14px;max-height:56vh;overflow:auto}
+.wa-bubble{background:#d9fdd3;color:#111b21;border-radius:10px 2px 10px 10px;padding:10px 12px;font-size:.86rem;line-height:1.7;box-shadow:0 1px 1px rgba(0,0,0,.12);white-space:normal;overflow-wrap:anywhere;max-width:96%;margin-inline-start:auto}
+.wa-bubble b{font-weight:700}
+.btn.wa-send{background:linear-gradient(180deg,#2bbd63,#1fa855);border-color:#18904a;color:#fff;box-shadow:0 8px 18px -10px #1fa855}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .wa-phone{background:#0b141a}:root:not([data-theme="light"]) .wa-bubble{background:#005c4b;color:#e9edef}}
+:root[data-theme="dark"] .wa-phone{background:#0b141a} :root[data-theme="dark"] .wa-bubble{background:#005c4b;color:#e9edef}
+@media (max-width:820px){ .wa-grid{grid-template-columns:minmax(0,1fr)} .wa-pv{position:static} .wa-phone{max-height:none} }
+
+.dw-h h2 svg.i{width:20px;height:20px;margin-inline-end:8px;vertical-align:-3px;color:#1fa855}
 </style>
 <style>
 [hidden]{display:none!important}
@@ -2009,6 +2035,7 @@ body.side-mini .syncpill{font-size:0;gap:0;padding:7px;justify-content:center}
   <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
   <symbol id="i-minus" viewBox="0 0 24 24"><path d="M7 12h10"/></symbol>
   <symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L3 20.5l1.5-5.2A8.5 8.5 0 1 1 21 11.5z"/></symbol>
+  <symbol id="i-wa" viewBox="0 0 24 24"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.1L4 20z"/><path d="M9 9.5c0 2.8 2.2 5 5 5l1.2-1.2-1.8-1-1 .8a3.4 3.4 0 0 1-1.9-1.9l.8-1-1-1.8L9 9.5z"/></symbol>
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
   <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></symbol>
   <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></symbol>
@@ -2249,6 +2276,7 @@ body.side-mini .syncpill{font-size:0;gap:0;padding:7px;justify-content:center}
   <span class="bk-sep" id="bulkSep2"></span>
   <div class="bk-g">
     <button type="button" data-bulk="all" title="تحديد كل المعروض في الصفحة"><svg class="i"><use href="#i-list"/></svg><span>تحديد الكل</span></button>
+    <button type="button" class="bk-wa" data-bulk="wa" title="إرسال المحدد كرسالة واتساب"><svg class="i"><use href="#i-wa"/></svg><span>واتساب</span></button>
     <button type="button" class="bk-xl" data-bulk="xlsx" title="تنزيل كشف Excel منسق للمحدد"><svg class="i"><use href="#i-dl"/></svg><span>تنزيل Excel</span></button>
     <button type="button" class="bk-x" data-bulk="clear" title="إلغاء التحديد" aria-label="إلغاء التحديد"><svg class="i"><use href="#i-x"/></svg></button>
   </div>
@@ -3223,6 +3251,85 @@ function projDialog(p){
       form.querySelectorAll("tr[data-inv]").forEach(tr=>tr.onclick=()=>{ const v=state.invoices.find(x=>x.id===tr.dataset.inv); if(v) invDialog(v); });
       const del=form.querySelector("#jDel"); if(del) del.onclick=()=>{ if(vs.length){ toast(`المشروع عليه ${vs.length} مستخلص. احذفهم الأول.`); return; }
         confirmBtn(del,"اضغط مرة أخرى للتأكيد",async()=>{ try{await db.collection("projects").doc(p.id).delete(); dlg.close(); toast("تم حذف المشروع"); logAct(`حذف مشروع: ${p.shortName||p.name}`, "", "");}catch{toast("تعذر الحذف");} }); };
+    }
+  });
+}
+
+/* ----- إرسال مستخلصات على الواتساب كرسالة ----- */
+const WA_FIELDS = [
+  ["g","المشروع"],
+  ["proj","اسم المشروع",1,(v,k,p,o)=>pName(p,o.short)],
+  ["contract","رقم العقد",1,(v,k,p)=>realId(p.contractNo)],
+  ["unified","كود العقد الموحد",1,(v,k,p)=>realId(p.unifiedCode)],
+  ["boq","رقم المقايسة",1,(v,k,p)=>realId(p.boqNo)],
+  ["company","الشركة",1,(v,k)=>k.company&&k.company!=="غير محدد"?k.company:""],
+  ["dept","جهة الإسناد",0,(v,k,p)=>p.dept||""],
+  ["loc","الموقع",0,(v,k,p)=>p.location||""],
+  ["total","قيمة العقد",0,(v,k,p)=>{ const c=contractVal(p); return c?`${fmt(c)} ${cur()}`:""; }],
+  ["exec","نسبة التنفيذ المالي",0,(v,k)=>k.exec==null?"":pctTxt(k.exec)],
+  ["g","المستخلص"],
+  ["cert","المستخلص",1,v=>certLabel(v)],
+  ["type","نوع المستخلص",1,v=>v.type||"مستخلص أعمال"],
+  ["date","تاريخ المستخلص",0,v=>v.date?dmy(v.date):""],
+  ["gross","القيمة الإجمالية (تراكمي)",1,(v,k)=>k.work&&has(v.gross)?`${fmt(v.gross)} ${cur()}`:""],
+  ["net","صافي المستخلص",1,(v,k)=>k.net==null?"":`${fmt(k.net)} ${cur()}`],
+  ["mat","الخامات المخصومة",0,(v,k)=>k.mat?`${fmt(k.mat)} ${cur()}`:""],
+  ["afterMat","الصافي بعد خصم الخامات",1,(v,k)=>k.mat&&k.afterMat!=null?`${fmt(k.afterMat)} ${cur()}`:""],
+  ["bank","المتوقع للبنك",0,v=>has(v.bankExpected)?`${fmt(v.bankExpected)} ${cur()}`:""],
+  ["g","المتابعة"],
+  ["stage","المكان الحالي",1,(v,k)=>v.paid==="نعم"&&!v.stage?"":k.hs&&v.stage?`${v.stage}${k.days!=null&&v.paid!=="نعم"?` (من ${daysAr(k.days)})`:""}`:""],
+  ["steps","مراحل المتابعة",1,(v,k)=>invSteps(v,k).map(x=>`${x.st==="y"?"✅":x.st==="na"?"➖":"⏳"} ${x.label}`).join(" · ")],
+  ["paid","الصرف",0,v=>v.paid==="نعم"?`تم الصرف${v.paidDate?` بتاريخ ${dmy(v.paidDate)}`:""}`:"لم يُصرف بعد"],
+  ["lastlog","آخر متابعة",0,v=>{ const l=(v.log||[]).at(-1); return l?`${dmy(l.date)}: ${l.text}`:""; }],
+  ["notes","ملاحظات",0,v=>v.notes||""]
+];
+const cur = () => state.cfg.currency||"ج.م";
+const daysAr = n => n===0?"النهارده":n===1?"يوم":n===2?"يومين":n<=10?`${n} أيام`:`${n} يوم`;
+function waText(vs, keys, o){
+  const F=WA_FIELDS.filter(f=>f[0]!=="g" && keys.includes(f[0])), L=[];
+  if(o.head) L.push(`*${o.title||"بيان مستخلصات"}*`, `بتاريخ ${dmy(today())} · ${vs.length} ${vs.length===1?"مستخلص":"مستخلصات"}`, "");
+  vs.forEach((v,i)=>{ const k=calc(v), p=k.p||{};
+    const titleF=F.find(f=>f[0]==="proj"), t = titleF ? titleF[3](v,k,p,o) : certLabel(v);
+    L.push(`*${vs.length>1?`${i+1}) `:""}${t}*`);
+    F.filter(f=>f[0]!=="proj").forEach(f=>{ const x=String(f[3](v,k,p,o)??"").trim(); if(x) L.push(`▪️ ${f[1]}: ${x}`); });
+    L.push(""); });
+  if(o.tot && vs.length>1){ const net=vs.reduce((a,v)=>a+num(calc(v).net),0), am=vs.reduce((a,v)=>{ const k=calc(v); return a+num(k.afterMat??k.net); },0);
+    L.push(`*الإجمالي:* ${vs.length} مستخلص`, `▪️ صافي المستخلصات: ${fmt(net)} ${cur()}`); if(Math.abs(am-net)>0.5) L.push(`▪️ بعد خصم الخامات: ${fmt(am)} ${cur()}`); }
+  return L.join("\n").replace(/[\u200e\u200f]/g,"").replace(/\n{3,}/g,"\n\n").trim();
+}
+function waDialog(ids){
+  const vs=(ids||[...state.sel]).map(id=>state.invoices.find(v=>v.id===id)).filter(Boolean).sort((a,b)=>(num(calc(a).p?.order)-num(calc(b).p?.order))||(num(a.order)-num(b.order)));
+  if(!vs.length){ toast("حدد مستخلص واحد على الأقل"); return; }
+  let keys, o;
+  try{ keys=JSON.parse(localStorage.getItem("waKeys")||"null"); o=JSON.parse(localStorage.getItem("waOpts")||"null"); }catch{}
+  keys ||= WA_FIELDS.filter(f=>f[0]!=="g"&&f[2]).map(f=>f[0]); o={short:true, head:true, tot:true, title:"بيان مستخلصات — "+(state.cfg.companyName||"شركة الدمام للمقاولات العامة"), ...(o||{})};
+  const chips = () => WA_FIELDS.map(f=> f[0]==="g" ? `<div class="wa-g">${esc(f[1])}</div>` : `<label class="wa-c"><input type="checkbox" data-wak="${f[0]}" ${keys.includes(f[0])?"checked":""}><span>${esc(f[1])}</span></label>`).join("");
+  openDlg({ title:`${ico("wa")}إرسال على الواتساب`, sub:`${vs.length} ${vs.length===1?"مستخلص":"مستخلصات"} محددة · اختار البيانات اللي هتتبعت وشوف الرسالة قبل الإرسال`,
+    body:`<div class="wa-grid">
+      <section class="sec"><h3>${ico("list")}البيانات اللي هتتبعت<span class="r"><button type="button" class="btn sm ghost" data-waset="def">الأساسي</button><button type="button" class="btn sm ghost" data-waset="all">الكل</button></span></h3>
+        <div class="wa-chips" id="waChips">${chips()}</div>
+        <div class="wa-opts"><div class="fi"><span>اسم المشروع</span><div class="seg" id="waShort"><button type="button" data-v="1" aria-pressed="${o.short}">مختصر</button><button type="button" data-v="0" aria-pressed="${!o.short}">كامل</button></div></div>
+          <label class="chk"><input type="checkbox" id="waHead" ${o.head?"checked":""}> عنوان وتاريخ في أول الرسالة</label>
+          <label class="chk"><input type="checkbox" id="waTot" ${o.tot?"checked":""}> إجمالي في آخر الرسالة</label>
+          <div class="f wide"><label for="waTitle">عنوان الرسالة</label><input id="waTitle" value="${esc(o.title)}"></div></div>
+      </section>
+      <section class="sec wa-pv"><h3>${ico("msg")}شكل الرسالة<span class="r faint small" id="waLen"></span></h3><div class="wa-phone"><div class="wa-bubble" id="waPrev"></div></div></section>
+    </div>`,
+    foot:`<button type="button" class="btn primary wa-send" id="waSend">${ico("wa")}فتح الواتساب</button><button type="button" class="btn" id="waCopy">${ico("doc")}نسخ الرسالة</button><button class="btn ghost" type="button" data-cancel>${ico("x")}إغلاق</button>`,
+    onMount:()=>{
+      const txt = () => waText(vs, keys, o);
+      const wf = t => esc(t).replace(/\*([^*\n]+)\*/g,"<b>$1</b>").replace(/\n/g,"<br>");
+      const draw = () => { const t=txt(); form.querySelector("#waPrev").innerHTML=wf(t); form.querySelector("#waLen").textContent=`${t.length} حرف`;
+        try{ localStorage.setItem("waKeys",JSON.stringify(keys)); localStorage.setItem("waOpts",JSON.stringify(o)); }catch{} };
+      form.querySelector("#waChips").addEventListener("change", e=>{ const c=e.target.closest("[data-wak]"); if(!c) return; const k=c.dataset.wak; keys = c.checked ? uniq([...keys,k]) : keys.filter(x=>x!==k); draw(); });
+      form.querySelectorAll("[data-waset]").forEach(b=>b.onclick=()=>{ keys = WA_FIELDS.filter(f=>f[0]!=="g" && (b.dataset.waset==="all"||f[2])).map(f=>f[0]); form.querySelector("#waChips").innerHTML=chips(); draw(); });
+      form.querySelector("#waShort").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; o.short=b.dataset.v==="1"; form.querySelectorAll("#waShort button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); draw(); };
+      form.querySelector("#waHead").onchange=e=>{ o.head=e.target.checked; draw(); };
+      form.querySelector("#waTot").onchange=e=>{ o.tot=e.target.checked; draw(); };
+      form.querySelector("#waTitle").oninput=e=>{ o.title=e.target.value; draw(); };
+      form.querySelector("#waCopy").onclick=async()=>{ const t=txt(); try{ await navigator.clipboard.writeText(t); toast("اتنسخت الرسالة — الصقها في الواتساب"); }catch{ const ta=document.createElement("textarea"); ta.value=t; document.body.append(ta); ta.select(); try{ document.execCommand("copy"); toast("اتنسخت الرسالة"); }catch{ toast("تعذر النسخ"); } ta.remove(); } };
+      form.querySelector("#waSend").onclick=()=>{ const u="https://wa.me/?text="+encodeURIComponent(txt()); const w=window.open(u,"_blank","noopener"); if(!w) location.href=u; };
+      draw(); formDirty=false;
     }
   });
 }
@@ -4613,6 +4720,7 @@ $("#bulk").addEventListener("click", e=>{ const b=e.target.closest("[data-bulk]"
   if(k==="clear"){ clearSel(); return; }
   if(k==="all"){ selectAllVisible(); return; }
   if(k==="xlsx"){ exportSelXlsx(b); return; }
+  if(k==="wa"){ waDialog(); return; }
   askBulk(k); });
 document.addEventListener("keydown", e=>{ if((e.key==="Enter"||e.key===" ") && e.target.matches?.("[data-pipe]")){ e.preventDefault(); e.target.click(); return; } if(e.key==="Enter" && e.target.matches?.("tr[data-inv]")){ const v=state.invoices.find(x=>x.id===e.target.dataset.inv); if(v) invDialog(v); return; } if((e.key==="Enter"||e.key===" ") && e.target.matches?.(".pc2")){ e.preventDefault(); const p=proj(e.target.dataset.proj); if(p) projDialog(p); } });
 /* quick search */
