@@ -1183,6 +1183,73 @@ html{scrollbar-gutter:stable}
 
 .nt2.flw{color:var(--info)}
 
+/* ===== تلميع الجداول والصفوف (نفس التصميم — أنضف وأهدى) ===== */
+/* أرقام المشروع: من غير براويز تقيلة */
+.idc{border:0;background:var(--sunk);border-radius:5px;line-height:1.7}
+.idc i{background:none;border:0;padding:0 0 0 2px;padding-inline-start:7px;padding-inline-end:0;color:var(--faint);font-size:.7rem}
+.idc>span{padding:0 7px 0 5px;padding-inline-start:5px;padding-inline-end:7px}
+/* علامات الموقف: دواير مليانة بدل المنقطة */
+.stb.ro{grid-template-columns:repeat(3,50px);gap:2px}
+.sq i{width:24px;height:24px;border:0}
+.sq i svg.i{width:13px;height:13px}
+.sq.n i{background:var(--warn-soft);color:var(--warn)}
+.sq.na i{background:var(--sunk);color:var(--faint)}
+.sq.y i{background:var(--ok);color:#fff}
+.sq.r i{background:var(--info-soft);color:var(--info)}
+.sq small{font-size:.66rem}
+.sq.n small{color:var(--muted)}
+/* آخر متابعة والملاحظة: سطر واحد */
+.nt2{gap:5px;margin-top:4px;font-size:.74rem}
+.nt2 svg.i{width:13px;height:13px;margin-top:3px}
+.rt .nt2 span{-webkit-line-clamp:1}
+.nt2 span span{display:inline}
+.nt2.flw{color:color-mix(in srgb,var(--info) 80%,var(--muted))}
+.rbl{margin-top:3px}
+/* شارة المكان وعدد الأيام */
+.stgl{padding:3px 11px;background:var(--surface);font-size:.76rem}
+.since{margin-top:3px;font-size:.7rem}
+.dbg{border-radius:999px;padding:2px 9px;font-size:.76rem}
+.certp{border-radius:5px;padding:1px 7px;font-size:.72rem;margin-bottom:2px}
+.amx{margin-top:1px;font-size:.7rem}
+.pg{margin-top:3px}
+.pgb{height:3px}
+@media (min-width:821px){
+  /* رأس الجدول */
+  .rt th{padding:10px 12px;font-size:.7rem;letter-spacing:.01em;background:var(--surface);border-bottom:1px solid var(--line);color:var(--faint)}
+  /* الصفوف: خط رفيع واحد بين كل صف والتاني، من غير تظليل متبادل */
+  .rt tr.r td,#satList .rt.satt tr.r td,#invTable.satt tr.r td{padding:9px 12px;border-bottom:1px solid var(--line2);border-top:0;background:var(--surface)}
+  .rt tr.r.zb td{background:var(--surface)}
+  .rt tr.r.newp td{border-top:0}
+  .rt tr.r:hover td{background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
+  .rt tr.r.picked td{background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
+  .rt tr.r td:first-child{box-shadow:inset -3px 0 0 var(--sc)}
+  .rt .idx{color:var(--faint);font-size:.72rem}
+  .rt td.pj .pname{font-size:.9rem}
+  .rt td.dys{white-space:nowrap}
+  /* رؤوس المجموعات: إدارة ← مكان ← شركة، كل مستوى أخف من اللي فوقه */
+  .rt tr.ghd td{padding:10px 16px;font-size:.94rem}
+  .rt tbody tr.ghd:not(:first-child) td{border-top:8px solid var(--bg)}
+  .rt tr.gh2 td{background:color-mix(in srgb,var(--accent) 7%,var(--surface));padding:8px 16px;border-top:0;border-bottom:1px solid var(--line2);box-shadow:inset -3px 0 0 var(--accent)}
+  .rt tr.gh2 b{font-size:.9rem}
+  .rt tr.gh3 td{background:var(--surface);padding:6px 16px;padding-inline-start:30px;border-bottom:1px dashed var(--line);font-size:.78rem}
+  .rt tr.gh3 .lvl-t{border:0;padding:0;opacity:.6}
+  .rt tr.gh3.coh td{background:color-mix(in srgb,var(--cc) 5%,var(--surface))!important;box-shadow:inset -3px 0 0 var(--cc)}
+  .rt tr.phd td{border-top:8px solid var(--bg);background:color-mix(in srgb,var(--accent) 4%,var(--surface));padding:10px 16px}
+  .rt tbody:first-of-type tr.phd:first-child td{border-top:0}
+  .lvl-t{font-size:.66rem;padding:0 7px}
+  .rt tfoot td{border-top:1px solid var(--line);padding:12px}
+  /* جداول القوائم العامة (القوة العاملة / ما بعد الختامي / جداول النوافذ) */
+  table.dt th{padding:10px 12px;font-size:.7rem;color:var(--faint);background:var(--surface);border-bottom:1px solid var(--line)}
+  table.dt td{padding:11px 12px;border-bottom:1px solid var(--line2)}
+  table.dt tbody tr:hover td{background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
+  #insTable td{padding:12px}
+  /* القوة العاملة: 10 أعمدة لازم تدخل في الشاشة */
+  #mpTable th,#mpTable td{padding:9px 8px}
+  #mpTable td:last-child{min-width:0}
+  #mpTable td.pn{min-width:170px}
+  table.dt .certp{white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}
+}
+
 /* =====================================================================
    طبقة التجاوب (Responsive) — نقاط التحول:
    ≤900  : القائمة الجانبية درج + شريط علوي (موجود فوق)
