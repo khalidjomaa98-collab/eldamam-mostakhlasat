@@ -1625,6 +1625,12 @@ input:not([type=checkbox]):not([type=radio]),select,textarea{transition:border-c
 .pc2-ms>span:last-child{display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc2-ms svg.i{width:13px;height:13px;color:var(--ok);flex:none}
 .pc2-ms .pmbar{height:4px}
+
+.dw-f [data-cancel]{min-width:110px;justify-content:center;margin-inline-start:auto}
+.sec.dz{border-color:color-mix(in srgb,var(--bad) 30%,var(--line));background:color-mix(in srgb,var(--bad) 3%,var(--surface));margin-top:6px}
+.sec.dz>h3{color:var(--bad);border-bottom-color:color-mix(in srgb,var(--bad) 18%,var(--line2))}
+.sec.dz .dz-b{display:flex;gap:8px;flex-wrap:wrap}
+.sec.dz .btn.danger{min-width:140px;justify-content:center}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2541,6 +2547,10 @@ function openDlg({title, sub, body, foot, onSubmit, onMount, remake, key}){
   form.querySelector("[data-back]")?.addEventListener("click",()=>dlg.close());
   form.querySelector("[data-min]").onclick=()=>minimizeDlg();
   form.querySelector("[data-cancel]")?.addEventListener("click",()=>dlg.close());
+  // أزرار الحذف/الإزالة مكانها آخر النافذة بعد آخر سكرول، مش جنب الحفظ
+  { const dz=[...form.querySelectorAll(".dw-f .btn.danger")]; if(dz.length){ const sec=document.createElement("section"); sec.className="sec dz";
+      sec.innerHTML=`<h3>${ico("x")}منطقة الحذف</h3><p class="hint">الحذف أو الإزالة بيأثر على كل المستخدمين ومينفعش يترجع. هتحتاج تضغط مرتين للتأكيد.</p><div class="dz-b"></div>`;
+      dz.forEach(b=>sec.querySelector(".dz-b").append(b)); form.querySelector(".dw-b").append(sec); } }
   formDirty=false;
   onMount && onMount();
   if(!dlg.open){ dlg.showModal(); lockScroll(true); }
@@ -2603,7 +2613,7 @@ const sfld = (id,label,list,v,all,lab) => `<div class="f"><label for="${id}">${l
 const val = id => form.querySelector("#"+id)?.value ?? "";
 const cNum = x => { x=String(x||"").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[٬,\s%]/g,"").replace("٫","."); if(x==="") return ""; const n=parseFloat(x); return isFinite(n)?n:""; };
 const nval = id => { const x=val(id).trim(); return x===""?"":num(x); };
-const footBtns = (saveTxt, delId) => state.canWrite ? `<button class="btn primary" type="submit">${ico("check")}${saveTxt}</button><button class="btn ghost" type="button" data-cancel>إلغاء</button>${delId?`<span style="flex:1"></span><button class="btn danger" type="button" id="${delId}">حذف</button>`:""}` : "";
+const footBtns = (saveTxt, delId) => state.canWrite ? `<button class="btn primary" type="submit">${ico("check")}${saveTxt}</button><span style="flex:1"></span><button class="btn ghost" type="button" data-cancel>${ico("x")}إلغاء</button>${delId?`<button class="btn danger" type="button" id="${delId}">حذف</button>`:""}` : "";
 
 async function save(ref, data){
   try { await ref.set(data); return true; }
