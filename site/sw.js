@@ -1,5 +1,5 @@
 /* Service worker: يخلي البرنامج يفتح من غير إنترنت، ويجيب التحديثات لما النت يرجع */
-const VERSION = "f63b743dd491";
+const VERSION = "de9aed2c3189";
 const SHELL = "shell-" + VERSION;
 const RUNTIME = "runtime-v1";
 const CORE = ["./", "./index.html", "./supabase.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./favicon.png"];

@@ -1769,6 +1769,16 @@ dialog.cmd{background:color-mix(in srgb,var(--surface) 80%,transparent);-webkit-
 .vfade>*:nth-child(n+6){animation-delay:.24s}
 @keyframes viewIn3{from{opacity:0;transform:translateY(16px) scale(.99);filter:blur(4px)}to{opacity:1;transform:none;filter:none}}
 @media (prefers-reduced-motion:reduce){ .nav-ind{transition:none} .vfade>*{animation:none} }
+
+.sec.ms>h3{padding:0;border-bottom:0}
+.sec.ms:not(.closed)>h3{padding-bottom:10px;border-bottom:1px solid var(--line2)}
+.ms-tg{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:8px;cursor:pointer;color:inherit;font:inherit;border-radius:8px}
+.ms-tg:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.ms-tg .r{margin-inline-start:auto;max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-ch{width:16px;height:16px;flex:none;transform:rotate(180deg);transition:transform .25s ease;color:var(--muted)}
+.sec.ms:not(.closed) .ms-ch{transform:none}
+.sec.ms.closed #msBox{display:none}
+.sec.ms #msBox{animation:fadeUp .3s ease}
 </style>
 <style>
 [hidden]{display:none!important}
@@ -3295,13 +3305,16 @@ function projDialog(p){
   const cfg = state.cfg;
   const d = p ? clone(p) : {order:nextOrder(state.projects)};
   const vs = p ? state.invoices.filter(v=>v.projectId===p.id).sort((a,b)=>num(a.order)-num(b.order)) : [];
+  const msOpt = !!(p && vs.length && realId(p.contractNo));
+  const msSec = `<section class="sec ms closed" id="msSec"><h3><button type="button" class="ms-tg" id="msTg" aria-expanded="false" aria-controls="msBox">${ico("flag")}<span>مراحل المشروع${msOpt?` <small class="faint">(اختياري — المشروع ليه عقد ومستخلصات)</small>`:""}</span><span class="r faint small" id="msCount" style="font-weight:500"></span><svg class="i ms-ch" aria-hidden="true"><use href="#i-up"/></svg></button></h3><div id="msBox"></div></section>`;
   openDlg({ title: p?esc(p.shortName||p.name):"مشروع جديد", sub: p?`عقد <span class="code">${esc(p.contractNo)}</span> · ${esc(p.location||"")}`:"",
     body: `<fieldset class="bare" ${state.canWrite?"":"disabled"}>
-      ${p?`<section class="sec"><h3>${ico("flag")}مراحل المشروع <span class="r faint small" id="msCount" style="font-weight:500"></span></h3><div id="msBox"></div></section>`:`<p class="hint">مراحل المشروع (جواب الميزانية، المقايسة، اللجان، العقد…) هتظهر هنا بعد ما تحفظ المشروع.</p>`}
+      ${p&&!(vs.length&&realId(p.contractNo))?msSec:""}${p?"":`<p class="hint">مراحل المشروع (جواب الميزانية، المقايسة، اللجان، العقد…) هتظهر هنا بعد ما تحفظ المشروع.</p>`}
       ${p?`<section class="sec"><h3>${ico("list")}مستخلصات المشروع (${vs.length})${state.canWrite?`<span class="r"><button type="button" class="btn sm" id="jNewInv">${ico("plus")}مستخلص جديد</button></span>`:""}</h3>
         ${vs.length?`<div class="tscroll"><table class="dt"><thead><tr><th>المستخلص</th><th class="n">الإجمالي</th><th class="n">الصافي</th><th>التنفيذ</th><th>الصرف</th></tr></thead><tbody>${
           vs.map(v=>{const k=calc(v); return `<tr data-inv="${esc(v.id)}"><td><span class="cert ${k.work?"":"ret"}">${esc(certLabel(v))}</span></td><td class="n">${money(v.gross)}</td><td class="n"><b>${money(k.net)}</b></td><td style="min-width:120px">${progHtml(k.exec)}</td><td>${paidChip(v)}</td></tr>`;}).join("")}</tbody></table></div>`:`<p class="hint">لا توجد مستخلصات بعد.</p>`}
       </section>`:""}
+      ${p&&vs.length&&realId(p.contractNo)?msSec:""}
       ${p?(()=>{ const cs=coState(p); return `<section class="sec"><h3>${ico("money")}ضمانات ومستحقات ما بعد الختامي${cs?`<span class="r"><button type="button" class="btn sm" data-co="${esc(p.id)}">${ico("up")}فتح متابعة المستحقات</button></span>`:""}</h3>${coSummaryHtml(cs)}</section>`; })():""}
       <section class="sec lk"><h3>${ico("bld")}بيانات المشروع${p&&state.canWrite?`<span class="r"><button type="button" class="btn sm ghost" data-unlockall>${ico("pen")}تعديل الكل</button></span>`:""}</h3>
       <div class="fields">
@@ -3347,7 +3360,7 @@ function projDialog(p){
       if(p){ const box=form.querySelector("#msBox"); let editing=-1, doing=-1;
         const list = () => { const cs=state.cfg.projSteps||DEF_PROJ_STEPS, rec=d.milestones||[]; return uniq([...cs, ...rec.map(x=>x.name)]).map(n=>({name:n, rec:rec.find(x=>x.name===n), custom:!cs.includes(n)})); };
         const draw = () => { const L=list(), dn=L.filter(x=>x.rec).length, nextI=L.findIndex(x=>!x.rec);
-          form.querySelector("#msCount").textContent = `${dn} من ${L.length}`;
+          { const last=(d.milestones||[]).slice().sort((a,b)=>(a.date||"").localeCompare(b.date||"")).at(-1); form.querySelector("#msCount").textContent = dn ? `${dn} من ${L.length} · آخرها: ${last.name}` : `${dn} من ${L.length}`; }
           box.innerHTML = `<div class="pmbar"><i style="width:${L.length?Math.round(dn/L.length*100):0}%"></i></div><ol class="pms">${L.map((x,i)=>{ const r=x.rec;
             const act = !state.canWrite ? "" : r ? (editing===i ? `<span class="pm-a"><input type="date" class="cell pm-d" value="${esc(r.date||"")}" max="${today()}" aria-label="تاريخ ${esc(x.name)}"><button type="button" class="btn sm primary" data-msok="${i}">${ico("check")}حفظ</button><button type="button" class="btn sm ghost" data-msundo="${i}" title="إلغاء تسجيل المرحلة">${ico("x")}إلغاء التسجيل</button></span>` : `<span class="pm-a"><button type="button" class="ib pen" data-msedit="${i}" title="تعديل التاريخ" aria-label="تعديل تاريخ ${esc(x.name)}">${ico("pen")}</button></span>`)
               : (i===nextI||i===doing) ? `<span class="pm-a"><input type="date" class="cell pm-d" value="${today()}" max="${today()}" aria-label="تاريخ ${esc(x.name)}"><button type="button" class="btn sm primary" data-msdo="${i}">${ico("check")}تم</button></span>` : `<span class="pm-a"><button type="button" class="btn sm ghost" data-msopen="${i}">${ico("plus")}تسجيل</button></span>`;
@@ -3362,7 +3375,8 @@ function projDialog(p){
           const b4=e.target.closest("[data-msundo]"); if(b4){ const x=L[+b4.dataset.msundo]; confirmBtn(b4,"اضغط للتأكيد",()=>commit(ms.filter(m=>m.name!==x.name), `لغى تسجيل «${x.name}»`)); return; }
           const b5=e.target.closest("[data-msopen]"); if(b5){ doing=+b5.dataset.msopen; draw(); return; }
           if(e.target.closest("#msAdd")){ const n=box.querySelector("#msNew").value.trim(); if(!n) return; if(list().some(x=>x.name===n)){ toast("المرحلة دي موجودة"); return; } ms.push({name:n, date:today(), by:myId||"", at:new Date().toISOString()}); await commit(ms, `تم «${n}» بتاريخ ${dmy(today())}`); } });
-        draw(); }
+        draw();
+        const tg=form.querySelector("#msTg"); tg.onclick=()=>{ const sec=form.querySelector("#msSec"), open=sec.classList.toggle("closed")===false; tg.setAttribute("aria-expanded",String(open)); }; }
       form.querySelectorAll("tr[data-inv]").forEach(tr=>tr.onclick=()=>{ const v=state.invoices.find(x=>x.id===tr.dataset.inv); if(v) invDialog(v); });
       const del=form.querySelector("#jDel"); if(del) del.onclick=()=>{ if(vs.length){ toast(`المشروع عليه ${vs.length} مستخلص. احذفهم الأول.`); return; }
         confirmBtn(del,"اضغط مرة أخرى للتأكيد",async()=>{ try{await db.collection("projects").doc(p.id).delete(); dlg.close(); toast("تم حذف المشروع"); logAct(`حذف مشروع: ${p.shortName||p.name}`, "", "");}catch{toast("تعذر الحذف");} }); };
