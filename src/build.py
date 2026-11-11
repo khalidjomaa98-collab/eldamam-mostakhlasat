@@ -51,6 +51,48 @@ manifest = {
 }
 open(f"{out}/manifest.webmanifest", "w", encoding="utf-8").write(json.dumps(manifest, ensure_ascii=False, indent=1))
 
+
+splash = f'''<div class="splash" id="splash" aria-hidden="true">
+  <div class="sp-orb o1"></div><div class="sp-orb o2"></div><div class="sp-orb o3"></div>
+  <div class="sp-c">
+    <div class="sp-logo"><span class="sp-ring"></span><img src="{logo_uri}" alt=""></div>
+    <div class="sp-t">متابعة المستخلصات</div>
+    <div class="sp-s">شركة الدمام للمقاولات العامة</div>
+    <div class="sp-bar"><i></i></div>
+  </div>
+</div>
+<script>
+(function(){{
+  var t0=Date.now(), el=document.getElementById("splash"), done=false;
+  function hide(){{ if(done||!el) return; done=true; el.classList.add("out"); setTimeout(function(){{ el.remove(); }},700); }}
+  function ready(){{ var lg=document.getElementById("login"); if(lg && !lg.hidden) return true;
+    if(document.body.classList.contains("auth-out")) return false; var c=document.getElementById("cInv"); return !!(c && c.textContent && c.textContent!=="0"); }}
+  var iv=setInterval(function(){{ if(Date.now()-t0>1300 && ready()){{ clearInterval(iv); hide(); }} if(Date.now()-t0>9000){{ clearInterval(iv); hide(); }} }},80);
+}})();
+</script>'''
+splash_css = '''<style>
+.splash{position:fixed;inset:0;z-index:200;display:grid;place-items:center;overflow:hidden;background:radial-gradient(120% 90% at 70% 15%,#1c2a6e 0,#0b1550 50%,#060b2e 100%);transition:opacity .6s ease,visibility .6s ease,transform .6s ease}
+.splash.out{opacity:0;visibility:hidden;transform:scale(1.04)}
+.sp-orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;animation:spFloat 6s ease-in-out infinite alternate}
+.sp-orb.o1{width:46vmax;height:46vmax;background:#1f7a8c;top:-18vmax;left:-12vmax}
+.sp-orb.o2{width:38vmax;height:38vmax;background:#4b4fd8;bottom:-16vmax;right:-10vmax;animation-delay:-2s}
+.sp-orb.o3{width:24vmax;height:24vmax;background:#8a4fd0;top:40%;left:55%;opacity:.35;animation-delay:-4s}
+@keyframes spFloat{to{transform:translate(4vmax,3vmax) scale(1.08)}}
+.sp-c{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;padding:34px 46px;border-radius:28px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);box-shadow:0 30px 80px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.15);animation:spIn .9s cubic-bezier(.16,1,.3,1) both;color:#fff;font-family:"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif;text-align:center}
+@keyframes spIn{from{opacity:0;transform:translateY(18px) scale(.94)}}
+.sp-logo{position:relative;width:118px;height:118px;display:grid;place-items:center}
+.sp-logo img{height:84px;width:auto;filter:brightness(0) invert(1) drop-shadow(0 6px 18px rgba(91,182,201,.55));animation:spLogo 1.1s cubic-bezier(.34,1.56,.64,1) .15s both}
+@keyframes spLogo{from{opacity:0;transform:scale(.6) rotate(-8deg)}}
+.sp-ring{position:absolute;inset:0;border-radius:50%;border:2px solid transparent;border-top-color:#5bb6c9;border-inline-end-color:rgba(91,182,201,.35);animation:spSpin 1.1s linear infinite}
+@keyframes spSpin{to{transform:rotate(360deg)}}
+.sp-t{font-size:1.5rem;font-weight:700;letter-spacing:-.01em;margin-top:6px;animation:spIn .9s .25s cubic-bezier(.16,1,.3,1) both}
+.sp-s{font-size:.9rem;color:#b9c3e6;animation:spIn .9s .35s cubic-bezier(.16,1,.3,1) both}
+.sp-bar{width:180px;height:4px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:12px}
+.sp-bar i{display:block;height:100%;width:40%;border-radius:4px;background:linear-gradient(90deg,transparent,#5bb6c9,#fff,#5bb6c9,transparent);animation:spLoad 1.2s ease-in-out infinite}
+@keyframes spLoad{from{transform:translateX(260%)}to{transform:translateX(-160%)}}
+@media (prefers-reduced-motion:reduce){.sp-orb,.sp-ring,.sp-bar i{animation:none}}
+</style>'''
+
 i = app.index("</style>") + len("</style>")
 head_part, body_part = app[:i], app[i:]
 
@@ -118,12 +160,14 @@ html = f'''<!doctype html>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="favicon.png">
 <link rel="apple-touch-icon" href="icon-192.png">
+{splash_css}
 {head_part}
 {css}
 <script src="supabase.js"></script>
 <script>{shim}</script>
 </head>
 <body class="auth-out">
+{splash}
 {login}
 {body_part}
 </body>
