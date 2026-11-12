@@ -2016,6 +2016,11 @@ tr.ready,#insTable tr.ready{box-shadow:inset -3px 0 0 var(--ok)!important}
   #insTable td.ins-txt>*+*{margin-top:7px}
   #insTable td.ins-txt>.ist-f{display:flex}
 }
+
+/* حماية: الصفحة متعرضش أوسع من الشباك */
+.app{max-width:100vw}
+.main{min-width:0;max-width:100%;overflow-x:clip}
+.main>*{max-width:100%;min-width:0}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -4930,8 +4935,9 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !newMenu.hidden
 $("#btnNewProject").onclick=()=>{ closeNew(); projDialog(); };
 $("#btnNewIns").onclick=()=>{ closeNew(); insDialog(); };
 $("#btnNewInv").onclick=()=>{ closeNew(); invDialog(); }; $("#fab").onclick=()=>invDialog();
-function applySide(){ const auto = innerWidth>900 && innerWidth<1180; document.body.classList.toggle("side-mini", state.sideMini || auto); const mini=document.body.classList.contains("side-mini"); $("#sideTog").title = mini ? "توسيع القائمة" : "تصغير القائمة"; $("#sideTog").querySelector("span").textContent = mini ? "توسيع" : "تصغير"; }
-$("#sideTog").onclick=()=>{ state.sideMini=!document.body.classList.contains("side-mini"); try{localStorage.setItem("sideMini",state.sideMini?"1":"0")}catch{} applySide(); };
+/* التصغير التلقائي في المقاسات المتوسطة بيشتغل بس لو المستخدم ماختارش بنفسه — زرار التصغير/التوسيع بيكسب دايمًا */
+function applySide(){ const auto = innerWidth>900 && innerWidth<1180; let ch=null; try{ ch=localStorage.getItem("sideMini"); }catch{} const want = ch==="1" ? true : ch==="0" ? false : (state.sideMini || auto); document.body.classList.toggle("side-mini", want); const mini=document.body.classList.contains("side-mini"); $("#sideTog").title = mini ? "توسيع القائمة" : "تصغير القائمة"; $("#sideTog").querySelector("span").textContent = mini ? "توسيع" : "تصغير"; }
+$("#sideTog").onclick=()=>{ state.sideMini=!document.body.classList.contains("side-mini"); try{localStorage.setItem("sideMini",state.sideMini?"1":"0")}catch{} applySide(); setTimeout(navInd,260); };
 addEventListener("resize", applySide); $("#fab").onclick=()=>invDialog();
 $("#btnSettings").onclick=()=>settingsDialog(); $("#mSettings").onclick=()=>settingsDialog();
 $("#btnBackup").onclick=exportBackup;
