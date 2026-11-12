@@ -2041,6 +2041,13 @@ tr.ready,#insTable tr.ready{box-shadow:inset -3px 0 0 var(--ok)!important}
 #insTable tr.r:hover>td{background:color-mix(in srgb,var(--accent) 5%,transparent)!important}
 #insTable tr.r{box-shadow:none}
 #insTable tr.r+tr.r>td{border-top:1px solid var(--glass-line,var(--line2))}
+
+/* خلية الوضع: ترجع خلية جدول عادية (flex كان بيقصّر طولها ويبان تحتها مربع بلون مختلف) */
+@media (min-width:1241px){
+  #insTable td.ins-txt{display:table-cell!important}
+  #insTable td.ins-txt>*+*{margin-top:7px}
+  #insTable td.ins-txt>.ist-f{display:flex}
+}
 </style>
 <style>
 [hidden]{display:none!important}
