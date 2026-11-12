@@ -1983,6 +1983,32 @@ tr.ready{box-shadow:inset -4px 0 0 #1fa855}
 .aci-ch .was{color:var(--faint);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--bad) 55%,transparent)}
 .aci-ch .arr{color:var(--faint)}
 .aci-ch .now{color:var(--fg);font-weight:600}
+
+/* جاهز للدفع: علامة هادية من غير توهج */
+.rdy{animation:none!important;box-shadow:none!important;background:color-mix(in srgb,var(--ok) 12%,transparent)!important;color:var(--ok)!important;border:1px solid color-mix(in srgb,var(--ok) 35%,transparent);font-weight:600}
+tr.ready>td{background:transparent!important}
+tr.ready,#insTable tr.ready{box-shadow:inset -3px 0 0 var(--ok)!important}
+@media (min-width:821px) and (max-width:1240px){ #insTable tr.r.ready{background:transparent!important} }
+.rdy-f{border-color:var(--glass-line,var(--line));background:color-mix(in srgb,var(--surface) 65%,transparent);color:var(--fg);font-weight:600}
+.rdy-f b{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.rdy-f svg.i{color:var(--ok)}
+.rdy-f span{color:var(--muted)}
+.rdy-f.on{background:color-mix(in srgb,var(--ok) 12%,transparent);color:var(--fg);border-color:color-mix(in srgb,var(--ok) 45%,transparent)}
+.rdy-f.on b{background:var(--ok);color:#fff}
+.btn.sm.wa-send{background:var(--surface);color:var(--fg);border-color:var(--line);box-shadow:none}
+.btn.sm.wa-send svg.i{color:#1fa855}
+.rdy-chk{grid-column:1/-1}
+.isel input{accent-color:var(--accent)}
+
+/* صفحة التأمينات: ألوان أهدى */
+.ist-s{background:color-mix(in srgb,var(--surface) 75%,transparent)!important;border-color:var(--line)!important;font-weight:600}
+.ist-r{background:color-mix(in srgb,var(--sunk) 60%,transparent)!important;border-inline-start-color:var(--line)!important}
+.ist-r b{color:var(--muted)!important}
+#insTable .iamt{color:var(--fg)!important}
+#insTable tr.r.zb>td,#insTable tr.r>td{background:transparent!important}
+#insTable tr.r:hover>td{background:color-mix(in srgb,var(--accent) 5%,transparent)!important}
+#insTable tr.r{box-shadow:none}
+#insTable tr.r+tr.r>td{border-top:1px solid var(--glass-line,var(--line2))}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2365,8 +2391,9 @@ function mpRow(v){
   return {k, p, byContract, base, wage, wageOwn, prevPaid, expected, approved};
 }
 /* جاهز فعليًا للدفع */
-const mpReady = v => v.mpStatus!=="تم الاستخراج" && v.mpStatus!=="لا حاجة" && !v.mpPaidDate && num(v.mpEstimate)>0;
-const insReadyPay = r => { const st=r.status||""; return num(r.amountDue)>0 && /دفع/.test(st) && !/تم الدفع/.test(st) && !insDone(r); };
+/* «جاهز فعليًا للدفع» بيتعلّم بإيد المستخدم (المبلغ لوحده ممكن يكون تقدير) */
+const mpReady = v => v.mpPayReady===true && !v.mpPaidDate && v.mpStatus!=="تم الاستخراج";
+const insReadyPay = r => r.payReady===true && !insDone(r) && !/تم الدفع/.test(r.status||"");
 const readyChip = t => `<span class="rdy">${ico("money")}${t||"جاهز للدفع"}</span>`;
 const insBad = k => k.insLabel==="لم يتم استخراج الشهادة" || k.insLabel==="لم يُحدَّث";
 const chip = (cls, icon, t) => `<span class="chip ${cls}">${icon?ico(icon):""}${t}</span>`;
@@ -2415,7 +2442,7 @@ function diffList(o, n, spec){
 }
 const INV_SPEC=[["projectId","العقد","proj"],["certNo","رقم المستخلص"],["type","النوع"],["gross","القيمة الإجمالية","money"],["date","تاريخ المستخلص","date"],["stage","المكان"],["stageDate","تاريخ دخول المكان","date"],["mpStatus","القوة العاملة"],["mpEstimate","تقدير القوة العاملة","money"],["insStatus","التأمينات","ins"],["insPaid","مبلغ التأمينات المدفوع","money"],["insRaise","مبلغ التعلية","money"],["readyPay","جاهز للصرف","ready"],["readyPayDate","تاريخ الجاهزية","date"],["paid","الصرف","paid"],["paidDate","تاريخ الصرف","date"],["bankExpected","المتوقع للبنك","money"],["notes","ملاحظات الكشف"],["company","الشركة"],["showSat","في كشف المتابعة","bool"],["showMp","في كشف القوة العاملة","bool"]];
 const PROJ_SPEC=[["contractNo","رقم العقد"],["name","اسم المشروع"],["shortName","الاسم المختصر"],["location","الموقع"],["dept","جهة الإسناد"],["company","الشركة"],["unifiedCode","الكود الموحد"],["contractDate","تاريخ العقد","date"],["boqNo","رقم المقايسة"],["total","قيمة العقد","money"],["reduced","تم تخفيض العقد","bool"],["totalReduced","القيمة بعد التخفيض","money"],["reducedDate","تاريخ إخطار الخفض","date"],["insFileNo","رقم ملف التأمينات (CS)"],["insFileDate","تاريخ فتح ملف التأمينات","date"],["wageRatio","نسبة الأجور","pct"],["notes","ملاحظات"]];
-const INS_SPEC=[["fileNo","رقم الملف"],["status","الحالة"],["statusText","الوضع الحالي"],["amountDue","المطلوب دفعه","money"],["required","المطلوب"],["owner","المسؤول"],["nextDate","موعد المتابعة","date"]];
+const INS_SPEC=[["fileNo","رقم الملف"],["status","الحالة"],["statusText","الوضع الحالي"],["amountDue","المطلوب دفعه","money"],["required","المطلوب"],["owner","المسؤول"],["nextDate","موعد المتابعة","date"],["payReady","جاهز فعليًا للدفع","bool"]];
 const newLogs = (o,n) => (n||[]).slice((o||[]).length).map(x=>`متابعة جديدة: ${DFMT.txt(x.text)}`);
 async function logAct(text, inv, projId){
   if(!db || !state.canWrite) return;
@@ -2946,7 +2973,7 @@ function renderMp(){
   const mpAll = state.invoices.filter(v=>v.showMp).sort((a,b)=>num(a.order)-num(b.order));
   const nReady = mpAll.filter(mpReady).length, readyAmt = mpAll.filter(mpReady).reduce((a,v)=>a+mpRow(v).approved,0);
   const mpList = state.mpReadyOnly ? mpAll.filter(mpReady) : mpAll;
-  $("#mpReadyBar").innerHTML = `<button type="button" class="rdy-f ${state.mpReadyOnly?"on":""}" data-mpready aria-pressed="${!!state.mpReadyOnly}">${ico("money")}جاهز فعليًا للدفع <b class="num">${nReady}</b>${nReady?`<span class="num">${fmt(readyAmt)} ${esc(state.cfg.currency||"ج.م")}</span>`:""}</button>${nReady&&state.canWrite?`<button type="button" class="btn sm" data-mpselready>${ico("check")}تحديد الجاهز</button>`:""}<span class="faint small">حدّد وابعت من زرار «واتساب» في الشريط اللي تحت</span>`;
+  $("#mpReadyBar").innerHTML = `<button type="button" class="rdy-f ${state.mpReadyOnly?"on":""}" data-mpready aria-pressed="${!!state.mpReadyOnly}">${ico("money")}جاهز فعليًا للدفع <b class="num">${nReady}</b>${nReady?`<span class="num">${fmt(readyAmt)} ${esc(state.cfg.currency||"ج.م")}</span>`:""}</button>${nReady&&state.canWrite?`<button type="button" class="btn sm" data-mpselready>${ico("check")}تحديد الجاهز</button>`:""}<span class="faint small">${nReady?"حدّد وابعت من زرار «واتساب» في الشريط اللي تحت":"علّم «جاهز فعليًا للدفع» من نافذة القوة العاملة لما المبلغ يبقى نهائي"}</span>`;
   const rows = mpList.map(mpRow);
   const tot = rows.reduce((s,r)=>s+r.approved,0);
   const def = rows.filter(r=>!r.wageOwn).length;
@@ -3692,6 +3719,7 @@ function mpDialog(v0){
       <section class="sec"><h3>${ico("shield")}الشهادة والسداد</h3><div class="fields">
         <div class="f"><label for="mStatus">شهادة القوة العاملة</label><select id="mStatus">${opts(["تم الاستخراج","لم يتم الاستخراج","لا حاجة"], v0?.mpStatus||"لم يتم الاستخراج", "لم يُحدَّث")}</select></div>
         ${fld("mEst","تقدير مكتب القوة العاملة (فعلي)",v0?.mpEstimate??"","number")}
+        <label class="chk rdy-chk"><input type="checkbox" id="mPayReady" ${v0?.mpPayReady?"checked":""}> جاهز فعليًا للدفع <small class="faint">(المبلغ نهائي ومطلوب سداده دلوقتي)</small></label>
         ${fld("mPaid","تاريخ سداد المبلغ",v0?.mpPaidDate||"","date")}
         <div class="f wide"><label for="mNote">ملاحظات القوة العاملة</label><textarea id="mNote" placeholder="مثال: الملف عند المكتب ومنتظر التقدير">${esc(v0?.mpNote||"")}</textarea></div>
       </div></section>
@@ -3716,7 +3744,7 @@ function mpDialog(v0){
       const v = state.invoices.find(x=>x.id===vid);
       if(!v){ toast(val("mContract").trim()?"اختر المستخلص":"اكتب رقم العقد واختر المستخلص"); return; }
       const paidD=val("mPaid"); if(paidD && paidD>today()){ toast("تاريخ السداد في المستقبل"); return; }
-      const data={...stripId(v), showMp:true, mpStatus:val("mStatus"), mpEstimate:nval("mEst"), mpPaidDate:paidD, mpNote:val("mNote").trim(), updatedAt:new Date().toISOString(), updatedBy:myId||""};
+      const data={...stripId(v), showMp:true, mpStatus:val("mStatus"), mpEstimate:nval("mEst"), mpPayReady:form.querySelector("#mPayReady").checked, mpPaidDate:paidD, mpNote:val("mNote").trim(), updatedAt:new Date().toISOString(), updatedBy:myId||""};
       if(await save(db.collection("invoices").doc(v.id), data)){ dlg.close(); toast(v0?"تم الحفظ":"تم ربط المستخلص بالقوة العاملة");
         logAct(`${v0?"عدّل القوة العاملة لـ":"ربط بالقوة العاملة:"} ${certLabel(v)} · ${pName(proj(v.projectId),true)}${data.mpStatus?` — ${data.mpStatus}`:""}`, v.id, v.projectId); }
     }
@@ -4280,7 +4308,7 @@ function renderIns(){
   $("#insChips").innerHTML = chip("","كل الملفات",all.length) + sts.map(st=>chip(st,st,all.filter(([r])=>r.status===st).length,insTone(st))).join("") + (noSt?chip("__none","بدون حالة",noSt,"mute"):"") + (doneC||f.status==="__done"?chip("__done","الشهادات المستخرجة",doneC,"ok"):"");
   const rowsAll = insFiltered(), rows = state.insReadyOnly ? rowsAll.filter(([r])=>insReadyPay(r)) : rowsAll;
   { const rd=state.ins.filter(insReadyPay), amt=rd.reduce((a,r)=>a+num(r.amountDue),0); [...state.isel].forEach(id=>{ if(!state.ins.some(r=>r.id===id)) state.isel.delete(id); });
-    $("#insReadyBar").innerHTML = `<button type="button" class="rdy-f ${state.insReadyOnly?"on":""}" data-insready aria-pressed="${state.insReadyOnly}">${ico("money")}جاهز فعليًا للدفع <b class="num">${rd.length}</b>${rd.length?`<span class="num">${fmt(amt)} ${esc(state.cfg.currency||"ج.م")}</span>`:""}</button>${rd.length?`<button type="button" class="btn sm" data-inselready>${ico("check")}تحديد الجاهز</button>`:""}${state.isel.size?`<button type="button" class="btn sm wa-send" data-inswa>${ico("wa")}واتساب (${state.isel.size})</button><button type="button" class="btn sm ghost" data-inselclr>${ico("x")}إلغاء التحديد</button>`:`<span class="faint small">حدّد الملفات من المربع اللي جنب اسم المشروع</span>`}`; }
+    $("#insReadyBar").innerHTML = `<button type="button" class="rdy-f ${state.insReadyOnly?"on":""}" data-insready aria-pressed="${state.insReadyOnly}">${ico("money")}جاهز فعليًا للدفع <b class="num">${rd.length}</b>${rd.length?`<span class="num">${fmt(amt)} ${esc(state.cfg.currency||"ج.م")}</span>`:""}</button>${rd.length?`<button type="button" class="btn sm" data-inselready>${ico("check")}تحديد الجاهز</button>`:""}${state.isel.size?`<button type="button" class="btn sm wa-send" data-inswa>${ico("wa")}واتساب (${state.isel.size})</button><button type="button" class="btn sm ghost" data-inselclr>${ico("x")}إلغاء التحديد</button>`:`<span class="faint small">${rd.length?"حدّد الملفات من المربع اللي جنب اسم المشروع":"علّم «جاهز فعليًا للدفع» من جوه ملف التأمينات لما المبلغ يبقى نهائي"}</span>`}`; }
   $("#insCount").textContent = `${rows.length} ملف`;
   if(!rows.length){
     $("#insTable").innerHTML = `<tbody><tr><td><div class="empty">${ico("shield")}<div>${state.ins.length?"لا توجد ملفات بالفلاتر الحالية.":"لا توجد ملفات تأمينات بعد. اضغط «ملف تأمينات» أو اختر مشروعًا من القائمة أدناه."}</div></div></td></tr></tbody>`;
@@ -4327,6 +4355,7 @@ function insDialog(r, preId){
         <div class="f"><label for="nFile">رقم ملف التأمينات (CS) <small class="faint">واحد للمشروع</small></label><input id="nFile" value="${esc(d.fileNo||"")}" autocomplete="off" placeholder="بيتسجل مرة واحدة على المشروع"><small class="hint" id="nFileHint" hidden>ملف التأمينات مفتوح على المشروع. لتعديل الرقم افتح بيانات المشروع.</small></div>
         <div class="f"><label for="nStatus">الحالة</label><select id="nStatus">${opts(uniq([...(cfg.insStatuses||[]), d.status]), d.status, "اختر الحالة")}</select></div>
         ${fld("nDue","المبلغ المطلوب دفعه",d.amountDue,"number")}
+        <label class="chk rdy-chk"><input type="checkbox" id="nPayReady" ${d.payReady?"checked":""}> جاهز فعليًا للدفع <small class="faint">(المبلغ نهائي ومطلوب دفعه دلوقتي)</small></label>
         <div class="f"><label for="nOwnerF">مسؤول المتابعة</label><input id="nOwnerF" list="dlOwners" value="${esc(d.owner||"")}" placeholder="مثال: أ / فلان"><datalist id="dlOwners">${uniq(state.ins.map(x=>x.owner)).map(x=>`<option value="${esc(x)}">`).join("")}</datalist></div>
         ${fld("nNext","موعد المتابعة التالية",d.nextDate,"date")}
         <div class="f wide"><label for="nStatusText">الوضع الحالي</label><textarea id="nStatusText" placeholder="اكتب الوضع الحالي للملف بالتفصيل">${esc(d.statusText||"")}</textarea></div>
@@ -4369,7 +4398,7 @@ function insDialog(r, preId){
       const rid = val("nRaiseSel"); if(rid && state.ins.some(x=>x.raiseInvoiceId===rid && x.id!==r?.id)){ toast("مستخلص رد التعلية ده مربوط بملف تاني"); return; }
       if(other){ toast("المستخلص ده له ملف تأمينات بالفعل"); return; }
       const pending = val("nNote").trim(); if(pending) d.log.push({date:today(), by:myId||"", text:pending});
-      const data = {...stripId(d), projectId:p.id, invoiceId:invId, fileNo:val("nFile").trim(), status:val("nStatus"), amountDue:nval("nDue"), owner:val("nOwnerF").trim(), nextDate:val("nNext"), raiseInvoiceId:val("nRaiseSel"), calcBase:cNum(val("cBase")), calcTax:cNum(val("cTax")), calcWage:cNum(val("cWage")),
+      const data = {...stripId(d), projectId:p.id, invoiceId:invId, fileNo:val("nFile").trim(), status:val("nStatus"), amountDue:nval("nDue"), payReady:form.querySelector("#nPayReady").checked, owner:val("nOwnerF").trim(), nextDate:val("nNext"), raiseInvoiceId:val("nRaiseSel"), calcBase:cNum(val("cBase")), calcTax:cNum(val("cTax")), calcWage:cNum(val("cWage")),
         statusText:val("nStatusText").trim(), required:val("nReq").trim(),
         requests:d.requests.filter(x=>(x.no||"").trim()||(x.subject||"").trim()).map(x=>({no:(x.no||"").trim(), date:x.date||"", subject:(x.subject||"").trim()})),
         updatedAt:new Date().toISOString(), updatedBy:myId||""};
