@@ -1926,6 +1926,26 @@ table.satt:not(#_) tr.r td.amtc .amtv{font-size:1.18rem}
 /* النافذة على قد محتواها (inset:0 كان بيمطّها لأقصى طول) */
 dialog.drawer{height:fit-content}
 @media (max-width:700px){ dialog.drawer{height:100dvh} }
+
+/* الشاشات المتوسطة (شباك متصغّر / لابتوب صغير): عمود المشروع ياخد مساحته */
+@media (min-width:821px) and (max-width:1320px){
+  .satt col.c-st{width:168px} .satt col.c-stg{width:128px} .satt col.c-amt{width:160px} .satt col.c-dy{width:62px} .satt col.c-idx{width:34px}
+  .istp{min-width:0;max-width:none}
+  .istp .isp small{display:none}
+  .istp .isp.cur small{display:block;position:absolute;top:28px;white-space:nowrap;font-size:.62rem;max-width:none;overflow:visible;text-overflow:clip;z-index:2}
+  .istp .isp{padding-bottom:16px}
+  .istp .isp i{width:22px;height:22px}
+  #satList .rt.satt tr.r td{padding:10px 6px}
+  #satList .rt.satt td.pj .pname{white-space:normal}
+  .rt.satt td.stc .stgl{white-space:normal;line-height:1.35;display:inline-block;max-width:100%}
+  #invTable.satt td.stc,.rt.satt td.stc{overflow:hidden}
+  #invTable.satt col.c-st{width:168px} #invTable.satt col.c-stg{width:128px} #invTable.satt col.c-amt{width:160px}
+  .amtv{font-size:1.02rem!important}
+}
+@media (min-width:821px) and (max-width:1060px){
+  .satt col.c-stg{width:110px} .satt col.c-amt{width:145px} .satt col.c-st{width:150px}
+  #satList .rt.satt td.stc .since{display:none}
+}
 </style>
 <style>
 [hidden]{display:none!important}
