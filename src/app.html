@@ -2934,7 +2934,7 @@ function rowHtml(v,k,o){
   const amt = `${o.proj?`<span class="certp ${k.work?"":"ret"}">${esc(certLabel(v))}</span>`:""}<b class="num amtv">${fmt(k.net)}</b>
       ${k.exec!=null?`<div class="pg"><span class="pgb"><i style="width:${Math.min(100,k.exec*100)}%"></i></span><span class="num">${pctTxt(k.exec)}</span></div>`:""}
       ${o.extra&&k.work&&Math.abs(num(v.gross)-num(k.net))>0.5?`<div class="amx">الإجمالي التراكمي <span class="num">${fmt(v.gross)}</span></div>`:""}${k.mat?`<div class="amx">بعد الخامات <span class="num">${fmt(k.afterMat)}</span></div>`:""}${has(v.bankExpected)?`<div class="amx">المتوقع للبنك <span class="num">${fmt(v.bankExpected)}</span></div>`:""}`;
-  const note = (isRaiseRef(v)&&v.paid!=="نعم"?`<div class="rbl ${raiseReady(v)?"ok":""}">${ico(raiseReady(v)?"check":"clock")}<span>${esc(raiseTxt(v))}</span></div>`:"") + ((v.log||[]).length?(()=>{ const l=v.log.at(-1); return `<div class="nt2 flw" title="آخر متابعة — ${esc(who(l.by))}: ${esc(l.text)}">${ico("clock")}<span><span class="dte">${dmy(l.date)}</span> · ${esc(l.text)}</span></div>`; })():"") + (v.notes?`<div class="nt2" title="${esc(v.notes)}">${ico("msg")}<span>${esc(v.notes)}</span></div>`:"");
+  const note = (isRaiseRef(v)&&v.paid!=="نعم"?`<div class="rbl ${raiseReady(v)?"ok":""}">${ico(raiseReady(v)?"check":"clock")}<span>${esc(raiseTxt(v))}</span></div>`:"") + ((v.log||[]).length?(()=>{ const l=v.log.at(-1); return `<div class="nt2 flw" title="آخر متابعة — ${esc(who(l.by))}: ${esc(l.text)}">${ico("clock")}<span><span class="dte">${dmy(l.date)}</span> · ${esc(l.text)}</span></div>`; })():"") + (v.notes && v.notes.trim()!==((v.log||[]).at(-1)?.text||"").trim()?`<div class="nt2" title="${esc(v.notes)}">${ico("msg")}<span>${esc(v.notes)}</span></div>`:"");
   const first = o.proj
     ? `<td class="pj"><button type="button" class="pname" data-inv="${esc(v.id)}" title="${esc(p.name||"")}">${esc(pName(p,o.short))}</button>
       <div class="pjm">${esc(p.location||"—")} · ${coTag(k.company)}</div>${idChips(p)}${note}</td>`
@@ -3350,7 +3350,7 @@ function invDialog(v, projectId){
         <div class="fields">
           <label class="chk"><input type="checkbox" id="vSat" ${d.showSat?"checked":""}> عرض في كشف المتابعة</label>
           <label class="chk"><input type="checkbox" id="vShowMp" ${d.showMp?"checked":""}> عرض في كشف القوة العاملة</label>
-          <div class="f wide"><label for="vNotes">ملاحظات الكشف</label><textarea id="vNotes" placeholder="مثال: متوقف على نقل الخامات">${esc(d.notes||"")}</textarea></div>
+          <div class="f wide"><label for="vNotes">ملاحظات الكشف</label><textarea id="vNotes" placeholder="مثال: متوقف على نقل الخامات — وأي متابعة جديدة بتتكتب هنا لوحدها">${esc(d.notes||"")}</textarea></div>
           ${sfld("vCompany","الشركة (لو مختلفة عن شركة المشروع)",uniq([...(cfg.companies||[]),...state.projects.map(p=>p.company)]),d.company,"نفس شركة المشروع")}
         </div>
       </section>
@@ -3366,7 +3366,7 @@ function invDialog(v, projectId){
       if(ro) return;
       const p = state.projects.find(x=>x.contractNo.trim()===val("vContract").trim());
       if(!p){ toast("رقم العقد غير موجود في المشاريع. أضف المشروع أولًا."); form._showTab?.("data"); form.querySelector("#vContract").focus(); return; }
-      { const pn=val("vNote").trim(); if(pn) d.log.push({date:today(), by:myId||"", text:pn}); }
+      { const pn=val("vNote").trim(); if(pn){ d.log.push({date:today(), by:myId||"", text:pn}); form.querySelector("#vNotes").value=pn; } }
       const data = {...stripId(d)}; delete data._draft;
       Object.assign(data, {projectId:p.id, certNo:val("vCert").trim(), type:val("vType")||"مستخلص أعمال", gross:nval("vGross"), date:val("vDate"),
         bankExpected:nval("vBank"), paid:val("vPaid"), paidDate:val("vPaidDate"), insStatus:val("vIns"), insPaid:nval("vInsPaid"), insRaise: val("vIns")==="تعلية" ? nval("vRaise") : (d.insRaise??""), insRaiseDate: val("vIns")==="تعلية" ? (val("vRaiseDate")||today()) : (d.insRaiseDate||""),
@@ -3390,7 +3390,9 @@ function invDialog(v, projectId){
         logAct(v ? `عدّل ${lab}${ch.length?" — "+ch.join(" | "):""}` : `سجّل مستخلص جديد: ${lab} — القيمة: ${fmt(data.gross)} | النوع: ${data.type}${data.stage?` | المكان: ${data.stage}`:""}`, ref.id, p.id); }
     },
     onMount: () => {
-      form.querySelector("#vAddNote").onclick=()=>{ const t=val("vNote").trim(); if(!t) return; d.log.push({date:today(), by:myId||"", text:t}); form.querySelector("#vNote").value=""; form.querySelector("#vLogBox").innerHTML=vLogHtml(); toast("أُضيفت المتابعة. اضغط «حفظ المستخلص» لتسجيلها"); };
+      form.querySelector("#vAddNote").onclick=()=>{ const t=val("vNote").trim(); if(!t) return; d.log.push({date:today(), by:myId||"", text:t}); form.querySelector("#vNote").value="";
+        // آخر متابعة تتنقل لـ«ملاحظات الكشف» كمان (الاتنين نفس المعنى)
+        { const nt=form.querySelector("#vNotes"); if(nt){ nt.value=t; nt.dispatchEvent(new Event("input",{bubbles:true})); } } form.querySelector("#vLogBox").innerHTML=vLogHtml(); toast("أُضيفت المتابعة واتكتبت في ملاحظات الكشف. اضغط «حفظ المستخلص» لتسجيلها"); };
       const refresh = () => {
         const p = state.projects.find(x=>x.contractNo.trim()===val("vContract").trim());
         d.projectId = p?.id || ""; d.type = val("vType"); d.gross = nval("vGross");
