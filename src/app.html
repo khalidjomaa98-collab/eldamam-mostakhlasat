@@ -3284,6 +3284,9 @@ function invDialog(v, projectId){
   const d = v ? clone(v) : {order:nextOrder(state.invoices), projectId:projectId||"", certNo:"", type:"مستخلص أعمال", gross:"", date:today(), paid:"لا", paidDate:"", bankExpected:"",
     insStatus:"لا", insPaid:"", mpStatus:"", mpEstimate:"", showSat:true, showMp:false, notes:"", stage:"", stageDate:"", stageLog:[], materials:[], company:""};
   d._draft = true; d.id = v?.id || "__new";
+  // تاريخ محفوظ بشكل غلط (زي «-» من الاستيراد) يتعامل كأنه فاضي، عشان الحفظ ميطلبش سبب تعديل على خانة فاضية
+  const vDate0 = /^\d{4}-\d{2}-\d{2}/.test(v?.date||"") ? v.date : "";
+  if(v && !vDate0) d.date = "";
   d.materials ||= []; d.stageLog ||= []; d.log ||= [];
   const vLogHtml = () => d.log.length ? `<div class="feed">${d.log.slice().reverse().map(x=>{ const n=who(x.by); return `<div class="feed-i"><span class="dot">${esc(initials(n))}</span><div><b>${esc(n)}</b><div class="txt pre">${esc(x.text)}</div></div><span class="when dte">${dmy(x.date)}</span></div>`; }).join("")}</div>` : `<p class="hint">لا توجد متابعات مسجلة على المستخلص ده.</p>`;
   if(!v && projectId){ const n = state.invoices.filter(x=>x.projectId===projectId && isWork(x.type)).length; d.certNo = `جاري ${n+1}`; }
@@ -3370,8 +3373,8 @@ function invDialog(v, projectId){
         mpStatus:val("vMp"), mpEstimate:nval("vMpEst"), readyPay:val("vReady"), readyPayDate: val("vReady")==="نعم" ? (val("vReadyDate")||today()) : "", stage:val("vStage"), stageDate:val("vStageDate"), notes:val("vNotes"), company:val("vCompany"),
         showSat:form.querySelector("#vSat").checked, showMp:form.querySelector("#vShowMp").checked, updatedAt:new Date().toISOString()});
       if(!data.certNo && isWork(data.type)){ toast("اكتب رقم المستخلص"); form._showTab?.("data"); form.querySelector("#vCert").focus(); return; }
-      if(v && v.date && data.date!==v.date && isFinalInv(v)){ const rsn=val("vDateRsn").trim(); if(!rsn){ toast("اكتب سبب تعديل تاريخ المستخلص الختامي"); form._showTab?.("data"); form.querySelector("#vDateRsn").focus(); return; }
-        data.dateLog=[...(v.dateLog||[]), {from:v.date, to:data.date, reason:rsn, by:myId||"", at:new Date().toISOString()}]; }
+      if(v && vDate0 && data.date!==vDate0 && isFinalInv(v)){ const rsn=val("vDateRsn").trim(); if(!rsn){ toast("اكتب سبب تعديل تاريخ المستخلص الختامي"); form._showTab?.("data"); form.querySelector("#vDateRsnF").hidden=false; form.querySelector("#vDateRsn").focus(); return; }
+        data.dateLog=[...(v.dateLog||[]), {from:vDate0, to:data.date, reason:rsn, by:myId||"", at:new Date().toISOString()}]; }
       if(data.paid==="نعم" && !data.paidDate) data.paidDate = today();
       if(data.mpStatus==="تم الاستخراج" && (v?.mpStatus!=="تم الاستخراج" || !d.mpDate)) data.mpDate = v?.mpStatus==="تم الاستخراج" ? (d.mpDate||"") : today(); else if(data.mpStatus!=="تم الاستخراج") data.mpDate="";
       if(data.insStatus==="نعم" && v?.insStatus!=="نعم") data.insDate = today(); else if(data.insStatus!=="نعم") data.insDate="";
@@ -3408,7 +3411,7 @@ function invDialog(v, projectId){
         form.querySelectorAll("#addMat,[data-quickmat]").forEach(b=>b.disabled = !k.work);
       };
       ["vContract","vType","vGross","vStageDate","vPaid"].forEach(id=>form.querySelector("#"+id).addEventListener("input",refresh));
-      if(v && v.date && isFinalInv(v)){ const sh=()=>{ form.querySelector("#vDateRsnF").hidden = val("vDate")===v.date; }; form.querySelector("#vDate").addEventListener("input",sh); form.querySelector("#vDate").addEventListener("change",sh); }
+      if(v && vDate0 && isFinalInv(v)){ const sh=()=>{ form.querySelector("#vDateRsnF").hidden = val("vDate")===vDate0; }; form.querySelector("#vDate").addEventListener("input",sh); form.querySelector("#vDate").addEventListener("change",sh); }
       form.querySelector("#vStage").addEventListener("change", e => { if(e.target.value!==origStage) form.querySelector("#vStageDate").value = today(); refresh(); });
       form.querySelector("#vIns").addEventListener("change", e => { const on=e.target.value==="تعلية"; form.querySelectorAll(".raisef").forEach(x=>x.hidden=!on); if(on && !val("vRaiseDate")) form.querySelector("#vRaiseDate").value=today(); });
       form.querySelector("#vPaid").addEventListener("change", e => { if(e.target.value==="نعم" && !val("vPaidDate")) form.querySelector("#vPaidDate").value=today(); });
