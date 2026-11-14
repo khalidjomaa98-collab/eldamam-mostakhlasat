@@ -43,7 +43,7 @@
       button { cursor:pointer; border:0; width:100%; padding:15px; border-radius:11px; color:#fff; background:linear-gradient(110deg, #08263d, #114766); font:700 13px Alexandria, sans-serif; box-shadow:0 12px 22px rgba(8,38,61,.18); transition:transform .2s, box-shadow .2s; }
       button:hover { transform:translateY(-2px); box-shadow:0 15px 28px rgba(8,38,61,.24); } button:active { transform:translateY(0); }
       .security { display:flex; justify-content:center; gap:8px; margin-top:23px; color:#7e919b; font-size:10px; }.lock { color:#b28c20; }
-      .message { min-height:18px; margin-top:14px; text-align:center; font-size:11px; color:#a32626; }
+      .message.info { color:#4f6672; } button:disabled { opacity:.7; cursor:wait; transform:none; } .message { min-height:18px; margin-top:14px; text-align:center; font-size:11px; color:#a32626; }
       @keyframes float { 0%,100%{transform:translateY(0) rotate(-.5deg)} 50%{transform:translateY(-14px) rotate(.5deg)} }
       @keyframes sweep { 0%,28%{transform:translate(-85%,0) rotate(-18deg);opacity:0} 43%{opacity:1} 63%,100%{transform:translate(86%,0) rotate(-18deg);opacity:0} }
       @keyframes spin { to{transform:rotate(360deg)} } @keyframes drift { to{transform:rotate(360deg)} }
@@ -68,17 +68,14 @@
           <h2>مرحباً بعودتك</h2><p class="intro">سجّل الدخول للوصول إلى لوحة المتابعة الخاصة بك.</p>
           <div class="field"><label for="user">اسم المستخدم أو البريد الإلكتروني</label><input id="user" name="user" type="text" autocomplete="username" placeholder="أدخل اسم المستخدم" required /><span class="icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span></div>
           <div class="field"><label for="password">كلمة المرور</label><input id="password" name="password" type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور" required /><span class="icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span></div>
-          <div class="row"><label class="remember"><input type="checkbox" /> تذكرني</label><a href="#">هل نسيت كلمة المرور؟</a></div>
+          <div class="row"><label class="remember"><input type="checkbox" id="remember" /> تذكرني</label><a href="#" id="forgot">هل نسيت كلمة المرور؟</a></div>
           <button type="submit">تسجيل الدخول ←</button><div class="message" id="message" role="status"></div>
-          <div class="security">نسخة تجريبية — نظام المستخدمين لم يُربط بعد</div>
+          <div class="security">الحسابات يُنشئها مدير المنظومة</div>
         </form>
       </section>
     </main>
-    <script>
-      document.getElementById('login-form').addEventListener('submit', (event) => {
-        event.preventDefault();
-        window.location.href = 'dashboard.html';
-      });
-    </script>
+    <script src="assets/supabase.js"></script>
+    <script src="assets/auth.js"></script>
+    <script>monazoma.initLogin();</script>
   </body>
 </html>
