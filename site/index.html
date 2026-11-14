@@ -1927,6 +1927,9 @@ table.satt:not(#_) tr.r td.amtc .amtv{font-size:1.18rem}
 dialog.drawer{height:fit-content}
 @media (max-width:700px){ dialog.drawer{height:100dvh} }
 
+
+/* أسماء المراحل الطويلة («تمت التسوية») تنزل سطرين بدل ما تتقص */
+.isp small{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.2;text-align:center}
 /* الشاشات المتوسطة (شباك متصغّر / لابتوب صغير): عمود المشروع ياخد مساحته */
 @media (min-width:821px) and (max-width:1320px){
   .satt col.c-st{width:168px} .satt col.c-stg{width:128px} .satt col.c-amt{width:160px} .satt col.c-dy{width:62px} .satt col.c-idx{width:34px}
@@ -2834,7 +2837,7 @@ function ago(iso){
 /* سجل الحركات: «الخانة: القيمة القديمة ← الجديدة» لكل خانة اتغيرت، مفصولين بـ « | » */
 const DFMT = { money:x=>has(x)?fmt(x):"—", date:x=>x?dmy(x):"—", bool:x=>x?"نعم":"لا", pct:x=>has(x)?pctTxt(num(x)):"—",
   paid:x=>x==="نعم"?"تم الصرف":x==="لا"?"لم يُصرف":"لم يُحدَّث", ins:x=>x==="نعم"?"تم استخراجها":x==="لا"?"لم تُستخرج":x==="تعلية"?"تعلية":x||"لم يُحدَّث",
-  ready:x=>x==="نعم"?"جاهز للصرف":"مش جاهز", proj:x=>{ const p=proj(x); return p?pName(p,true):"—"; },
+  ready:x=>x==="نعم"?"تمت التسوية":"لسه متسوّاش", proj:x=>{ const p=proj(x); return p?pName(p,true):"—"; },
   txt:x=>{ const t=String(x??"").replace(/\s+/g," ").trim(); return t ? (t.length>70?t.slice(0,70)+"…":t) : "—"; } };
 function diffList(o, n, spec){
   const out=[], S=JSON.stringify;
@@ -2843,7 +2846,7 @@ function diffList(o, n, spec){
     out.push(`${label}: ${DFMT[f](a)} ← ${DFMT[f](b)}`); }
   return out;
 }
-const INV_SPEC=[["projectId","العقد","proj"],["certNo","رقم المستخلص"],["type","النوع"],["gross","القيمة الإجمالية","money"],["date","تاريخ المستخلص","date"],["stage","المكان"],["stageDate","تاريخ دخول المكان","date"],["mpStatus","القوة العاملة"],["mpEstimate","تقدير القوة العاملة","money"],["insStatus","التأمينات","ins"],["insPaid","مبلغ التأمينات المدفوع","money"],["insRaise","مبلغ التعلية","money"],["readyPay","جاهز للصرف","ready"],["readyPayDate","تاريخ الجاهزية","date"],["paid","الصرف","paid"],["paidDate","تاريخ الصرف","date"],["bankExpected","المتوقع للبنك","money"],["notes","ملاحظات الكشف"],["company","الشركة"],["showSat","في كشف المتابعة","bool"],["showMp","في كشف القوة العاملة","bool"]];
+const INV_SPEC=[["projectId","العقد","proj"],["certNo","رقم المستخلص"],["type","النوع"],["gross","القيمة الإجمالية","money"],["date","تاريخ المستخلص","date"],["stage","المكان"],["stageDate","تاريخ دخول المكان","date"],["mpStatus","القوة العاملة"],["mpEstimate","تقدير القوة العاملة","money"],["insStatus","التأمينات","ins"],["insPaid","مبلغ التأمينات المدفوع","money"],["insRaise","مبلغ التعلية","money"],["readyPay","التسوية","ready"],["readyPayDate","تاريخ التسوية","date"],["paid","الصرف","paid"],["paidDate","تاريخ الصرف","date"],["bankExpected","المتوقع للبنك","money"],["notes","ملاحظات الكشف"],["company","الشركة"],["showSat","في كشف المتابعة","bool"],["showMp","في كشف القوة العاملة","bool"]];
 const PROJ_SPEC=[["contractNo","رقم العقد"],["name","اسم المشروع"],["shortName","الاسم المختصر"],["location","الموقع"],["dept","جهة الإسناد"],["company","الشركة"],["unifiedCode","الكود الموحد"],["contractDate","تاريخ العقد","date"],["boqNo","رقم المقايسة"],["total","قيمة العقد","money"],["reduced","تم تخفيض العقد","bool"],["totalReduced","القيمة بعد التخفيض","money"],["reducedDate","تاريخ إخطار الخفض","date"],["insFileNo","رقم ملف التأمينات (CS)"],["insFileDate","تاريخ فتح ملف التأمينات","date"],["wageRatio","نسبة الأجور","pct"],["notes","ملاحظات"]];
 const INS_SPEC=[["fileNo","رقم الملف"],["status","الحالة"],["statusText","الوضع الحالي"],["amountDue","المطلوب دفعه","money"],["required","المطلوب"],["owner","المسؤول"],["nextDate","موعد المتابعة","date"],["payReady","جاهز فعليًا للدفع","bool"]];
 const newLogs = (o,n) => (n||[]).slice((o||[]).length).map(x=>`متابعة جديدة: ${DFMT.txt(x.text)}`);
@@ -3117,7 +3120,7 @@ function renderSat(){
     <div class="sx"><span class="l">المتوقع للبنك</span><b>${money(sum(base,([v])=>v.bankExpected))}${cur}</b><span class="s">مسجل لـ ${base.filter(([v])=>has(v.bankExpected)).length} من ${base.length}</span></div>`;
   const nLate = base.filter(([v,k])=>k.late).length, nIns = base.filter(([v,k])=>insBad(k)).length, nMp = base.filter(([v])=>v.mpStatus==="لم يتم الاستخراج").length;
   const al = (key, n, bad, t) => (n||f.alert===key) ? `<button type="button" class="fch ${bad?"bad":""}" data-alert="${key}" aria-pressed="${f.alert===key}"><b class="num">${n}</b>${t}<svg class="i xx" aria-hidden="true"><use href="#i-x"/></svg></button>` : "";
-  const alHtml = al("late",nLate,true,`متأخر أكثر من ${num(cfg.lateDays||30)} يوم`) + al("noIns",nIns,true,"بدون شهادة تأمينات") + al("noMp",nMp,false,"قوة عاملة لم تُستخرج") + al("ready",base.filter(([v])=>v.readyPay==="نعم"&&v.paid!=="نعم").length,false,"جاهز للصرف") + al("unpaid",unpaid.length,false,"لم يُصرف");
+  const alHtml = al("late",nLate,true,`متأخر أكثر من ${num(cfg.lateDays||30)} يوم`) + al("noIns",nIns,true,"بدون شهادة تأمينات") + al("noMp",nMp,false,"قوة عاملة لم تُستخرج") + al("ready",base.filter(([v])=>v.readyPay==="نعم"&&v.paid!=="نعم").length,false,"تمت التسوية") + al("unpaid",unpaid.length,false,"لم يُصرف");
   $("#satAlerts").innerHTML = alHtml || `<span class="muted small">${ico("check")} لا توجد تنبيهات</span>`;
 
   // pipeline
@@ -3558,7 +3561,7 @@ function invDialog(v, projectId){
         <div id="matBox" style="display:flex;flex-direction:column;gap:8px">${matHtml()}</div>
         <div class="mattot" id="matTot"></div>
       </section>
-      <section class="sec" data-tab="steps"><h3>${ico("flag")}مراحل المتابعة <span class="r faint small" style="font-weight:500">قوة عاملة ← تأمينات ← تعلية ← جاهز للصرف ← تم الصرف</span></h3>
+      <section class="sec" data-tab="steps"><h3>${ico("flag")}مراحل المتابعة <span class="r faint small" style="font-weight:500">قوة عاملة ← تأمينات ← تعلية ← تمت التسوية ← تم الصرف</span></h3>
         <div id="vSteps"></div>
         <div class="fields">
           ${sfld("vMp","1 · شهادة القوة العاملة",["تم الاستخراج","لم يتم الاستخراج","لا حاجة"],d.mpStatus,"لم يُحدَّث")}
@@ -3568,8 +3571,8 @@ function invDialog(v, projectId){
           <div class="f raisef" ${d.insStatus==="تعلية"?"":"hidden"}><label for="vRaise">3 · مبلغ التعلية المخصوم</label><input id="vRaise" type="text" inputmode="decimal" value="${esc(d.insRaise??"")}" autocomplete="off"></div>
           <div class="f raisef" ${d.insStatus==="تعلية"?"":"hidden"}><label for="vRaiseDate">تاريخ التعلية</label><input id="vRaiseDate" type="date" value="${esc(d.insRaiseDate||"")}"></div>
           <p class="hint raisef wide" ${d.insStatus==="تعلية"?"":"hidden"} style="grid-column:1/-1">التعلية بتسمح بصرف المستخلص من غير الشهادة. لما الشهادة تطلع غيّر الحالة لـ«تم استخراجها» وسجّل «رد تعلية تأمينات اجتماعية» كمستخلص جديد على نفس العقد.</p>
-          ${sfld("vReady","4 · جاهز للصرف",["نعم"],d.readyPay||"","لسه مش جاهز",x=>"جاهز للصرف")}
-          <div class="f readyf" ${d.readyPay==="نعم"?"":"hidden"}><label for="vReadyDate">تاريخ الجاهزية للصرف</label><input id="vReadyDate" type="date" value="${esc(d.readyPayDate||"")}"></div>
+          ${sfld("vReady","4 · التسوية",["نعم"],d.readyPay||"","لسه متسوّاش",x=>"تمت التسوية")}
+          <div class="f readyf" ${d.readyPay==="نعم"?"":"hidden"}><label for="vReadyDate">تاريخ التسوية</label><input id="vReadyDate" type="date" value="${esc(d.readyPayDate||"")}"></div>
           ${sfld("vPaid","5 · حالة الصرف",["نعم","لا"],d.paid,"لم يُحدَّث",x=>x==="نعم"?"تم الصرف":"لم يُصرف")}
           ${fld("vPaidDate","تاريخ الصرف",d.paidDate,"date")}
           ${fld("vBank","المتوقع تحويله للبنك",d.bankExpected,"number")}
@@ -4033,8 +4036,8 @@ const stState = (v,k) => ({
   ins: isRaiseRef(v) ? (raiseReady(v) ? "y" : "n") : k.insLabel==="تم استخراج الشهادة" ? "y" : k.insLabel==="تم عمل تعلية" ? "r" : (k.insLabel==="لا حاجة"||k.insLabel==="لا يوجد") ? "na" : "n",
   mp: v.mpStatus==="تم الاستخراج" ? "y" : v.mpStatus==="لا حاجة" ? "na" : "n"
 });
-/* مراحل متابعة المستخلص: قوة عاملة ← تأمينات ← تم تعلية التأمينات ← جاهز للصرف ← تم الصرف */
-const INV_STEPS = [["mp","قوة عاملة","قوة عاملة"],["ins","تأمينات","تأمينات"],["raise","تم تعلية التأمينات","تعلية"],["ready","جاهز للصرف","جاهز"],["paid","تم الصرف","تم الصرف"]];
+/* مراحل متابعة المستخلص: قوة عاملة ← تأمينات ← تم تعلية التأمينات ← تمت التسوية ← تم الصرف */
+const INV_STEPS = [["mp","قوة عاملة","قوة عاملة"],["ins","تأمينات","تأمينات"],["raise","تم تعلية التأمينات","تعلية"],["ready","تمت التسوية","تمت التسوية"],["paid","تم الصرف","تم الصرف"]];
 function invSteps(v,k){
   const d = x => x ? ` — ${dmy(x)}` : "";
   const mp = v.mpStatus==="تم الاستخراج" ? ["y",`تم استخراج شهادة القوة العاملة${d(v.mpDate)}`] : v.mpStatus==="لا حاجة" ? ["na","القوة العاملة: لا حاجة"] : ["n", v.mpStatus==="لم يتم الاستخراج" ? "شهادة القوة العاملة لم تُستخرج" : "القوة العاملة لم تُحدَّث"];
@@ -4046,7 +4049,7 @@ function invSteps(v,k){
     raise = v.insStatus==="تعلية" ? ["y",`تم عمل تعلية التأمينات${num(v.insRaise)?` بمبلغ ${fmt(v.insRaise)}`:""}${d(v.insRaiseDate)}`] : ins[0]!=="n" ? ["na","التعلية مش محتاجة"] : ["n","لم يتم عمل تعلية"];
   }
   const paid = v.paid==="نعم" ? ["y",`تم الصرف${d(v.paidDate)}`] : ["n", v.paid==="لا" ? "لم يُصرف" : "الصرف لم يُحدَّث"];
-  const ready = v.readyPay==="نعم" || v.paid==="نعم" ? ["y",`جاهز للصرف${d(v.readyPayDate)}`] : ["n","لسه مش جاهز للصرف"];
+  const ready = v.readyPay==="نعم" || v.paid==="نعم" ? ["y",`تمت التسوية${d(v.readyPayDate)}`] : ["n","لسه متسوّاش"];
   const m={mp,ins,raise,ready,paid};
   const out = INV_STEPS.map(([key,label,short])=>({key,label,short,st:m[key][0],title:m[key][1]}));
   { let lastY=-1; out.forEach((x,i)=>{ if(x.st==="y") lastY=i; }); const cur = out.find((x,i)=>i>lastY && x.st==="n"); if(cur) cur.cur=true; }
