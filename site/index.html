@@ -2142,6 +2142,19 @@ tr.ready,#insTable tr.ready{box-shadow:inset -3px 0 0 var(--ok)!important}
   #projGrid table.rt tbody td.sel{grid-column:1 / -1}
   .istp .isp small{display:block!important;position:static!important;font-size:.64rem!important}
 }
+
+/* اختيار متعدد في فلاتر الكشف */
+.msel-b{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-width:120px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:color-mix(in srgb,var(--surface) 75%,transparent);font:inherit;font-size:.9rem;cursor:pointer;color:var(--fg)}
+.msel-b span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msel-b svg.i{width:14px;height:14px;color:var(--muted);flex:none;fill:none;stroke:currentColor;stroke-width:2.2}
+.msel-b.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--surface));color:var(--accent-strong);font-weight:600}
+.msel-b:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.msel-pop{position:fixed;z-index:120;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 40px -12px rgba(6,18,40,.35);padding:6px;display:flex;flex-direction:column;gap:4px;max-height:min(60vh,420px)}
+.msel-l{overflow:auto;display:flex;flex-direction:column}
+.msel-o{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:.9rem}
+.msel-o:hover{background:var(--sunk)}
+.msel-o input{width:17px;height:17px;accent-color:var(--accent);flex:none}
+.msel-f{display:flex;justify-content:space-between;gap:6px;border-top:1px solid var(--line2);padding:6px 4px 2px}
 </style>
 <style>
 [hidden]{display:none!important}
@@ -3140,6 +3153,11 @@ const stageOrder = () => [...(state.cfg.stages||[]), "غير محدد", "—"];
 const qNorm = x => String(x??"").toLowerCase().replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/[\s\/\\\-_.]+/g," ").trim();
 const invHay = (v,k) => { const p=k.p||{}; return qNorm([p.name,p.shortName,p.contractNo,p.boqNo,p.unifiedCode,p.location,p.dept,p.company,p.insFileNo,v.certNo,v.type,certLabel(v),v.notes,v.stage,k.company,(v.log||[]).map(x=>x.text).join(" ")].join(" ")); };
 const qMatch = (v,k,q) => { if(!q) return true; const h=invHay(v,k); return q.split(" ").every(t=>h.includes(t)); };
+/* فلاتر متعددة: القيمة «أ||ب» يعني أي واحد منهم */
+const msList = v => v ? String(v).split("||").filter(Boolean) : [];
+const msHas = (v,x) => msList(v).includes(x);
+const msToggle = (v,x) => { const l=msList(v); return (l.includes(x) ? l.filter(y=>y!==x) : [...l,x]).join("||"); };
+const msLab = (v,fn=(x=>x)) => msList(v).map(fn).join("، ");
 function satBase(ignoreAlert){
   const f = state.satFilter;
   const q = qNorm(state.satQ||"");
@@ -3147,11 +3165,11 @@ function satBase(ignoreAlert){
     if(!v.showSat) return false;
     const k = calc(v);
     if(q && !qMatch(v,k,q)) return false;
-    if(f.dept && k.dept!==f.dept) return false;
-    if(f.stage && k.stage!==f.stage && stageParent(k.stage)!==f.stage) return false;
-    if(f.company && k.company!==f.company) return false;
-    if(f.loc && (k.p?.location||"غير محدد")!==f.loc) return false;
-    if(f.type==="__ret" ? isWork(v.type) : (f.type && (v.type||"مستخلص أعمال")!==f.type)) return false;
+    if(f.dept && !msHas(f.dept,k.dept)) return false;
+    if(f.stage && !msHas(f.stage,k.stage) && !msHas(f.stage,stageParent(k.stage))) return false;
+    if(f.company && !msHas(f.company,k.company)) return false;
+    if(f.loc && !msHas(f.loc,k.p?.location||"غير محدد")) return false;
+    if(f.type && !msList(f.type).some(t=> t==="__ret" ? !isWork(v.type) : (v.type||"مستخلص أعمال")===t)) return false;
     if(!ignoreAlert && f.alert){
       if(f.alert==="late" && !k.late) return false;
       if(f.alert==="noIns" && !insBad(k)) return false;
@@ -3174,6 +3192,35 @@ function drawPresets(){
   box.hidden=!ps.length;
   box.innerHTML = ps.length ? `<span class="pres-l">${ico("flag")}المفضلة</span>` + ps.map((x,i)=>`<span class="svp ${preSame(x)?"on":""}"><button type="button" data-pre="${i}" title="تطبيق «${esc(x.name)}»">${esc(x.name)}</button><button type="button" class="px" data-prex="${i}" aria-label="حذف ${esc(x.name)}" title="حذف من المفضلة">${ico("x")}</button></span>`).join("") : "";
 }
+/* قايمة اختيار متعدد بدل الـ select العادي في فلاتر الكشف */
+function drawMsel(){
+  Object.entries(satMap).forEach(([id,k])=>{ const sel=$("#"+id); if(!sel) return; sel.hidden=true;
+    let b=sel.parentElement.querySelector(`.msel-b[data-msel="${k}"]`);
+    if(!b){ b=document.createElement("button"); b.type="button"; b.className="msel-b"; b.dataset.msel=k; sel.after(b); }
+    const opts=[...sel.options].filter(o=>o.value).map(o=>[o.value,o.textContent]), cur=msList(state.satFilter[k]);
+    const lab=v=>(opts.find(o=>o[0]===v)||[v,v])[1];
+    b.classList.toggle("on", !!cur.length);
+    b.innerHTML = `<span>${esc(!cur.length?"الكل":cur.length===1?lab(cur[0]):`${lab(cur[0])} +${cur.length-1}`)}</span><svg class="i chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>`;
+    b.title = cur.length ? cur.map(lab).join("، ") : "الكل";
+  });
+  const pop=$("#mselPop"); if(pop && !pop.hidden) openMsel(pop.dataset.k, true);
+}
+function openMsel(k, keep){
+  let pop=$("#mselPop"); if(!pop){ pop=document.createElement("div"); pop.id="mselPop"; pop.className="msel-pop"; pop.hidden=true; document.body.appendChild(pop);
+    pop.addEventListener("change", e=>{ const c=e.target.closest("[data-mv]"); if(!c) return; const kk=pop.dataset.k; state.satFilter[kk]=msToggle(state.satFilter[kk], c.dataset.mv); satChanged(); });
+    pop.addEventListener("click", e=>{ if(e.target.closest("[data-mall]")){ state.satFilter[pop.dataset.k]=""; satChanged(); } if(e.target.closest("[data-mdone]")) pop.hidden=true; });
+    document.addEventListener("pointerdown", e=>{ if(!pop.hidden && !e.target.closest("#mselPop") && !e.target.closest(".msel-b")) pop.hidden=true; }, true);
+    document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !pop.hidden){ pop.hidden=true; } });
+    window.addEventListener("resize", ()=>{ pop.hidden=true; }); }
+  const id=Object.keys(satMap).find(x=>satMap[x]===k), sel=$("#"+id), b=document.querySelector(`.msel-b[data-msel="${k}"]`); if(!sel||!b) return;
+  if(!keep && !pop.hidden && pop.dataset.k===k){ pop.hidden=true; return; }
+  const cur=msList(state.satFilter[k]), opts=[...sel.options].filter(o=>o.value);
+  pop.dataset.k=k;
+  pop.innerHTML = `<div class="msel-l">${opts.map(o=>`<label class="msel-o"><input type="checkbox" data-mv="${esc(o.value)}" ${cur.includes(o.value)?"checked":""}><span>${esc(o.textContent)}</span></label>`).join("")}</div><div class="msel-f"><button type="button" class="btn sm ghost" data-mall>${ico("x")}الكل</button><button type="button" class="btn sm primary" data-mdone>تم</button></div>`;
+  pop.hidden=false;
+  const r=b.getBoundingClientRect(), w=Math.max(r.width,220); pop.style.width=w+"px";
+  let left=r.right-w; left=Math.max(8,Math.min(left,innerWidth-w-8)); pop.style.left=left+"px"; pop.style.top=(r.bottom+6)+"px";
+}
 const ssH = (k,t) => { const S=state.satSort, on=S.k===k; return `<button type="button" class="ssort ${on?"on":""}" data-ssort="${k}" title="ترتيب حسب ${t}${on?(S.d<0?" (الأكبر أولًا)":" (الأصغر أولًا)"):""}">${t}<span class="ar">${on?(S.d<0?"↓":"↑"):"↕"}</span></button>`; };
 function renderSat(){
   const f = state.satFilter, cfg = state.cfg;
@@ -3188,7 +3235,8 @@ function renderSat(){
   $("#sGroup").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===f.group));
   $("#sShort").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed", (b.dataset.v==="1")===f.short));
   $("#sClear").hidden = !(f.dept||f.stage||f.company||f.loc||f.type||f.alert||state.satQ);
-  const nf = [f.dept,f.stage,f.company,f.loc,f.type].filter(Boolean).length;
+  const nf = [f.dept,f.stage,f.company,f.loc,f.type].reduce((a,x)=>a+msList(x).length,0);
+  drawMsel();
   $("#fToggleTxt").textContent = nf ? `الفلاتر (${nf})` : "الفلاتر";
 
   if(!state.loaded.i){ $("#satKpis").innerHTML=skelKpis(4); $("#satAlerts").innerHTML=""; $("#satMatrix").innerHTML=`<tbody><tr><td>${skelRows(3)}</td></tr></tbody>`; $("#satList").innerHTML=`<section class="panel"><div class="bd">${skelRows(8)}</div></section>`; return; }
@@ -3214,13 +3262,13 @@ function renderSat(){
     const steps=[...(cfg.stages||[])]; if(all.some(([v,k])=>k.stage==="غير محدد")) steps.push("غير محدد"); if(all.some(([v,k])=>k.stage==="—")) steps.push("—");
     const T = Math.max(1, sum(all,([v,k])=>k.net));
     const inSt = st => all.filter(([v,k])=>k.stage===st || stageParent(k.stage)===st);
-    const full = steps.filter(st=>!stageParent(st) && (inSt(st).length || f.stage===st)), empty = steps.filter(st=>!stageParent(st) && !full.includes(st));
+    const full = steps.filter(st=>!stageParent(st) && (inSt(st).length || msHas(f.stage,st))), empty = steps.filter(st=>!stageParent(st) && !full.includes(st));
     $("#satPipe").innerHTML = full.map(st=>{ const rr=inSt(st); const lt=rr.filter(([v,k])=>k.late).length, val=sum(rr,([v,k])=>k.net);
-      const subs = steps.filter(x=>stageParent(x)===st).map(x=>[x, all.filter(([v,k])=>k.stage===x)]).filter(([x,r])=>r.length || f.stage===x);
+      const subs = steps.filter(x=>stageParent(x)===st).map(x=>[x, all.filter(([v,k])=>k.stage===x)]).filter(([x,r])=>r.length || msHas(f.stage,x));
       const own = all.filter(([v,k])=>k.stage===st);
-      const chip=(key,label,r,clk)=>`<span class="psub" ${clk?`role="button" tabindex="0" data-pipe="${esc(key)}" aria-pressed="${f.stage===key}"`:""} title="${esc(label)}: ${r.length} مستخلص · ${fmt(sum(r,([v,k])=>k.net))}">${esc(label)} <b class="num">${r.length}</b></span>`;
+      const chip=(key,label,r,clk)=>`<span class="psub" ${clk?`role="button" tabindex="0" data-pipe="${esc(key)}" aria-pressed="${msHas(f.stage,key)}"`:""} title="${esc(label)}: ${r.length} مستخلص · ${fmt(sum(r,([v,k])=>k.net))}">${esc(label)} <b class="num">${r.length}</b></span>`;
       const subHtml = subs.length ? `<span class="psubs">${own.length?chip(st,"مباشرة",own,false):""}${subs.map(([x,r])=>chip(x,stageSplit(x).sub,r,true)).join("")}</span>` : "";
-      return `<div class="pstep" role="button" tabindex="0" data-pipe="${esc(st)}" aria-pressed="${f.stage===st}"><span class="pn">${esc(st==="—"?"جهات بدون مراحل":st)}</span><span class="pr"><b class="num">${rr.length}</b><span class="ps num">${money(val)}</span></span><span class="pbar"><i style="width:${Math.round(val/T*100)}%"></i></span><span class="pft">${lt?`<span class="pl">${lt} متأخر</span>`:""}${subHtml}${!lt&&!subHtml?`<span class="pl ok">&nbsp;</span>`:""}</span></div>`; }).join("");
+      return `<div class="pstep" role="button" tabindex="0" data-pipe="${esc(st)}" aria-pressed="${msHas(f.stage,st)}"><span class="pn">${esc(st==="—"?"جهات بدون مراحل":st)}</span><span class="pr"><b class="num">${rr.length}</b><span class="ps num">${money(val)}</span></span><span class="pbar"><i style="width:${Math.round(val/T*100)}%"></i></span><span class="pft">${lt?`<span class="pl">${lt} متأخر</span>`:""}${subHtml}${!lt&&!subHtml?`<span class="pl ok">&nbsp;</span>`:""}</span></div>`; }).join("");
     $("#satPipeE").textContent = empty.length ? `لا توجد مستخلصات حاليًا في: ${empty.join("، ")}` : "";
     $("#mxWrap").hidden=!state.mxOpen; $("#mxToggle").setAttribute("aria-expanded", String(state.mxOpen)); $("#mxToggle").textContent = state.mxOpen?"إخفاء الجدول":"جدول الإدارة × المكان"; }
   // heatmap
@@ -4674,7 +4722,7 @@ function exportSatHtml(){
   const f=state.satFilter, fs=f.stage; f.stage=""; const all=satBase(true).map(v=>[v,calc(v)]); f.stage=fs;
   const steps=[...(state.cfg.stages||[]), "غير محدد", "—"].filter(st=>all.some(([v,k])=>k.stage===st));
   const lab = st => st==="—" ? "جهات بدون مراحل" : st==="غير محدد" ? "مكان غير محدد" : `كشف ${st}`;
-  const filt=[f.dept&&`الإدارة: ${f.dept}`, f.company&&`الشركة: ${coShort(f.company)}`, f.loc&&`الموقع: ${f.loc}`, f.type&&`النوع: ${f.type==="__ret"?"الردود فقط":f.type}`].filter(Boolean);
+  const filt=[f.dept&&`الإدارة: ${msLab(f.dept)}`, f.company&&`الشركة: ${msLab(f.company,coShort)}`, f.loc&&`الموقع: ${msLab(f.loc)}`, f.type&&`النوع: ${f.type==="__ret"?"الردود فقط":f.type}`].filter(Boolean);
   openDlg({
     title: "تقرير PDF",
     sub: `اختر الكشوف المطلوبة في التقرير${filt.length?` · بالفلاتر الحالية: ${esc(filt.join(" · "))}`:""}`,
@@ -5446,7 +5494,8 @@ $("#sGroup").onclick=e=>{ const b=e.target.closest("button"); if(b){ state.satFi
 $("#sShort").onclick=e=>{ const b=e.target.closest("button"); if(b){ state.satFilter.short=b.dataset.v==="1"; satChanged(); } };
 $("#fToggle").onclick=()=>{ const o=$("#satFbar").classList.toggle("open"); $("#fToggle").setAttribute("aria-expanded",o); };
 $("#sClear").onclick=()=>{ Object.assign(state.satFilter,{dept:"",stage:"",company:"",loc:"",type:"",alert:""}); state.satQ=""; $("#sQ").value=""; satChanged(); };
-$("#sSavePre").onclick=()=>{ const f=state.satFilter, parts=[f.dept,f.stage,f.company&&coShort(f.company),f.loc,f.type,state.satQ&&`«${state.satQ}»`].filter(Boolean);
+document.addEventListener("click", e=>{ const b=e.target.closest(".msel-b"); if(b){ e.preventDefault(); openMsel(b.dataset.msel); } });
+$("#sSavePre").onclick=()=>{ const f=state.satFilter, parts=[msLab(f.dept),msLab(f.stage),msLab(f.company,coShort),msLab(f.loc),msLab(f.type,t=>t==="__ret"?"الردود":t),state.satQ&&`«${state.satQ}»`].filter(Boolean);
   const name=(prompt("اسم المفضلة:", parts.join(" + ")||"كل الكشف")||"").trim(); if(!name) return;
   const ps=getPresets().filter(x=>x.name!==name); ps.push({name, f:Object.fromEntries(PRE_KEYS.map(k=>[k,f[k]])), q:state.satQ||""}); setPresets(ps); drawPresets(); toast(`اتحفظت «${name}» في المفضلة`); };
 $("#sPresets").addEventListener("click", e=>{ const x=e.target.closest("[data-prex]"); if(x){ const ps=getPresets(); const n=ps[+x.dataset.prex]?.name; ps.splice(+x.dataset.prex,1); setPresets(ps); drawPresets(); toast(`اتشالت «${n}»`); return; }
@@ -5574,7 +5623,7 @@ document.addEventListener("click",e=>{
   if(e.target.closest("#stPop")) return;
   const pd=e.target.closest("[data-paid]"); if(pd){ quickPaid(pd); return; }
   const mvb=e.target.closest("[data-move]"); if(mvb){ if(state.canWrite) moveDialog(mvb.dataset.move); return; }
-  const pp=e.target.closest("[data-pipe]"); if(pp){ e.stopPropagation(); state.satFilter.stage = state.satFilter.stage===pp.dataset.pipe ? "" : pp.dataset.pipe; satChanged(); return; }
+  const pp=e.target.closest("[data-pipe]"); if(pp){ e.stopPropagation(); state.satFilter.stage = msToggle(state.satFilter.stage, pp.dataset.pipe); satChanged(); return; }
   const gtb=e.target.closest("[data-gotab]"); if(gtb){ state.tab=gtb.dataset.gotab; render(); window.scrollTo(0,0); markEnter(); return; }
   const mst=e.target.closest("[data-mvstage]"); if(mst){ state.mv.stage=mst.dataset.mvstage; mvChanged(); $("#mvList").scrollIntoView({behavior:"smooth",block:"start"}); return; }
   if(e.target.closest("#mvMore")){ state.mv.limit+=80; renderMoves(); return; }
