@@ -1810,14 +1810,14 @@ dialog.cmd{background:color-mix(in srgb,var(--surface) 80%,transparent);-webkit-
 .pres{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .pres-l{display:inline-flex;align-items:center;gap:5px;font-size:.76rem;color:var(--muted);font-weight:600;margin-inline-end:4px}
 .pres-l svg.i{width:14px;height:14px}
-.pre{display:inline-flex;align-items:center;border:1px solid var(--glass-brd,var(--line));background:color-mix(in srgb,var(--surface) 65%,transparent);border-radius:999px;overflow:hidden;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:background-color .15s,border-color .15s}
-.pre button{all:unset;cursor:pointer;padding:5px 12px;font-size:.82rem;font-weight:600}
-.pre .px{padding:5px 8px 5px 6px;color:var(--faint);display:grid;place-items:center}
-.pre .px svg.i{width:12px;height:12px}
-.pre .px:hover{color:var(--bad)}
-.pre:hover{border-color:var(--accent)}
-.pre.on{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:var(--accent);color:var(--accent-strong)}
-.pre button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.svp{display:inline-flex;align-items:center;border:1px solid var(--glass-brd,var(--line));background:color-mix(in srgb,var(--surface) 65%,transparent);border-radius:999px;overflow:hidden;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:background-color .15s,border-color .15s}
+.svp button{all:unset;cursor:pointer;padding:5px 12px;font-size:.82rem;font-weight:600}
+.svp .px{padding:5px 8px 5px 6px;color:var(--faint);display:grid;place-items:center}
+.svp .px svg.i{width:12px;height:12px}
+.svp .px:hover{color:var(--bad)}
+.svp:hover{border-color:var(--accent)}
+.svp.on{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:var(--accent);color:var(--accent-strong)}
+.svp button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 
 /* تبويبات النافذة */
 .dtabs{position:relative;display:flex;gap:2px;margin:6px -6px -14px;padding:0 6px;overflow-x:auto;scrollbar-width:none}
@@ -2781,7 +2781,7 @@ const preSame = x => PRE_KEYS.every(k=>(x.f[k]??"")===(state.satFilter[k]??"")) 
 function drawPresets(){
   const box=$("#sPresets"); if(!box) return; const ps=getPresets();
   box.hidden=!ps.length;
-  box.innerHTML = ps.length ? `<span class="pres-l">${ico("flag")}المفضلة</span>` + ps.map((x,i)=>`<span class="pre ${preSame(x)?"on":""}"><button type="button" data-pre="${i}" title="تطبيق «${esc(x.name)}»">${esc(x.name)}</button><button type="button" class="px" data-prex="${i}" aria-label="حذف ${esc(x.name)}" title="حذف من المفضلة">${ico("x")}</button></span>`).join("") : "";
+  box.innerHTML = ps.length ? `<span class="pres-l">${ico("flag")}المفضلة</span>` + ps.map((x,i)=>`<span class="svp ${preSame(x)?"on":""}"><button type="button" data-pre="${i}" title="تطبيق «${esc(x.name)}»">${esc(x.name)}</button><button type="button" class="px" data-prex="${i}" aria-label="حذف ${esc(x.name)}" title="حذف من المفضلة">${ico("x")}</button></span>`).join("") : "";
 }
 const ssH = (k,t) => { const S=state.satSort, on=S.k===k; return `<button type="button" class="ssort ${on?"on":""}" data-ssort="${k}" title="ترتيب حسب ${t}${on?(S.d<0?" (الأكبر أولًا)":" (الأصغر أولًا)"):""}">${t}<span class="ar">${on?(S.d<0?"↓":"↑"):"↕"}</span></button>`; };
 function renderSat(){
