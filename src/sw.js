@@ -3,23 +3,20 @@ const VERSION = "__VERSION__";
 const SHELL = "shell-" + VERSION;
 const RUNTIME = "runtime-v1";
 const CORE = ["./", "./index.html", "./supabase.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./favicon.png"];
-const LIBS = [
-  "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js",
-  "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
-];
+// مكتبات Excel (lib/) كبيرة (~1.8 ميجا): بتتنزل أول مرة تحتاجها بس، وبتفضل محفوظة حتى بعد تحديث البرنامج
+// لو غيّرت نسخة المكتبات في lib/ غيّر الرقم ده عشان تتنزل من جديد
+const LIBCACHE = "lib-v1";
 
 self.addEventListener("install", e => {
   e.waitUntil((async () => {
     const c = await caches.open(SHELL);
     // cache:"reload" عشان ياخد الملفات الجديدة من السيرفر مش من كاش المتصفح القديم
     await c.addAll(CORE.map(u => new Request(u, { cache: "reload" })));
-    const r = await caches.open(RUNTIME);
-    await Promise.all(LIBS.map(u => fetch(u, { mode: "no-cors" }).then(res => r.put(u, res)).catch(() => {})));
   })());
 });
 self.addEventListener("activate", e => {
   e.waitUntil((async () => {
-    for(const k of await caches.keys()) if(k.startsWith("shell-") && k !== SHELL) await caches.delete(k);
+    for(const k of await caches.keys()) if((k.startsWith("shell-") && k !== SHELL) || (k.startsWith("lib-") && k !== LIBCACHE)) await caches.delete(k);
     await self.clients.claim();
   })());
 });
@@ -30,6 +27,15 @@ self.addEventListener("fetch", e => {
   if(req.method !== "GET") return;
   const url = new URL(req.url);
   if(url.hostname.endsWith("supabase.co")) return;              // البيانات: دايماً من السيرفر (والمزامنة بتتعامل مع النت)
+  if(url.origin === location.origin && /\/lib\/[^/]+\.js$/.test(url.pathname)){
+    // مكتبات Excel: من الكاش الدائم، ولو مش موجودة تتنزل مرة واحدة وتتحفظ
+    e.respondWith((async () => {
+      const c = await caches.open(LIBCACHE);
+      const hit = await c.match(req, { ignoreSearch: true }); if(hit) return hit;
+      const res = await fetch(req); if(res.ok) c.put(req, res.clone()); return res;
+    })());
+    return;
+  }
   if(url.origin === location.origin){
     // ملفات البرنامج: من الكاش على طول (سريع وأوفلاين)، والنسخة الجديدة بتتنزل في الخلفية
     e.respondWith((async () => {

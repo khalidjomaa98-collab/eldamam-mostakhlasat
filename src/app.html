@@ -2650,6 +2650,17 @@ function renderBulk(){
     $("#bulkStage").innerHTML = `<option value="">نقل إلى مكان…</option>` + (state.cfg.stages||[]).map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");
   }
 }
+/* Esc: يشيل التحديد لو فيه حاجة متحددة، ولو مفيش يمسح فلاتر كشف المتابعة
+   (بس لو مفيش نافذة أو قايمة مفتوحة، ومش بتكتب في خانة) */
+document.addEventListener("keydown", e=>{
+  if(e.key!=="Escape" || e.defaultPrevented) return;
+  if(document.querySelector("dialog[open], #mselPop:not([hidden]), #stPop:not([hidden]), #newMenu:not([hidden])") || document.body.classList.contains("menu-open")) return;
+  const t=e.target; if(t && (t.isContentEditable || t.tagName==="TEXTAREA" || (t.tagName==="INPUT" && !/^(checkbox|radio|button)$/.test(t.type)))) return;
+  if(bkPending && typeof endAsk==="function"){ endAsk(); return; }
+  if(state.sel.size || state.psel.size){ clearSel(); return; }
+  if(state.isel.size){ state.isel.clear(); renderIns(); return; }
+  if(state.tab==="sat" && !$("#sClear").hidden){ $("#sClear").click(); toast("اتمسحت الفلاتر"); }
+});
 function clearSel(){
   if(typeof endAsk==="function" && bkPending) endAsk();
   state.sel.clear(); state.psel.clear();
