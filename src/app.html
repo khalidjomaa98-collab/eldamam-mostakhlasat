@@ -2036,6 +2036,25 @@ tr.ready,#insTable tr.ready{box-shadow:inset -3px 0 0 var(--ok)!important}
 .istp.big .isp small{display:block!important;position:static!important;top:auto!important;font-size:.78rem!important;white-space:normal!important}
 .istp.big .isp{padding-bottom:0!important}
 .istp.big .isp i{width:34px!important;height:34px!important}
+
+/* الشاشات المتوسطة: أسماء المراحل كلها ظاهرة في الجداول (بخط أصغر وسطرين) */
+@media (min-width:821px) and (max-width:1320px){
+  .satt col.c-st,#invTable.satt col.c-st{width:212px}
+  .satt col.c-amt,#invTable.satt col.c-amt{width:148px}
+  .satt col.c-stg,#invTable.satt col.c-stg{width:112px}
+  .istp .isp small{display:block!important;position:static!important;font-size:.58rem!important;line-height:1.15;white-space:normal!important;max-width:100%}
+  .istp .isp{padding-bottom:0!important}
+  .istp .isp i{width:22px;height:22px}
+  .isp+.isp::before{top:10px}
+  .rt td.pj .idc{max-width:100%}
+  .rt td.pj .idc .code,.rt td.pj .idc .num{white-space:normal;overflow-wrap:anywhere}
+}
+@media (min-width:821px) and (max-width:1060px){
+  .satt col.c-st,#invTable.satt col.c-st{width:196px}
+  .satt col.c-amt,#invTable.satt col.c-amt{width:136px}
+  .satt col.c-stg,#invTable.satt col.c-stg{width:100px}
+  .satt col.c-dy{width:54px}
+}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
