@@ -2155,6 +2155,17 @@ tr.ready{box-shadow:inset -3px 0 0 var(--ok)!important}
 /* صفحة التأمينات بنفس ترتيب القوة العاملة */
 .fbar .ins-cnt{margin-inline-start:auto;align-self:center;white-space:nowrap}
 #nStatusF.on{border-color:var(--accent);color:var(--accent-strong);font-weight:600}
+
+/* سرعة الإحساس: حركات التنقل والنوافذ قصيرة (الصفحة بتثبت في ~0.15 ثانية بدل ~0.8) */
+.vfade>*,.vfade>*:nth-child(n){animation:viewQ .12s ease-out both;animation-delay:0s}
+@keyframes viewQ{from{opacity:.35}to{opacity:1}}
+.nav-ind{transition:transform .16s cubic-bezier(.2,.8,.2,1),height .16s ease,width .16s ease,opacity .12s ease}
+.nav button[aria-current="page"] svg.i{transition:transform .15s ease}
+dialog.drawer[open]{animation:modalIn .16s cubic-bezier(.16,1,.3,1)}
+dialog::backdrop{animation:fade .12s ease-out}
+form.dlg-push,form.dlg-pop{animation-duration:.16s}
+.dt-ind{transition:transform .16s cubic-bezier(.2,.8,.2,1),width .16s ease}
+@media (prefers-reduced-motion:reduce){ .vfade>*,.vfade>*:nth-child(n){animation:none} }
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -3226,7 +3237,7 @@ function openDlg({title, sub, body, foot, onSubmit, onMount, remake, key, tabs})
   else dlgAnim(nested?"dlg-push":"");
   form.querySelector(".dw-b").scrollTop = 0;
 }
-function dlgAnim(cls){ if(RM||!cls) return; form.classList.remove("dlg-push","dlg-pop"); void form.offsetWidth; form.classList.add(cls); setTimeout(()=>form.classList.remove(cls),420); }
+function dlgAnim(cls){ if(RM||!cls) return; form.classList.remove("dlg-push","dlg-pop"); void form.offsetWidth; form.classList.add(cls); setTimeout(()=>form.classList.remove(cls),200); }
 function closeAllDlg(){
   if((formDirty || dlgStack.some(x=>x.dirty)) && state.canWrite && dlgStack.length && !confirm("فيه تعديلات مش محفوظة في النوافذ المفتوحة. تقفلهم كلهم؟")) return;
   dlgStack.length=0; dlg.close();
