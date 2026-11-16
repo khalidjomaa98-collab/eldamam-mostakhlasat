@@ -3188,13 +3188,13 @@ function renderMp(){
 /* ---------- الدرج الجانبي ---------- */
 const dlg=$("#dlg"), form=$("#dlgForm");
 /* النوافذ: نافذة واحدة في نص الشاشة، ولو فتحت نافذة من جوه نافذة (مستخلص من جوه مشروع) القديمة بتستنى تحتها وترجعلها بزرار «رجوع» */
-const dlgStack=[]; let dlgRemake=null, dlgRestoring=false, dlgNoPop=false;
+const dlgStack=[]; let dlgRemake=null, dlgRestoring=false, dlgNoPop=false, dlgInitTab="";
 let dlgKey="";
 function openDlg({title, sub, body, foot, onSubmit, onMount, remake, key, tabs}){
   if(key && dlg.open && dlgKey===key && !dlgRestoring) return;
   const nested = dlg.open && form.firstChild;
   if(nested){ const frag=document.createDocumentFragment(); while(form.firstChild) frag.appendChild(form.firstChild);
-    dlgStack.push({frag, onsubmit:form.onsubmit, dirty:formDirty, remake:dlgRemake, key:dlgKey, title:frag.querySelector(".dw-h h2")?.textContent||"النافذة السابقة"}); }
+    dlgStack.push({frag, onsubmit:form.onsubmit, dirty:formDirty, remake:dlgRemake, key:dlgKey, showTab:form._showTab, tab:frag.querySelector?.('.dtabs [aria-selected="true"]')?.dataset.dtab||"", title:frag.querySelector(".dw-h h2")?.textContent||"النافذة السابقة"}); }
   else if(!dlgRestoring) dlgStack.length=0;
   dlgRemake = remake||null; dlgKey = key||"";
   const back = dlgStack.length ? `<button type="button" class="dw-back" data-back title="رجوع للنافذة اللي تحت">${ico("back")}<span>رجوع إلى <b>${esc(dlgStack.at(-1).title)}</b></span></button>` : "";
@@ -3217,9 +3217,8 @@ function openDlg({title, sub, body, foot, onSubmit, onMount, remake, key, tabs})
       const on=bar.querySelector(`[data-dtab="${k}"]`), ind=bar.querySelector(".dt-ind"); if(on&&ind){ ind.style.width=on.offsetWidth+"px"; ind.style.transform=`translateX(${on.offsetLeft}px)`; }
       bd.querySelectorAll(`[data-tab="${k}"]`).forEach(x=>{ x.classList.remove("tin"); void x.offsetWidth; x.classList.add("tin"); }); };
     bar.addEventListener("click", e=>{ const b=e.target.closest("[data-dtab]"); if(b) show(b.dataset.dtab); });
-    form._showTab = show; requestAnimationFrame(()=>show(tabs[0][0]));
-    // لو حقل مطلوب في تبويب مستخبي اتعمله focus، نفتح التبويب بتاعه
-    form.addEventListener("focusin", e=>{ const t=e.target.closest?.("[data-tab]"); if(t && t.hidden) show(t.dataset.tab); }, {capture:true});
+    const first = dlgInitTab && tabs.some(t=>t[0]===dlgInitTab) ? dlgInitTab : tabs[0][0]; dlgInitTab="";
+    form._showTab = show; requestAnimationFrame(()=>show(first));
   } else form._showTab = null;
   formDirty=false;
   onMount && onMount();
@@ -3237,13 +3236,15 @@ dlg.addEventListener("close", ()=>{
   if(dlgNoPop){ dlgNoPop=false; return; }
   if(dlg.open || !dlgStack.length) return;
   const top=dlgStack.pop();
-  if(top.remake && !top.dirty){ dlgRestoring=true; let ok=false; try{ ok = top.remake()!==false; }finally{ dlgRestoring=false; }
+  if(top.remake && !top.dirty){ dlgRestoring=true; dlgInitTab=top.tab||""; let ok=false; try{ ok = top.remake()!==false; }finally{ dlgRestoring=false; dlgInitTab=""; }
     if(ok){ dlgAnim("dlg-pop"); return; } }
-  form.replaceChildren(top.frag); form.onsubmit=top.onsubmit; formDirty=top.dirty; dlgRemake=top.remake; dlgKey=top.key||"";
+  form.replaceChildren(top.frag); form.onsubmit=top.onsubmit; formDirty=top.dirty; dlgRemake=top.remake; dlgKey=top.key||""; form._showTab=top.showTab||null;
   dlg.showModal(); lockScroll(true); dlgAnim("dlg-pop");
 });
 /* تصغير النافذة: المحتوى بيتشال على جنب بكل اللي اتكتب فيه، وترجعله من الزرار اللي تحت */
 let formDirty=false, dlgStash=null;
+// لو حقل في تبويب مستخبي اتعمله focus (زي تنبيه خانة ناقصة) نفتح التبويب بتاعه — مستمع واحد بس للنافذة كلها
+form.addEventListener("focusin", e=>{ const t=e.target.closest?.("[data-tab]"); if(t && t.hidden && form._showTab) form._showTab(t.dataset.tab); }, {capture:true});
 form.addEventListener("input", ()=>{ formDirty=true; });
 form.addEventListener("change", ()=>{ formDirty=true; });
 function minimizeDlg(){
@@ -3251,13 +3252,13 @@ function minimizeDlg(){
   if(dlgStash){ toast("فيه نافذة متصغّرة بالفعل — ارجعلها أو اقفلها الأول"); return; }
   const title=form.querySelector(".dw-h h2")?.textContent||"نافذة";
   const frag=document.createDocumentFragment(); while(form.firstChild) frag.appendChild(form.firstChild);
-  dlgStash={frag, onsubmit:form.onsubmit, dirty:formDirty, title, stack:dlgStack.splice(0), remake:dlgRemake, key:dlgKey}; dlgKey="";
+  dlgStash={frag, onsubmit:form.onsubmit, dirty:formDirty, title, showTab:form._showTab, stack:dlgStack.splice(0), remake:dlgRemake, key:dlgKey}; dlgKey="";
   form.onsubmit=null; dlgNoPop=true; dlg.close(); drawStash();
 }
 function restoreDlg(){
   if(!dlgStash) return;
   if(dlg.open){ toast("اقفل النافذة المفتوحة الأول"); return; }
-  form.replaceChildren(dlgStash.frag); form.onsubmit=dlgStash.onsubmit; formDirty=dlgStash.dirty; dlgStack.length=0; dlgStack.push(...dlgStash.stack); dlgRemake=dlgStash.remake; dlgKey=dlgStash.key||""; dlgStash=null; drawStash();
+  form.replaceChildren(dlgStash.frag); form.onsubmit=dlgStash.onsubmit; form._showTab=dlgStash.showTab||null; formDirty=dlgStash.dirty; dlgStack.length=0; dlgStack.push(...dlgStash.stack); dlgRemake=dlgStash.remake; dlgKey=dlgStash.key||""; dlgStash=null; drawStash();
   dlg.showModal(); lockScroll(true);
 }
 function drawStash(){
