@@ -2143,6 +2143,18 @@ tr.ready{box-shadow:inset -3px 0 0 var(--ok)!important}
 .sh-x:hover{color:var(--bad)}
 .sh-q:focus-visible,.sh-x:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:8px}
 
+
+/* تابات القوة العاملة والتأمينات جوه المستخلص */
+.vf-ro{padding:9px 12px;border:1px dashed var(--line);border-radius:10px;background:var(--sunk);font-weight:600;min-height:40px;display:flex;align-items:center}
+.vf-reqs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:12px 0 4px}
+.reqchip{font-size:.75rem;padding:3px 9px;border-radius:8px;border:1px solid var(--line);background:var(--sunk);direction:ltr}
+.vf-h{display:flex;align-items:center;gap:6px;font-size:.86rem;margin:16px 0 8px;color:var(--muted)}
+.vf-h svg.i{width:15px;height:15px}
+.vf-f{display:flex;justify-content:flex-start;margin-top:12px}
+
+/* صفحة التأمينات بنفس ترتيب القوة العاملة */
+.fbar .ins-cnt{margin-inline-start:auto;align-self:center;white-space:nowrap}
+#nStatusF.on{border-color:var(--accent);color:var(--accent-strong);font-weight:600}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2370,14 +2382,15 @@ tr.ready{box-shadow:inset -3px 0 0 var(--ok)!important}
       <div class="ph"><div><h1>التأمينات الاجتماعية</h1><div class="sub">متابعة ملف التأمينات لكل مستخلص: الوضع الحالي، المطلوب، أرقام الطلبات، والمسؤول</div></div>
         <div class="tools"><button class="btn" id="insXlsx" hidden><svg class="i"><use href="#i-dl"/></svg>Excel</button><button class="btn" id="insHtml" hidden><svg class="i"><use href="#i-print"/></svg>نسخة للطباعة</button><button class="btn primary" id="insNew"><svg class="i"><use href="#i-plus"/></svg>ملف تأمينات</button></div></div>
       <div class="kpis" id="insKpis"></div>
-      <div class="alerts" id="insChips"></div>
+      <div class="rdy-bar" id="insReadyBar"></div>
       <div class="fbar">
         <input id="nSearch" type="search" placeholder="ابحث برقم العقد أو الملف أو رقم الطلب أو الوضع…" aria-label="بحث">
+        <label class="fi"><span>الحالة</span><select id="nStatusF"></select></label>
         <label class="fi"><span>المسؤول</span><select id="nOwner"></select></label>
         <label class="fi"><span>الترتيب</span><select id="nSort"><option value="order">ترتيب الإضافة</option><option value="next">موعد المتابعة</option><option value="due">المبلغ المطلوب</option></select></label>
+        <span class="muted small ins-cnt" id="insCount"></span>
       </div>
-      <div class="rdy-bar" id="insReadyBar"></div>
-      <section class="panel"><div class="hd"><h2>ملفات التأمينات</h2><span class="muted" id="insCount"></span></div><div class="tscroll"><table class="dt" id="insT"></table></div></section>
+      <section class="panel"><div class="tscroll"><table class="dt" id="insT"></table></div></section>
       <section class="panel" id="insSuggestP" hidden><div class="hd"><h2>مستخلصات تحتاج ملف متابعة</h2><span class="muted">مستخلصات لم تُستخرج شهادتها ولم تُعمل لها تعلية، وليس لها ملف</span></div><div class="bd" id="insSuggest"></div></section>
     </div>
 
@@ -2574,7 +2587,7 @@ function diffList(o, n, spec){
     out.push(`${label}: ${DFMT[f](a)} ← ${DFMT[f](b)}`); }
   return out;
 }
-const INV_SPEC=[["projectId","العقد","proj"],["certNo","رقم المستخلص"],["type","النوع"],["gross","القيمة الإجمالية","money"],["date","تاريخ المستخلص","date"],["stage","المكان"],["stageDate","تاريخ دخول المكان","date"],["mpStatus","القوة العاملة"],["mpEstimate","تقدير القوة العاملة","money"],["insStatus","التأمينات","ins"],["insPaid","مبلغ التأمينات المدفوع","money"],["insRaise","مبلغ التعلية","money"],["readyPay","التسوية","ready"],["readyPayDate","تاريخ التسوية","date"],["paid","الصرف","paid"],["paidDate","تاريخ الصرف","date"],["bankExpected","المتوقع للبنك","money"],["notes","ملاحظات الكشف"],["company","الشركة"],["showSat","في كشف المتابعة","bool"],["showMp","في كشف القوة العاملة","bool"]];
+const INV_SPEC=[["projectId","العقد","proj"],["certNo","رقم المستخلص"],["type","النوع"],["gross","القيمة الإجمالية","money"],["date","تاريخ المستخلص","date"],["stage","المكان"],["stageDate","تاريخ دخول المكان","date"],["mpStatus","القوة العاملة"],["mpEstimate","تقدير القوة العاملة","money"],["insStatus","التأمينات","ins"],["insPaid","مبلغ التأمينات المدفوع","money"],["insRaise","مبلغ التعلية","money"],["readyPay","التسوية","ready"],["readyPayDate","تاريخ التسوية","date"],["paid","الصرف","paid"],["paidDate","تاريخ الصرف","date"],["bankExpected","المتوقع للبنك","money"],["notes","ملاحظات الكشف"],["company","الشركة"],["showSat","في كشف المتابعة","bool"],["showMp","في كشف القوة العاملة","bool"],["mpPayReady","القوة العاملة جاهزة للدفع","bool"],["mpPaidDate","تاريخ سداد القوة العاملة","date"],["mpNote","ملاحظات القوة العاملة"]];
 const PROJ_SPEC=[["contractNo","رقم العقد"],["name","اسم المشروع"],["shortName","الاسم المختصر"],["location","الموقع"],["dept","جهة الإسناد"],["company","الشركة"],["unifiedCode","الكود الموحد"],["contractDate","تاريخ العقد","date"],["boqNo","رقم المقايسة"],["total","قيمة العقد","money"],["reduced","تم تخفيض العقد","bool"],["totalReduced","القيمة بعد التخفيض","money"],["reducedDate","تاريخ إخطار الخفض","date"],["insFileNo","رقم ملف التأمينات (CS)"],["insFileDate","تاريخ فتح ملف التأمينات","date"],["wageRatio","نسبة الأجور","pct"],["notes","ملاحظات"]];
 const INS_SPEC=[["fileNo","رقم الملف"],["status","الحالة"],["statusText","الوضع الحالي"],["amountDue","المطلوب دفعه","money"],["required","المطلوب"],["owner","المسؤول"],["nextDate","موعد المتابعة","date"],["payReady","جاهز فعليًا للدفع","bool"]];
 const newLogs = (o,n) => (n||[]).slice((o||[]).length).map(x=>`متابعة جديدة: ${DFMT.txt(x.text)}`);
@@ -3306,6 +3319,10 @@ function invDialog(v, projectId){
   d._draft = true; d.id = v?.id || "__new";
   // تاريخ محفوظ بشكل غلط (زي «-» من الاستيراد) يتعامل كأنه فاضي، عشان الحفظ ميطلبش سبب تعديل على خانة فاضية
   const vDate0 = /^\d{4}-\d{2}-\d{2}/.test(v?.date||"") ? v.date : "";
+  // ملف التأمينات المربوط بالمستخلص (أصلي أو رد تعلية) — بيتعدّل من تاب «التأمينات»
+  const insF0 = v ? (insForInv(v.id) || state.ins.find(r=>r.raiseInvoiceId===v.id)) : null;
+  const insF = insF0 ? clone(insF0) : null; if(insF) insF.log ||= [];
+  const vfLogHtml = () => insF && insF.log.length ? `<div class="feed">${insF.log.slice().reverse().slice(0,8).map(x=>{ const n=who(x.by); return `<div class="feed-i"><span class="dot">${esc(initials(n))}</span><div><b>${esc(n)}</b><div class="txt pre">${esc(x.text)}</div></div><span class="when dte">${dmy(x.date)}</span></div>`; }).join("")}</div>` : `<p class="hint">لا توجد متابعات مسجلة على الملف.</p>`;
   if(v && !vDate0) d.date = "";
   d.materials ||= []; d.stageLog ||= []; d.log ||= [];
   const vLogHtml = () => d.log.length ? `<div class="feed">${d.log.slice().reverse().map(x=>{ const n=who(x.by); return `<div class="feed-i"><span class="dot">${esc(initials(n))}</span><div><b>${esc(n)}</b><div class="txt pre">${esc(x.text)}</div></div><span class="when dte">${dmy(x.date)}</span></div>`; }).join("")}</div>` : `<p class="hint">لا توجد متابعات مسجلة على المستخلص ده.</p>`;
@@ -3341,13 +3358,7 @@ function invDialog(v, projectId){
       <section class="sec" data-tab="steps"><h3>${ico("flag")}مراحل المتابعة <span class="r faint small" style="font-weight:500">قوة عاملة ← تأمينات ← تعلية ← تمت التسوية ← تم الصرف</span></h3>
         <div id="vSteps"></div>
         <div class="fields">
-          ${sfld("vMp","1 · شهادة القوة العاملة",["تم الاستخراج","لم يتم الاستخراج","لا حاجة"],d.mpStatus,"لم يُحدَّث")}
-          ${fld("vMpEst","تقدير مكتب القوة العاملة (فعلي)",d.mpEstimate,"number")}
-          ${sfld("vIns","2 · شهادة التأمينات الاجتماعية",["نعم","لا","تعلية","لا حاجة"],d.insStatus,"لم يُحدَّث",x=>x==="نعم"?"تم استخراجها":x==="لا"?"لم تُستخرج":x==="تعلية"?"3 · تم عمل تعلية تأمينات (يُصرف)":x)}
-          ${fld("vInsPaid","مبلغ التأمينات المدفوع",d.insPaid,"number")}
-          <div class="f raisef" ${d.insStatus==="تعلية"?"":"hidden"}><label for="vRaise">3 · مبلغ التعلية المخصوم</label><input id="vRaise" type="text" inputmode="decimal" value="${esc(d.insRaise??"")}" autocomplete="off"></div>
-          <div class="f raisef" ${d.insStatus==="تعلية"?"":"hidden"}><label for="vRaiseDate">تاريخ التعلية</label><input id="vRaiseDate" type="date" value="${esc(d.insRaiseDate||"")}"></div>
-          <p class="hint raisef wide" ${d.insStatus==="تعلية"?"":"hidden"} style="grid-column:1/-1">التعلية بتسمح بصرف المستخلص من غير الشهادة. لما الشهادة تطلع غيّر الحالة لـ«تم استخراجها» وسجّل «رد تعلية تأمينات اجتماعية» كمستخلص جديد على نفس العقد.</p>
+          <p class="hint wide" style="grid-column:1/-1">المرحلة 1 (القوة العاملة) والمرحلتين 2 و3 (التأمينات والتعلية) بتتعدّل من تابات «القوة العاملة» و«التأمينات» فوق.</p>
           ${sfld("vReady","4 · التسوية",["نعم"],d.readyPay||"","لسه متسوّاش",x=>"تمت التسوية")}
           <div class="f readyf" ${d.readyPay==="نعم"?"":"hidden"}><label for="vReadyDate">تاريخ التسوية</label><input id="vReadyDate" type="date" value="${esc(d.readyPayDate||"")}"></div>
           ${sfld("vPaid","5 · حالة الصرف",["نعم","لا"],d.paid,"لم يُحدَّث",x=>x==="نعم"?"تم الصرف":"لم يُصرف")}
@@ -3366,10 +3377,48 @@ function invDialog(v, projectId){
         ${v?timelineHtml(v,true):""}
       </section>
       ${v&&(isFinalInv(v)||v.type===CO_WG||v.type===CO_FI)?(()=>{ const cs=coState(proj(v.projectId)||{id:""}); return cs?`<section class="sec" data-tab="steps"><h3>${ico("money")}مستحقات ما بعد الختامي<span class="r"><button type="button" class="btn sm" data-co="${esc(v.projectId)}">${ico("up")}فتح المتابعة</button></span></h3><div class="coinv">${v.type===CO_WG?coToneChip(cs.wg.tone,"رد ضمان الأعمال: "+cs.wg.status):v.type===CO_FI?coToneChip(cs.fi.tone,"رد التأمين النهائي: "+cs.fi.status):`${coToneChip(cs.wg.tone,"ضمان الأعمال: "+cs.wg.status)} ${coToneChip(cs.fi.tone,"التأمين النهائي: "+cs.fi.status)}`}${cs.avail?` <span class="sub2">متاح للمطالبة من <span class="dte">${dmy(cs.avail)}</span></span>`:cs.due?` <span class="sub2">مرور السنة <span class="dte">${dmy(cs.due)}</span></span>`:""}</div>${(v.dateLog||[]).length?`<p class="hint">تعديلات التاريخ: ${v.dateLog.map(x=>`${dmy(x.from)} ← ${dmy(x.to)} (${esc(x.reason)} — ${esc(who(x.by))})`).join("، ")}</p>`:""}</section>`:""; })():""}
+      <section class="sec" data-tab="mp"><h3>${ico("users")}القوة العاملة <span class="r faint small" style="font-weight:500">أي تعديل هنا بيظهر في صفحة القوة العاملة</span></h3>
+        <div class="fields">
+          <label class="chk wide"><input type="checkbox" id="vShowMp" ${d.showMp?"checked":""}> عرض في كشف القوة العاملة</label>
+          ${sfld("vMp","1 · شهادة القوة العاملة",["تم الاستخراج","لم يتم الاستخراج","لا حاجة"],d.mpStatus,"لم يُحدَّث")}
+          ${fld("vMpEst","تقدير مكتب القوة العاملة (فعلي)",d.mpEstimate,"number")}
+          <label class="chk rdy-chk"><input type="checkbox" id="vMpReady" ${d.mpPayReady?"checked":""}> جاهز فعليًا للدفع <small class="faint">(المبلغ نهائي ومطلوب سداده دلوقتي)</small></label>
+          ${fld("vMpPaid","تاريخ سداد المبلغ",d.mpPaidDate||"","date")}
+          <div class="f wide"><label for="vMpNote">ملاحظات القوة العاملة</label><textarea id="vMpNote" placeholder="مثال: الملف عند المكتب ومنتظر التقدير">${esc(d.mpNote||"")}</textarea></div>
+        </div>
+        ${v?(()=>{ const r=mpRow(v); return `<div class="calcs"><div><span>أساس الحساب</span><b class="num">${fmt(r.base)}</b><small>${r.byContract?"إجمالي العقد":"المستخلص"}</small></div><div><span>نسبة الأجور</span><b class="num">${pctTxt(r.wage)}</b>${r.wageOwn?"":"<small>افتراضي</small>"}</div><div><span>مسدد سابقًا</span><b class="num">${r.prevPaid?fmt(r.prevPaid):"—"}</b></div><div class="hl"><span>المتوقع سداده</span><b class="num">${fmt(r.expected)}</b></div><div><span>المعتمد للسداد</span><b class="num">${fmt(r.approved)}</b></div></div><p class="hint">الحسبة على آخر بيانات محفوظة للمستخلص.</p>`; })():`<p class="hint">الحسبة بتظهر بعد حفظ المستخلص.</p>`}
+      </section>
+      <section class="sec" data-tab="ins"><h3>${ico("shield")}شهادة التأمينات للمستخلص</h3>
+        <div class="fields">
+          ${sfld("vIns","2 · شهادة التأمينات الاجتماعية",["نعم","لا","تعلية","لا حاجة"],d.insStatus,"لم يُحدَّث",x=>x==="نعم"?"تم استخراجها":x==="لا"?"لم تُستخرج":x==="تعلية"?"3 · تم عمل تعلية تأمينات (يُصرف)":x)}
+          ${fld("vInsPaid","مبلغ التأمينات المدفوع",d.insPaid,"number")}
+          <div class="f raisef" ${d.insStatus==="تعلية"?"":"hidden"}><label for="vRaise">3 · مبلغ التعلية المخصوم</label><input id="vRaise" type="text" inputmode="decimal" value="${esc(d.insRaise??"")}" autocomplete="off"></div>
+          <div class="f raisef" ${d.insStatus==="تعلية"?"":"hidden"}><label for="vRaiseDate">تاريخ التعلية</label><input id="vRaiseDate" type="date" value="${esc(d.insRaiseDate||"")}"></div>
+          <p class="hint raisef wide" ${d.insStatus==="تعلية"?"":"hidden"} style="grid-column:1/-1">التعلية بتسمح بصرف المستخلص من غير الشهادة. لما الشهادة تطلع غيّر الحالة لـ«تم استخراجها» وسجّل «رد تعلية تأمينات اجتماعية» كمستخلص جديد على نفس العقد.</p>
+        </div>
+      </section>
+      <section class="sec" data-tab="ins"><h3>${ico("doc")}ملف التأمينات <span class="r faint small" style="font-weight:500">${insF?"أي تعديل هنا بيظهر في صفحة التأمينات":""}</span></h3>
+        ${insF?`<div class="fields">
+          <div class="f"><label>رقم الملف (CS)</label><div class="vf-ro num">${esc(realId(proj(insF.projectId)?.insFileNo)||insF.fileNo||"—")}</div></div>
+          <div class="f"><label for="vfStatus">حالة الملف</label><select id="vfStatus">${opts(uniq([...(cfg.insStatuses||[]), insF.status]), insF.status||"", "اختر الحالة")}</select></div>
+          ${fld("vfDue","المبلغ المطلوب دفعه",insF.amountDue,"number")}
+          <label class="chk rdy-chk"><input type="checkbox" id="vfReady" ${insF.payReady?"checked":""}> جاهز فعليًا للدفع <small class="faint">(المبلغ نهائي ومطلوب دفعه دلوقتي)</small></label>
+          <div class="f"><label for="vfOwner">مسؤول المتابعة</label><input id="vfOwner" list="vfOwners" value="${esc(insF.owner||"")}" placeholder="مثال: أ / فلان"><datalist id="vfOwners">${uniq(state.ins.map(x=>x.owner)).map(x=>`<option value="${esc(x)}">`).join("")}</datalist></div>
+          ${fld("vfNext","موعد المتابعة التالية",insF.nextDate||"","date")}
+          <div class="f wide"><label for="vfText">الوضع الحالي</label><textarea id="vfText" placeholder="اكتب الوضع الحالي للملف">${esc(insF.statusText||"")}</textarea></div>
+          <div class="f wide"><label for="vfReq">المطلوب</label><textarea id="vfReq" placeholder="اكتب الخطوة المطلوبة والمسؤول عنها">${esc(insF.required||"")}</textarea></div>
+        </div>
+        ${(insF.requests||[]).filter(x=>x.no).length?`<div class="vf-reqs"><span class="faint small">أرقام الطلبات:</span>${(insF.requests||[]).filter(x=>x.no).map(x=>`<span class="reqchip num" title="${esc(x.subject||"")}">${esc(x.no)}</span>`).join("")}</div>`:""}
+        <h4 class="vf-h">${ico("clock")}متابعات الملف</h4>
+        <div style="display:flex;gap:8px;align-items:flex-start"><textarea class="cell" id="vfNote" rows="2" placeholder="اكتب ما تم في ملف التأمينات… ستُسجل باسمك وبتاريخ اليوم" style="flex:1;min-height:46px;resize:vertical"></textarea><button type="button" class="btn" id="vfAddNote">${ico("plus")}إضافة</button></div>
+        <div id="vfLogBox">${vfLogHtml()}</div>
+        <div class="vf-f"><button type="button" class="btn sm" id="vfOpen">${ico("doc")}فتح الملف كامل (الطلبات والحاسبة)</button></div>`
+        : v ? `<p class="hint">المستخلص ده ملوش ملف تأمينات.</p><div class="vf-f"><button type="button" class="btn sm" id="vfNew">${ico("plus")}فتح ملف تأمينات للمستخلص ده</button></div>`
+        : `<p class="hint">احفظ المستخلص الأول، وبعدها تقدر تفتح له ملف تأمينات من هنا.</p>`}
+      </section>
       <section class="sec" data-tab="data"><h3>${ico("sat")}الكشوف والملاحظات</h3>
         <div class="fields">
           <label class="chk"><input type="checkbox" id="vSat" ${d.showSat?"checked":""}> عرض في كشف المتابعة</label>
-          <label class="chk"><input type="checkbox" id="vShowMp" ${d.showMp?"checked":""}> عرض في كشف القوة العاملة</label>
           <div class="f wide"><label for="vNotes">ملاحظات الكشف</label><textarea id="vNotes" placeholder="مثال: متوقف على نقل الخامات — وأي متابعة جديدة بتتكتب هنا لوحدها">${esc(d.notes||"")}</textarea></div>
           ${sfld("vCompany","الشركة (لو مختلفة عن شركة المشروع)",uniq([...(cfg.companies||[]),...state.projects.map(p=>p.company)]),d.company,"نفس شركة المشروع")}
         </div>
@@ -3380,7 +3429,7 @@ function invDialog(v, projectId){
     </fieldset>
     ${v?(()=>{ const h=state.activity.filter(a=>a.inv===v.id).slice(0,12); return `<section class="sec" data-tab="log"><h3>${ico("clock")}سجل التعديلات</h3>${h.length?`<div class="feed">${h.map(a=>{const n=who(a.by); return `<div class="feed-i"><span class="dot">${esc(initials(n))}</span><div><b>${esc(n)}</b><div class="txt">${esc(a.text)}</div></div><span class="when">${esc(ago(a.at))}</span></div>`;}).join("")}</div>`:`<p class="hint">لا توجد تعديلات مسجلة على هذا المستخلص.</p>`}</section>`; })():""}`,
     key: v ? "inv:"+v.id : "", remake: v ? ()=>{ const nv=state.invoices.find(x=>x.id===v.id); if(!nv) return false; invDialog(nv); } : null,
-    tabs: [["data","البيانات"],["mat","الخامات"],["steps","المراحل والمكان"],["log","المتابعة والسجل"]],
+    tabs: [["data","البيانات"],["mp","القوة العاملة"],["ins","التأمينات"],["mat","الخامات"],["steps","المراحل والمكان"],["log","المتابعة والسجل"]],
     foot: footBtns("حفظ المستخلص", v?"vDel":""),
     onSubmit: async () => {
       if(ro) return;
@@ -3391,7 +3440,14 @@ function invDialog(v, projectId){
       Object.assign(data, {projectId:p.id, certNo:val("vCert").trim(), type:val("vType")||"مستخلص أعمال", gross:nval("vGross"), date:val("vDate"),
         bankExpected:nval("vBank"), paid:val("vPaid"), paidDate:val("vPaidDate"), insStatus:val("vIns"), insPaid:nval("vInsPaid"), insRaise: val("vIns")==="تعلية" ? nval("vRaise") : (d.insRaise??""), insRaiseDate: val("vIns")==="تعلية" ? (val("vRaiseDate")||today()) : (d.insRaiseDate||""),
         mpStatus:val("vMp"), mpEstimate:nval("vMpEst"), readyPay:val("vReady"), readyPayDate: val("vReady")==="نعم" ? (val("vReadyDate")||today()) : "", stage:val("vStage"), stageDate:val("vStageDate"), notes:val("vNotes"), company:val("vCompany"),
-        showSat:form.querySelector("#vSat").checked, showMp:form.querySelector("#vShowMp").checked, updatedAt:new Date().toISOString()});
+        showSat:form.querySelector("#vSat").checked, showMp:form.querySelector("#vShowMp").checked,
+        mpPayReady:form.querySelector("#vMpReady").checked, mpPaidDate:val("vMpPaid"), mpNote:val("vMpNote").trim(), updatedAt:new Date().toISOString()});
+      if(data.mpPaidDate && data.mpPaidDate>today()){ toast("تاريخ سداد القوة العاملة في المستقبل"); form._showTab?.("mp"); form.querySelector("#vMpPaid").focus(); return; }
+      // ملف التأمينات: نجهز التعديلات قبل الحفظ
+      let fData=null;
+      if(insF){ const fn=val("vfNote").trim(); if(fn) insF.log.push({date:today(), by:myId||"", text:fn});
+        const fd={...stripId(insF), status:val("vfStatus"), amountDue:nval("vfDue"), payReady:form.querySelector("#vfReady").checked, owner:val("vfOwner").trim(), nextDate:val("vfNext"), statusText:val("vfText").trim(), required:val("vfReq").trim()};
+        if(diffList(insF0,fd,INS_SPEC).length || newLogs(insF0.log,fd.log).length) fData={...fd, updatedAt:new Date().toISOString(), updatedBy:myId||""}; }
       if(!data.certNo && isWork(data.type)){ toast("اكتب رقم المستخلص"); form._showTab?.("data"); form.querySelector("#vCert").focus(); return; }
       if(v && vDate0 && data.date!==vDate0 && isFinalInv(v)){ const rsn=val("vDateRsn").trim(); if(!rsn){ toast("اكتب سبب تعديل تاريخ المستخلص الختامي"); form._showTab?.("data"); form.querySelector("#vDateRsnF").hidden=false; form.querySelector("#vDateRsn").focus(); return; }
         data.dateLog=[...(v.dateLog||[]), {from:vDate0, to:data.date, reason:rsn, by:myId||"", at:new Date().toISOString()}]; }
@@ -3404,7 +3460,11 @@ function invDialog(v, projectId){
       if(dup){ toast(`المستخلص «${certLabel(data)}» مسجل من قبل على نفس العقد`); return; }
       data.updatedBy = myId||"";
       const ref = v ? db.collection("invoices").doc(v.id) : db.collection("invoices").doc();
-      if(await save(ref, v ? rebase(state.invoices, v.id, v, data) : data)){ dlg.close(); toast(v?"تم حفظ المستخلص":"تم تسجيل المستخلص");
+      if(await save(ref, v ? rebase(state.invoices, v.id, v, data) : data)){
+        if(fData && await save(db.collection("insurance").doc(insF0.id), rebase(state.ins, insF0.id, insF0, fData))){
+          const fch=[...diffList(insF0,fData,INS_SPEC), ...newLogs(insF0.log,fData.log)];
+          logAct(`عدّل ملف تأمينات ${pName(p,true)} · ${certLabel(data)} (من صفحة المستخلص)${fch.length?" — "+fch.join(" | "):""}`, ref.id, p.id); }
+        dlg.close(); toast(v?"تم حفظ المستخلص":"تم تسجيل المستخلص");
         const ch = v ? [...diffList(v,data,INV_SPEC), ...newLogs(v.log,data.log), ...(JSON.stringify(v.materials||[])!==JSON.stringify(data.materials)?[`الخامات: ${(v.materials||[]).length} بند ← ${data.materials.length} بند`]:[]), ...(data.dateLog&&data.dateLog.length>(v.dateLog||[]).length?[`سبب تعديل تاريخ الختامي: ${data.dateLog.at(-1).reason}`]:[])] : [];
         const lab = `${certLabel(data)} · ${pName(p,true)}`;
         logAct(v ? `عدّل ${lab}${ch.length?" — "+ch.join(" | "):""}` : `سجّل مستخلص جديد: ${lab} — القيمة: ${fmt(data.gross)} | النوع: ${data.type}${data.stage?` | المكان: ${data.stage}`:""}`, ref.id, p.id); }
@@ -3439,6 +3499,9 @@ function invDialog(v, projectId){
       form.querySelector("#vPaid").addEventListener("change", e => { if(e.target.value==="نعم" && !val("vPaidDate")) form.querySelector("#vPaidDate").value=today(); });
       const stepsLive = () => { const t={...d, mpStatus:val("vMp"), insStatus:val("vIns"), insRaise:nval("vRaise"), insRaiseDate:val("vRaiseDate"), readyPay:val("vReady"), readyPayDate:val("vReadyDate"), paid:val("vPaid"), paidDate:val("vPaidDate"), type:val("vType")||d.type};
         form.querySelector("#vSteps").innerHTML = stepperHtml(t, calc(t), true); };
+      form.querySelector("#vfAddNote")?.addEventListener("click", ()=>{ const t=val("vfNote").trim(); if(!t) return; insF.log.push({date:today(), by:myId||"", text:t}); form.querySelector("#vfNote").value=""; form.querySelector("#vfLogBox").innerHTML=vfLogHtml(); form.dispatchEvent(new Event("input",{bubbles:true})); toast("أُضيفت المتابعة على ملف التأمينات. اضغط «حفظ المستخلص» لتسجيلها"); });
+      form.querySelector("#vfOpen")?.addEventListener("click", ()=>insDialog(insF0));
+      form.querySelector("#vfNew")?.addEventListener("click", ()=>insDialog(null, v.id));
       form.querySelector("#vReady").addEventListener("change", e => { const on=e.target.value==="نعم"; form.querySelectorAll(".readyf").forEach(x=>x.hidden=!on); if(on && !val("vReadyDate")) form.querySelector("#vReadyDate").value=today(); });
       ["vMp","vIns","vReady","vPaid","vType","vRaise","vRaiseDate","vReadyDate","vPaidDate"].forEach(id=>{ const el=form.querySelector("#"+id); el?.addEventListener("change",stepsLive); el?.addEventListener("input",stepsLive); });
       stepsLive();
@@ -3690,7 +3753,8 @@ function waText(vs, keys, o, M=WA_MODES.inv){
     F.filter(f=>f[0]!=="proj").forEach(f=>{ const r=f[3](v,k,p,o,ex); if(Array.isArray(r)){ if(r.length) L.push(`- ${f[1]}:`, ...r); return; } const x=String(r??"").trim(); if(x) L.push(`- ${f[1]}: ${x}`); });
     L.push(""); });
   if(o.tot && vs.length>1) L.push(...M.tot(vs));
-  return L.join("\n").replace(/[\u200e\u200f\ufe0f]/g,"").replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,"").replace(/\n{3,}/g,"\n\n").trim();
+  // \u0639\u0644\u0627\u0645\u0629 RLM \u0641\u064a \u0623\u0648\u0644 \u0643\u0644 \u0633\u0637\u0631: \u0627\u0644\u0648\u0627\u062a\u0633\u0627\u0628 \u064a\u0639\u0631\u0636 \u0627\u0644\u0631\u0633\u0627\u0644\u0629 \u0645\u0646 \u0627\u0644\u064a\u0645\u064a\u0646 \u0644\u0644\u0634\u0645\u0627\u0644 \u062d\u062a\u0649 \u0644\u0648 \u0627\u0644\u0633\u0637\u0631 \u0628\u0627\u062f\u0626 \u0628\u0631\u0642\u0645 \u0623\u0648 \u0631\u0645\u0632 \u0623\u0648 \u0643\u0644\u0645\u0629 \u0625\u0646\u062c\u0644\u064a\u0632\u064a
+  return L.join("\n").replace(/[\u200e\u200f\ufe0f]/g,"").replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,"").replace(/\n{3,}/g,"\n\n").trim().split("\n").map(x=>x?"\u200f"+x:x).join("\n");
 }
 function waDialog(ids, mode="inv"){
   const M=WA_MODES[mode], WF=M.fields;
@@ -4490,9 +4554,9 @@ function renderIns(){
     <div class="kpi ${lateF?"hl":""}"><span class="lbl">${ico("clock")}متابعات تجاوزت موعدها</span><span class="val num">${lateF}</span><span class="sub">تجاوز موعد المتابعة التالية</span></div>
     <div class="kpi ${certsMissing?"wn":""}"><span class="lbl">${ico("doc")}في انتظار شهادة التأمينات</span><span class="val num">${certsMissing}</span><span class="sub">${raised.length?`+ ${raised.length} مستخلص اتعملهم تعلية (${fmt(raisedSum)})`:"مستخلص دون شهادة ولا تعلية"}</span></div>`;
   const f=state.insFilter, sts=uniq([...(cfg.insStatuses||[]), ...state.ins.map(r=>r.status)]);
-  const chip = (key,label,n,tone) => `<button type="button" class="alert st" data-insst="${esc(key)}" aria-pressed="${f.status===key}" ${n||f.status===key||key===""?"":"hidden"}>${key?`<i class="dt" style="background:${toneColor(tone)}"></i>`:""}${esc(label)} <b class="num">${n}</b></button>`;
-  const noSt = all.filter(([r])=>!r.status).length;
-  $("#insChips").innerHTML = chip("","كل الملفات",all.length) + sts.map(st=>chip(st,st,all.filter(([r])=>r.status===st).length,insTone(st))).join("") + (noSt?chip("__none","بدون حالة",noSt,"mute"):"") + (doneC||f.status==="__done"?chip("__done","الشهادات المستخرجة",doneC,"ok"):"");
+  { const noSt = all.filter(([r])=>!r.status).length, o=(k,l,n)=>`<option value="${esc(k)}" ${f.status===k?"selected":""}>${esc(l)} (${n})</option>`;
+    $("#nStatusF").innerHTML = o("","كل الملفات",all.length) + sts.map(st=>[st,all.filter(([r])=>r.status===st).length]).filter(([st,n])=>n||f.status===st).map(([st,n])=>o(st,st,n)).join("") + (noSt||f.status==="__none"?o("__none","بدون حالة",noSt):"") + (doneC||f.status==="__done"?o("__done","الشهادات المستخرجة",doneC):"");
+    $("#nStatusF").classList.toggle("on", !!f.status); }
   const rowsAll = insFiltered(), rows = state.insReadyOnly ? rowsAll.filter(([r])=>insReadyPay(r)) : rowsAll;
   { const rd=state.ins.filter(insReadyPay), amt=rd.reduce((a,r)=>a+num(r.amountDue),0); [...state.isel].forEach(id=>{ if(!state.ins.some(r=>r.id===id)) state.isel.delete(id); });
     $("#insReadyBar").innerHTML = `<button type="button" class="rdy-f ${state.insReadyOnly?"on":""}" data-insready aria-pressed="${state.insReadyOnly}">${ico("money")}جاهز فعليًا للدفع <b class="num">${rd.length}</b>${rd.length?`<span class="num">${fmt(amt)} ${esc(state.cfg.currency||"ج.م")}</span>`:""}</button>${rd.length?`<button type="button" class="btn sm" data-inselready>${ico("check")}تحديد الجاهز</button>`:""}${state.isel.size?`<button type="button" class="btn sm wa-send" data-inswa>${ico("wa")}واتساب (${state.isel.size})</button><button type="button" class="btn sm ghost" data-inselclr>${ico("x")}إلغاء التحديد</button>`:`<span class="faint small">${rd.length?"حدّد الملفات من المربع اللي جنب اسم المشروع":"علّم «جاهز فعليًا للدفع» من جوه ملف التأمينات لما المبلغ يبقى نهائي"}</span>`}`; }
@@ -5122,7 +5186,7 @@ $("#coXlsx").onclick=exportCoXlsx; $("#coHtml").onclick=exportCoHtml;
 $("#insXlsx").onclick=exportInsXlsx; $("#insHtml").onclick=exportInsHtml; $("#insNew").onclick=()=>insDialog();
 $("#insSuggest").addEventListener("click", e=>{ if(e.target.closest("#insSugToggle")){ state.insSugAll=!state.insSugAll; memo.clear(); renderIns(); } });
 ["#nSearch","#nOwner","#nSort"].forEach(x=>$(x).addEventListener("input",()=>{ memo.clear(); renderIns(); }));
-$("#insChips").onclick=e=>{ const b=e.target.closest("[data-insst]"); if(b){ state.insFilter.status = state.insFilter.status===b.dataset.insst ? "" : b.dataset.insst; memo.clear(); renderIns(); } };
+$("#nStatusF").onchange=e=>{ state.insFilter.status = e.target.value; memo.clear(); renderIns(); };
 $("#satXlsx").onclick=exportSatXlsx; $("#satHtml").onclick=exportSatHtml; $("#mpXlsx").onclick=exportMpXlsx; $("#mpNew").onclick=()=>mpDialog(null);
 $("#mpParams").onclick=()=>settingsDialog();
 const satMap={sDept:"dept",sStage:"stage",sCompany:"company",sLoc:"loc",sType:"type"};
