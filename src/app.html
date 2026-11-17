@@ -3329,10 +3329,10 @@ function claimDialog(kind, srcs, isFile=false){
           <div class="f wide"><label for="clTitle">عنوان المذكرة</label><input id="clTitle" value="${esc(C().title)}"></div>
           <div class="f wide"><label for="clTo">إلى</label><input id="clTo" value="${esc(o.to)}"></div>
           <div class="f wide"><label for="clPayee">يُصرف لصالح</label><input id="clPayee" value="${esc(o["payee_"+kind]||C().payee)}"></div>
-          <div class="f"><label for="clBy">الاسم تحت توقيع المكتب الفني (اختياري)</label><input id="clBy" value="${esc(o.by)}"></div>
+          <div class="f wide"><label for="clSig">خانات التوقيع بالترتيب (افصل بفاصلة — الأولى «إعداد» والأخيرة «اعتماد» واللي في النص «مراجعة»)</label><input id="clSig" value="${esc(o.sig||"المكتب الفني، رئيس مجلس الإدارة")}"></div>
           <div class="f"><label for="clRef">رقم المذكرة</label><input id="clRef" class="num" value="${C().code}-${today().replace(/-/g,"")}-${String(new Date().getHours()).padStart(2,"0")}${String(new Date().getMinutes()).padStart(2,"0")}"></div>
           <label class="chk wide"><input type="checkbox" id="clAtt" ${o.att!==false?"checked":""}> مرفق صورة المطالبة من المنظومة</label>
-          <div class="f wide"><label for="clNote">تعليقات (اختياري)</label><textarea id="clNote" rows="2" placeholder="مثال: برجاء الصرف بشيك باسم الهيئة"></textarea></div>
+          <div class="f wide"><label for="clNote">تعليمات الصرف (اختياري)</label><textarea id="clNote" rows="2" placeholder="مثال: برجاء الصرف بشيك باسم الهيئة"></textarea></div>
         </div></section>
       <section class="sec"><h3>${ico("money")}المستخلصات والمبالغ <span class="r faint small" style="font-weight:500">تقدر تعدّل أي مبلغ قبل الطباعة</span></h3>
         <div id="clRows" class="cl-rows">${rowsHtml()}</div>
@@ -3349,8 +3349,8 @@ function claimDialog(kind, srcs, isFile=false){
         rows=srcs.map(x=>claimRow(kind,x,isFile)); box.innerHTML=rowsHtml(); upd();
         form.querySelector("#clTitle").value=C().title; form.querySelector("#clPayee").value=o["payee_"+kind]||C().payee;
         const rf=form.querySelector("#clRef"); rf.value=rf.value.replace(/^(INS|MP)/,C().code); };
-      const build=()=>{ const d={title:val("clTitle").trim()||C().title, to:val("clTo").trim(), payee:val("clPayee").trim(), by:val("clBy").trim(), ref:val("clRef").trim(), note:val("clNote").trim(), att:form.querySelector("#clAtt").checked};
-        o.att=d.att; o.to=d.to; o.by=d.by; o["payee_"+kind]=d.payee; try{ localStorage.setItem("claimOpts",JSON.stringify(o)); }catch{}
+      const build=()=>{ const d={title:val("clTitle").trim()||C().title, to:val("clTo").trim(), payee:val("clPayee").trim(), by:"", ref:val("clRef").trim(), note:val("clNote").trim(), att:form.querySelector("#clAtt").checked, sig:val("clSig").trim()};
+        o.att=d.att; o.sig=d.sig; o.to=d.to; o.by=d.by; o["payee_"+kind]=d.payee; try{ localStorage.setItem("claimOpts",JSON.stringify(o)); }catch{}
         return claimHtml(kind, rows, d); };
       form.querySelector("#clGo").onclick=()=>{ if(!tot()){ toast("الإجمالي صفر — اكتب المبالغ المطلوبة"); return; }
         const html=build(), u=URL.createObjectURL(new Blob([html],{type:"text/html;charset=utf-8"})), w=window.open(u,"_blank");
@@ -3363,57 +3363,97 @@ function claimDialog(kind, srcs, isFile=false){
 function claimHtml(kind, rows, d){
   const C=CLAIM[kind], cur=esc(state.cfg.currency||"ج.م"), co=esc(state.cfg.companyName||"شركة الدمام للمقاولات العامة");
   const total=rows.reduce((a,r)=>a+num(r.amt),0);
-  const cell=(r,[,k,t])=>{ const v=r[k]; if(t==="n"){ if(k==="wage") return `<td class="n"><span dir="ltr">${v?pctTxt(v):"—"}</span></td>`; return `<td class="n${k==="amt"?" amt":""}"><span dir="ltr">${v===""||v==null?"—":(k==="amt"?f2(v):fmt(v))}</span></td>`; } return `<td class="${k==="p"?"pn":k==="file"?"fl":k==="c"?"cn":""}">${esc(v||"—")}</td>`; };
-  const dd=today().split("-").reverse().join("/"), now=new Date(), stamp=`${dd} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+  const money=new Set(["net","amt","base"]);
+  const head=c=>`${c[0]}${money.has(c[1])?` <small>(${cur})</small>`:""}`;
+  const cell=(r,[,k,t])=>{ const v=r[k];
+    if(t==="n"){ const x = v===""||v==null ? "—" : k==="wage" ? (v?pctTxt(v):"—") : k==="amt" ? f2(v) : fmt(v); return `<td class="n${k==="amt"?" amt":""}"><span dir="ltr">${x}</span></td>`; }
+    return `<td class="${k==="p"?"pn":k==="file"?"fl":k==="c"?"cn":""}">${k==="file"?`<span dir="ltr">${esc(v||"—")}</span>`:esc(v||"—")}</td>`; };
+  const dd=today().split("-").reverse().join("/"), now=new Date(), tm=`${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+  const sigs=(d.sig||"المكتب الفني، رئيس مجلس الإدارة").split(/[،,|]/).map(x=>x.trim()).filter(Boolean).slice(0,4);
+  const role=(i,n)=> n===1 ? "اعتماد" : i===0 ? "إعداد" : i===n-1 ? "اعتماد" : "مراجعة";
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(d.title)} — ${esc(d.ref)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap">
 <style>
-@page{size:A4;margin:14mm 13mm 16mm}
-*{box-sizing:border-box}body{margin:0;font-family:Cairo,"Segoe UI",Tahoma,sans-serif;color:#14233b;font-size:12.5px;line-height:1.7;background:#eef2f8}
+@page{size:A4;margin:12mm 13mm 13mm;@bottom-center{content:"صفحة " counter(page) " من " counter(pages);font-family:Cairo,sans-serif;font-size:8.5pt;color:#7a8597}@bottom-right{content:${JSON.stringify("صدر من نظام متابعة المستخلصات — "+dd+" "+tm)};font-family:Cairo,sans-serif;font-size:8pt;color:#7a8597}@bottom-left{content:${JSON.stringify(String(d.ref||""))};font-family:Cairo,sans-serif;font-size:8pt;color:#7a8597}}
+*{box-sizing:border-box}
+body{margin:0;font-family:Cairo,"Segoe UI",Tahoma,sans-serif;color:#1a2433;font-size:13.5px;line-height:1.65;background:#e9edf3}
 .bar{position:sticky;top:0;background:#0c2156;color:#fff;padding:10px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between;z-index:2;font-weight:600}
-.bar button{font:inherit;font-weight:700;background:#fff;color:#0c2156;border:0;border-radius:8px;padding:8px 18px;cursor:pointer}
-.pg{background:#fff;max-width:210mm;margin:16px auto;padding:14mm 13mm;box-shadow:0 10px 40px rgba(12,33,86,.12);border-radius:6px}
-header{display:flex;align-items:center;gap:14px;padding-bottom:12px;border-bottom:3px solid #0c2156}
-header img{height:64px}header .co b{display:block;font-size:19px;font-weight:800;color:#0c2156}header .co span{color:#5d6b82;font-size:11.5px}
-header .meta{margin-inline-start:auto;border:1.5px solid #0c2156;border-radius:10px;padding:6px 14px;min-width:190px}
-header .meta div{display:grid;grid-template-columns:96px auto;align-items:center;font-size:11.5px}header .meta div b{color:#0c2156;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;text-align:right;justify-self:start}
-h1{margin:18px 0 12px;text-align:center;font-size:18px;font-weight:800;color:#fff;background:#0c2156;border-radius:999px;padding:7px 18px;display:table;margin-inline:auto}
-.to{margin:6px 0 2px;font-weight:700;font-size:13.5px}.greet{margin:4px 0 8px;font-weight:700;text-align:center}
-p.body{margin:0 0 12px;text-align:justify}p.body b{color:#0c2156}
-table{width:100%;border-collapse:collapse;margin-top:6px;border:1px solid #0c2156}
-th{background:#0c2156;color:#fff;font-weight:700;padding:7px 6px;border:1px solid #0c2156;border-inline-color:rgba(255,255,255,.22);font-size:11.5px}
-td{border:1px solid #cfd8e6;padding:6px 7px;vertical-align:middle;text-align:center}td.pn{text-align:start}
-tbody tr:nth-child(even) td{background:#f6f8fc}
-td.c{text-align:center;color:#5d6b82;width:30px}td.pn{font-weight:700}td.fl{text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
-td.n{text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums}td.cn{white-space:nowrap}td.amt{font-weight:800;color:#0c2156}
-tfoot td{background:#eaf0fb;font-weight:800;color:#0c2156;font-size:13.5px;border-color:#cfd8e6;border-top:2px solid #0c2156}tfoot td:first-child{text-align:start}
-.words{margin-top:10px;border:1.5px dashed #0c2156;border-radius:10px;padding:8px 14px;background:#f6f8fc;font-weight:700}
-.words span{display:block;font-size:10.5px;color:#5d6b82;font-weight:600}
-.note{margin-top:10px;border-inline-start:4px solid #d99322;background:#fdf6e8;padding:8px 12px;border-radius:6px}
-.att{margin-top:10px;padding:7px 12px;border:1px solid #cfd8e6;border-radius:8px;background:#fff}.att b{color:#0c2156}
-.thanks{margin:14px 0 4px;font-weight:600}
-.sig{display:grid;grid-template-columns:repeat(2,1fr);gap:60px;margin:26px 30px 0}
-.sig div{text-align:center;font-size:11.5px}.sig b{display:block;color:#0c2156;font-size:12px}.sig .ln{border-bottom:1.5px solid #8a97ad;height:44px;margin:4px 6px}.sig .nm{color:#5d6b82;min-height:18px}
-footer{margin-top:22px;padding-top:8px;border-top:1px solid #cfd8e6;display:flex;justify-content:space-between;color:#8a97ad;font-size:10px}
-thead{display:table-header-group}tr{break-inside:avoid}.words,.sig,.note{break-inside:avoid}
-@media print{body{background:#fff}.bar{display:none}.pg{box-shadow:none;margin:0;padding:0;max-width:none;border-radius:0}}
+.bar button{font:inherit;font-weight:700;background:#fff;color:#0c2156;border:0;border-radius:6px;padding:8px 18px;cursor:pointer}
+.pg{background:#fff;width:210mm;min-height:297mm;margin:16px auto;padding:12mm 13mm;box-shadow:0 10px 40px rgba(12,33,86,.12);display:flex;flex-direction:column}
+/* الترويسة */
+header{display:flex;align-items:center;gap:16px;padding-bottom:9px;border-bottom:2.5px solid #0c2156}
+header img{height:68px}
+header .co b{display:block;font-size:23px;font-weight:800;color:#0c2156;line-height:1.35}
+header .co span{color:#5b6677;font-size:13px;font-weight:600}
+table.meta{margin-inline-start:auto;border-collapse:collapse;font-size:12.5px;min-width:240px}
+table.meta th,table.meta td{border:1px solid #b9c3d3;padding:4px 10px;text-align:start}
+table.meta th{background:#f1f4f9;color:#0c2156;font-weight:700;width:118px;white-space:nowrap}
+table.meta td{font-weight:700;font-variant-numeric:tabular-nums}table.meta tr.hl th,table.meta tr.hl td{background:#0c2156;color:#fff}
+/* العنوان */
+h1{margin:12px auto 8px;text-align:center;font-size:21px;font-weight:800;color:#0c2156;padding-bottom:6px;border-bottom:2px solid #0c2156;display:table}
+.to{font-weight:700;font-size:14.5px}
+.greet{margin:2px 0 4px;font-weight:700;text-align:center;font-size:14.5px}
+p.body{margin:0 0 10px;text-align:justify;font-size:14px}
+p.body b{color:#0c2156}
+/* ملخص المبلغ */
+.sum{display:grid;grid-template-columns:1fr 1.4fr;border:1px solid #b9c3d3;margin-bottom:10px}
+.sum div{padding:5px 14px}.sum div+div{border-inline-start:1px solid #b9c3d3}
+.sum span{display:block;font-size:11.5px;color:#5b6677;font-weight:600}
+.sum b{font-size:17px;color:#0c2156;font-weight:800;line-height:1.5}.sum b.am{white-space:nowrap}
+h2{font-size:14.5px;font-weight:800;color:#0c2156;margin:0 0 6px}
+/* الجدول */
+table.t{width:100%;border-collapse:collapse;border:1px solid #b9c3d3}
+table.t th{background:#0c2156;color:#fff;font-weight:700;padding:9px 8px;border:1px solid #b9c3d3;border-top-color:#0c2156;font-size:12.5px;line-height:1.4}
+table.t th small{font-weight:600;font-size:11px;opacity:.9}
+table.t td{border:1px solid #b9c3d3;padding:8px 8px;vertical-align:middle;text-align:center;font-size:13px}
+table.t tbody tr:nth-child(even) td{background:#f6f8fb}
+td.c{color:#5b6677;width:34px}
+td.pn{text-align:start;font-weight:700;font-size:13.5px}
+td.n,td.fl,td.cn{white-space:nowrap;font-variant-numeric:tabular-nums}
+td.amt{font-weight:800;color:#0c2156;font-size:14px}
+table.t tfoot td{background:#e6ebf4;font-weight:800;color:#0c2156;font-size:14.5px;border-top:1.5px solid #0c2156;padding:10px 8px}
+table.t tfoot td:first-child{text-align:start}
+/* المبلغ بالحروف */
+.words{margin-top:10px;border:1px solid #b9c3d3;background:#f5f6f8;padding:9px 14px;font-weight:700;font-size:14.5px;color:#1a2433}
+.words span{display:block;font-size:11.5px;color:#5b6677;font-weight:600}
+/* المرفقات وتعليمات الصرف */
+.ext{margin-top:10px;border:1px solid #b9c3d3}
+.ext h3{margin:0;background:#f1f4f9;border-bottom:1px solid #b9c3d3;padding:5px 14px;font-size:12.5px;color:#0c2156;font-weight:800}
+.ext div{display:grid;grid-template-columns:118px 1fr;padding:6px 14px;font-size:13px}.ext div+div{border-top:1px solid #b9c3d3}
+.ext div b{color:#0c2156}
+.thanks{margin:10px 0 0;font-weight:700;text-align:center}
+/* التوقيعات والفوتر في آخر الصفحة */
+.end{margin-top:auto;padding-top:10px}
+.sig{display:grid;grid-template-columns:repeat(${sigs.length},1fr);border:1px solid #b9c3d3}
+.sig>div{padding:8px 12px 10px;text-align:center}.sig>div+div{border-inline-start:1px solid #b9c3d3}
+.sig .r{display:block;font-size:11.5px;color:#5b6677;font-weight:700;letter-spacing:.3px}
+.sig b{display:block;font-size:14px;color:#0c2156;font-weight:800}
+.sig .nm{min-height:20px;font-size:12px;color:#5b6677}
+.sig .sp{height:64px}
+.sig .ln{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#5b6677;border-top:1px solid #b9c3d3;padding-top:4px}
+footer{margin-top:8px;padding-top:6px;border-top:1px solid #c9d1de;display:flex;justify-content:space-between;color:#7a8597;font-size:10.5px}
+thead{display:table-header-group}tr{break-inside:avoid}.words,.ext,.sig,.sum{break-inside:avoid}
+@media print{body{background:#fff}.bar{display:none}footer{display:none}.pg{box-shadow:none;margin:0;padding:0;width:auto;min-height:262mm}}
 </style></head><body>
 <div class="bar"><span>${esc(d.title)} · ${esc(d.ref)}</span><button onclick="print()">طباعة / حفظ PDF</button></div>
 <div class="pg">
 <header><img src="${LOGO_NAVY}" alt=""><div class="co"><b>${co}</b><span>إدارة متابعة المستخلصات</span></div>
-  <div class="meta"><div><span>رقم المذكرة</span><b>${esc(d.ref)}</b></div><div><span>التاريخ</span><b>${dd}</b></div><div><span>عدد المستخلصات</span><b>${rows.length}</b></div></div></header>
+  <table class="meta"><tr><th>رقم المذكرة</th><td><span dir="ltr">${esc(d.ref)}</span></td></tr><tr><th>التاريخ</th><td><span dir="ltr">${dd}</span></td></tr><tr><th>عدد المستخلصات</th><td>${rows.length}</td></tr><tr class="hl"><th>المبلغ المطلوب</th><td><span dir="ltr">${f2(total)}</span> ${cur}</td></tr></table></header>
 <h1>${esc(d.title)}</h1>
-${d.to?`<div class="to">${esc(d.to)}</div>`:""}<div class="greet">تحية طيبة وبعد،</div>
-<p class="body">نرجو من سيادتكم التكرم بالموافقة على صرف مبلغ إجمالي وقدره <b><span dir="ltr">${f2(total)}</span> ${cur}</b> لصالح <b>${esc(d.payee||C.payee)}</b>، وذلك لـ${esc(C.purpose)}، طبقًا للبيان التالي:</p>
-<table><thead><tr><th>م</th>${C.cols.map(c=>`<th>${c[0]}${c[1]==="amt"?` (${cur})`:""}</th>`).join("")}</tr></thead>
+${d.to?`<div class="to">${esc(d.to)}</div>`:""}
+<div class="greet">تحية طيبة وبعد،،،</div>
+<p class="body">نرجو من سيادتكم التكرم بالموافقة على صرف مبلغ إجمالي وقدره <b><span dir="ltr">${f2(total)}</span> ${cur}</b> لصالح <b>${esc(d.payee||C.payee)}</b>، وذلك لـ${esc(C.purpose)}، وفقًا للبيان التالي:</p>
+<h2>بيان المستخلصات</h2>
+<table class="t"><thead><tr><th>م</th>${C.cols.map(c=>`<th>${head(c)}</th>`).join("")}</tr></thead>
 <tbody>${rows.map((r,i)=>`<tr><td class="c">${i+1}</td>${C.cols.map(c=>cell(r,c)).join("")}</tr>`).join("")}</tbody>
-<tfoot><tr><td colspan="${C.cols.length}">الإجمالي المطلوب صرفه</td><td class="n"><span dir="ltr">${f2(total)}</span></td></tr></tfoot></table>
+<tfoot><tr><td colspan="${C.cols.length}">الإجمالي المطلوب صرفه (${cur})</td><td class="n"><span dir="ltr">${f2(total)}</span></td></tr></tfoot></table>
 <div class="words"><span>المبلغ بالحروف</span>${esc(amountWords(total))}</div>
-${d.att?`<div class="att"><b>المرفقات: </b>صورة المطالبة من المنظومة.</div>`:""}
-${d.note?`<div class="note"><b>تعليقات: </b>${esc(d.note)}</div>`:""}
+${d.att||d.note?`<div class="ext"><h3>المرفقات وتعليمات الصرف</h3>${d.att?`<div><b>المرفقات</b><span>صورة المطالبة من المنظومة.</span></div>`:""}${d.note?`<div><b>تعليمات الصرف</b><span>${esc(d.note)}</span></div>`:""}</div>`:""}
 <div class="thanks">وتفضلوا بقبول فائق الاحترام والتقدير،،،</div>
-<div class="sig"><div><b>المكتب الفني</b><div class="ln"></div><div class="nm">${esc(d.by||"")}</div></div><div><b>رئيس مجلس الإدارة</b><div class="ln"></div><div class="nm"></div></div></div>
-<footer><span>صدر من نظام متابعة المستخلصات — ${stamp}</span><span>${esc(d.ref)}</span></footer>
+<div class="end">
+<div class="sig">${sigs.map((t,i)=>`<div><span class="r">${role(i,sigs.length)}</span><b>${esc(t)}</b><div class="sp"></div><div class="ln"><span>التوقيع</span><span>التاريخ: &nbsp; / &nbsp; / ${new Date().getFullYear()}</span></div></div>`).join("")}</div>
+<footer><span>صدر من نظام متابعة المستخلصات — <span dir="ltr">${dd} ${tm}</span></span><span dir="ltr">${esc(d.ref)}</span></footer>
+</div>
 </div>
 <script>window.addEventListener("load",()=>{ (document.fonts&&document.fonts.ready||Promise.resolve()).then(()=>setTimeout(()=>print(),400)); });<\/script>
 </body></html>`;
