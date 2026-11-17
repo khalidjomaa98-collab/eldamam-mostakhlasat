@@ -3295,7 +3295,7 @@ function amountWords(v){ const t=Math.round(num(v)*100), lb=Math.floor(t/100), p
 const CLAIM = {
   ins:{ lab:"التأمينات الاجتماعية", title:"مذكرة طلب صرف — مستحقات التأمينات الاجتماعية", payee:"الهيئة القومية للتأمين الاجتماعي",
     purpose:"سداد مستحقات ملفات التأمينات الاجتماعية، واستخراج شهادات التأمينات اللازمة لصرف المستخلصات", code:"INS",
-    cols:[["المشروع","p"],["رقم العقد","c"],["المستخلص","cert"],["رقم ملف التأمينات / الطلبات","file"],["صافي المستخلص","net","n"],["المبلغ المطلوب","amt","n"]] },
+    cols:[["المشروع","p"],["رقم العقد","c"],["المستخلص","cert"],["رقم ملف التأمينات","file"],["صافي المستخلص","net","n"],["المبلغ المطلوب","amt","n"]] },
   mp:{ lab:"القوة العاملة", title:"مذكرة طلب صرف — مبالغ القوة العاملة", payee:"مكتب القوة العاملة — صندوق العمالة غير المنتظمة",
     purpose:"سداد المبالغ المقدّرة لصندوق العمالة غير المنتظمة، واستخراج شهادات القوة العاملة اللازمة لصرف المستخلصات", code:"MP",
     cols:[["المشروع","p"],["رقم العقد","c"],["المستخلص","cert"],["أساس الحساب","base","n"],["نسبة الأجور","wage","n"],["المبلغ المطلوب","amt","n"]] }
@@ -3306,7 +3306,7 @@ function claimRow(kind, src, isFile){
     const r = isFile ? src : (insForInv(src.id) || state.ins.find(x=>x.raiseInvoiceId===src.id) || null);
     const iv = r ? (insInv(r) || (isFile?null:src)) : src, k = iv ? calc(iv) : {}, p = (r ? proj(r.projectId) : k.p) || {};
     const reqs = r ? (r.requests||[]).filter(x=>x.no).map(x=>x.no) : [];
-    return { p:pName(p,true), c:p.contractNo||"", cert:iv?certLabel(iv):"—", file:[realId(p.insFileNo)||r?.fileNo||"", ...reqs].filter(Boolean).join(" · ")||"—",
+    return { p:pName(p,true), c:p.contractNo||"", cert:iv?certLabel(iv):"—", file:realId(p.insFileNo)||r?.fileNo||"—",
       net:iv&&k.net!=null?num(k.net):"", amt:r?num(r.amountDue):0, note:r?.required||"" };
   }
   const v=isFile ? insInv(src) : src; if(!v) return {p:pName(proj(src.projectId)||{},true), c:proj(src.projectId)?.contractNo||"", cert:"—", base:"", wage:"", amt:0, note:""};
@@ -3331,7 +3331,8 @@ function claimDialog(kind, srcs, isFile=false){
           <div class="f wide"><label for="clPayee">يُصرف لصالح</label><input id="clPayee" value="${esc(o["payee_"+kind]||C().payee)}"></div>
           <div class="f"><label for="clBy">الاسم تحت توقيع المكتب الفني (اختياري)</label><input id="clBy" value="${esc(o.by)}"></div>
           <div class="f"><label for="clRef">رقم المذكرة</label><input id="clRef" class="num" value="${C().code}-${today().replace(/-/g,"")}-${String(new Date().getHours()).padStart(2,"0")}${String(new Date().getMinutes()).padStart(2,"0")}"></div>
-          <div class="f wide"><label for="clNote">ملاحظات (اختياري)</label><textarea id="clNote" rows="2" placeholder="مثال: برجاء الصرف بشيك باسم الهيئة"></textarea></div>
+          <label class="chk wide"><input type="checkbox" id="clAtt" ${o.att!==false?"checked":""}> مرفق صورة المطالبة من المنظومة</label>
+          <div class="f wide"><label for="clNote">تعليقات (اختياري)</label><textarea id="clNote" rows="2" placeholder="مثال: برجاء الصرف بشيك باسم الهيئة"></textarea></div>
         </div></section>
       <section class="sec"><h3>${ico("money")}المستخلصات والمبالغ <span class="r faint small" style="font-weight:500">تقدر تعدّل أي مبلغ قبل الطباعة</span></h3>
         <div id="clRows" class="cl-rows">${rowsHtml()}</div>
@@ -3348,8 +3349,8 @@ function claimDialog(kind, srcs, isFile=false){
         rows=srcs.map(x=>claimRow(kind,x,isFile)); box.innerHTML=rowsHtml(); upd();
         form.querySelector("#clTitle").value=C().title; form.querySelector("#clPayee").value=o["payee_"+kind]||C().payee;
         const rf=form.querySelector("#clRef"); rf.value=rf.value.replace(/^(INS|MP)/,C().code); };
-      const build=()=>{ const d={title:val("clTitle").trim()||C().title, to:val("clTo").trim(), payee:val("clPayee").trim(), by:val("clBy").trim(), ref:val("clRef").trim(), note:val("clNote").trim()};
-        o.to=d.to; o.by=d.by; o["payee_"+kind]=d.payee; try{ localStorage.setItem("claimOpts",JSON.stringify(o)); }catch{}
+      const build=()=>{ const d={title:val("clTitle").trim()||C().title, to:val("clTo").trim(), payee:val("clPayee").trim(), by:val("clBy").trim(), ref:val("clRef").trim(), note:val("clNote").trim(), att:form.querySelector("#clAtt").checked};
+        o.att=d.att; o.to=d.to; o.by=d.by; o["payee_"+kind]=d.payee; try{ localStorage.setItem("claimOpts",JSON.stringify(o)); }catch{}
         return claimHtml(kind, rows, d); };
       form.querySelector("#clGo").onclick=()=>{ if(!tot()){ toast("الإجمالي صفر — اكتب المبالغ المطلوبة"); return; }
         const html=build(), u=URL.createObjectURL(new Blob([html],{type:"text/html;charset=utf-8"})), w=window.open(u,"_blank");
@@ -3362,7 +3363,7 @@ function claimDialog(kind, srcs, isFile=false){
 function claimHtml(kind, rows, d){
   const C=CLAIM[kind], cur=esc(state.cfg.currency||"ج.م"), co=esc(state.cfg.companyName||"شركة الدمام للمقاولات العامة");
   const total=rows.reduce((a,r)=>a+num(r.amt),0);
-  const cell=(r,[,k,t])=>{ const v=r[k]; if(t==="n"){ if(k==="wage") return `<td class="n">${v?pctTxt(v):"—"}</td>`; return `<td class="n${k==="amt"?" amt":""}">${v===""||v==null?"—":(k==="amt"?f2(v):fmt(v))}</td>`; } return `<td class="${k==="p"?"pn":k==="file"?"fl":k==="c"?"cn":""}">${esc(v||"—")}</td>`; };
+  const cell=(r,[,k,t])=>{ const v=r[k]; if(t==="n"){ if(k==="wage") return `<td class="n"><span dir="ltr">${v?pctTxt(v):"—"}</span></td>`; return `<td class="n${k==="amt"?" amt":""}"><span dir="ltr">${v===""||v==null?"—":(k==="amt"?f2(v):fmt(v))}</span></td>`; } return `<td class="${k==="p"?"pn":k==="file"?"fl":k==="c"?"cn":""}">${esc(v||"—")}</td>`; };
   const dd=today().split("-").reverse().join("/"), now=new Date(), stamp=`${dd} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(d.title)} — ${esc(d.ref)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap">
@@ -3379,16 +3380,17 @@ header .meta div{display:flex;justify-content:space-between;gap:14px;font-size:1
 h1{margin:18px 0 12px;text-align:center;font-size:18px;font-weight:800;color:#fff;background:#0c2156;border-radius:999px;padding:7px 18px;display:table;margin-inline:auto}
 .to{margin:6px 0 2px;font-weight:700;font-size:13.5px}.greet{margin:0 0 6px;font-weight:600}
 p.body{margin:0 0 12px;text-align:justify}p.body b{color:#0c2156}
-table{width:100%;border-collapse:collapse;margin-top:6px}
-th{background:#0c2156;color:#fff;font-weight:700;padding:7px 6px;border:1px solid #0c2156;font-size:11.5px}
-td{border:1px solid #cfd8e6;padding:6px 7px;vertical-align:middle}
+table{width:100%;border-collapse:collapse;margin-top:6px;border:1px solid #0c2156}
+th{background:#0c2156;color:#fff;font-weight:700;padding:7px 6px;border:1px solid #0c2156;border-inline-color:rgba(255,255,255,.22);font-size:11.5px}
+td{border:1px solid #cfd8e6;padding:6px 7px;vertical-align:middle;text-align:center}td.pn{text-align:start}
 tbody tr:nth-child(even) td{background:#f6f8fc}
-td.c{text-align:center;color:#5d6b82;width:30px}td.pn{font-weight:700}td.fl{font-size:10.5px;direction:ltr;text-align:right;unicode-bidi:plaintext}
-td.n{text-align:left;direction:ltr;white-space:nowrap;font-variant-numeric:tabular-nums}td.cn{white-space:nowrap}td.amt{font-weight:800;color:#0c2156}
-tfoot td{background:#eaf0fb;font-weight:800;color:#0c2156;font-size:13.5px;border-color:#0c2156}
+td.c{text-align:center;color:#5d6b82;width:30px}td.pn{font-weight:700}td.fl{text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.n{text-align:left;white-space:nowrap;font-variant-numeric:tabular-nums}td.cn{white-space:nowrap}td.amt{font-weight:800;color:#0c2156}
+tfoot td{background:#eaf0fb;font-weight:800;color:#0c2156;font-size:13.5px;border-color:#cfd8e6;border-top:2px solid #0c2156}tfoot td:first-child{text-align:start}
 .words{margin-top:10px;border:1.5px dashed #0c2156;border-radius:10px;padding:8px 14px;background:#f6f8fc;font-weight:700}
 .words span{display:block;font-size:10.5px;color:#5d6b82;font-weight:600}
 .note{margin-top:10px;border-inline-start:4px solid #d99322;background:#fdf6e8;padding:8px 12px;border-radius:6px}
+.att{margin-top:10px;padding:7px 12px;border:1px solid #cfd8e6;border-radius:8px;background:#fff}.att b{color:#0c2156}
 .thanks{margin:14px 0 4px;font-weight:600}
 .sig{display:grid;grid-template-columns:repeat(2,1fr);gap:60px;margin:26px 30px 0}
 .sig div{text-align:center;font-size:11.5px}.sig b{display:block;color:#0c2156;font-size:12px}.sig .ln{border-bottom:1.5px solid #8a97ad;height:44px;margin:4px 6px}.sig .nm{color:#5d6b82;min-height:18px}
@@ -3405,9 +3407,10 @@ ${d.to?`<div class="to">${esc(d.to)}</div>`:""}<div class="greet">تحية طي�
 <p class="body">نرجو من سيادتكم التكرم بالموافقة على صرف مبلغ إجمالي وقدره <b><span dir="ltr">${f2(total)}</span> ${cur}</b> لصالح <b>${esc(d.payee||C.payee)}</b>، وذلك لـ${esc(C.purpose)}، طبقًا للبيان التالي:</p>
 <table><thead><tr><th>م</th>${C.cols.map(c=>`<th>${c[0]}${c[1]==="amt"?` (${cur})`:""}</th>`).join("")}</tr></thead>
 <tbody>${rows.map((r,i)=>`<tr><td class="c">${i+1}</td>${C.cols.map(c=>cell(r,c)).join("")}</tr>`).join("")}</tbody>
-<tfoot><tr><td colspan="${C.cols.length}">الإجمالي المطلوب صرفه</td><td class="n">${f2(total)}</td></tr></tfoot></table>
+<tfoot><tr><td colspan="${C.cols.length}">الإجمالي المطلوب صرفه</td><td class="n"><span dir="ltr">${f2(total)}</span></td></tr></tfoot></table>
 <div class="words"><span>المبلغ بالحروف</span>${esc(amountWords(total))}</div>
-${d.note?`<div class="note"><b>ملاحظات: </b>${esc(d.note)}</div>`:""}
+${d.att?`<div class="att"><b>المرفقات: </b>صورة المطالبة من المنظومة.</div>`:""}
+${d.note?`<div class="note"><b>تعليقات: </b>${esc(d.note)}</div>`:""}
 <div class="thanks">وتفضلوا بقبول فائق الاحترام والتقدير،،،</div>
 <div class="sig"><div><b>المكتب الفني</b><div class="ln"></div><div class="nm">${esc(d.by||"")}</div></div><div><b>رئيس مجلس الإدارة</b><div class="ln"></div><div class="nm"></div></div></div>
 <footer><span>صدر من نظام متابعة المستخلصات — ${stamp}</span><span>${esc(d.ref)}</span></footer>
