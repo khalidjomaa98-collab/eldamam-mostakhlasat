@@ -2229,6 +2229,16 @@ form.dlg-push,form.dlg-pop{animation-duration:.16s}
 .skin-m button{all:unset;flex:1;text-align:center;cursor:pointer;padding:7px 4px;border-radius:9px;border:1px solid var(--line);font-size:.8rem;font-weight:600}
 .skin-m button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .skin-m button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* نموذج المطالبة */
+.cl-rows{display:flex;flex-direction:column;gap:6px}
+.cl-r{display:grid;grid-template-columns:28px minmax(0,1fr) 150px auto;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.cl-i{color:var(--faint);text-align:center}.cl-t{min-width:0}.cl-t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-r input{text-align:left;direction:ltr;font-weight:700}
+.cl-tot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:10px 14px;border-radius:10px;background:var(--accent-soft);color:var(--accent-strong);font-weight:700}
+.cl-tot b{font-size:1.15rem}
+@media (max-width:640px){ .cl-r{grid-template-columns:22px minmax(0,1fr) auto} .cl-r input{grid-column:2 / 4} }
+.vf-f{gap:8px;flex-wrap:wrap}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2516,6 +2526,7 @@ form.dlg-push,form.dlg-pop{animation-duration:.16s}
   <div class="bk-g">
     <button type="button" data-bulk="all" title="تحديد كل المعروض في الصفحة"><svg class="i"><use href="#i-list"/></svg><span>تحديد الكل</span></button>
     <button type="button" data-bulk="fill" title="تكملة البيانات الناقصة للمحدد مرة واحدة"><svg class="i"><use href="#i-pen"/></svg><span>تكملة البيانات</span></button>
+    <button type="button" data-bulk="claim" title="نموذج مطالبة PDF للحسابات (تأمينات أو قوة عاملة)"><svg class="i"><use href="#i-print"/></svg><span>نموذج مطالبة</span></button>
     <button type="button" class="bk-wa" data-bulk="wa" title="إرسال المحدد كرسالة واتساب"><svg class="i"><use href="#i-wa"/></svg><span>واتساب</span></button>
     <button type="button" class="bk-xl" data-bulk="xlsx" title="تنزيل كشف Excel منسق للمحدد"><svg class="i"><use href="#i-dl"/></svg><span>تنزيل Excel</span></button>
     <button type="button" class="bk-x" data-bulk="clear" title="إلغاء التحديد" aria-label="إلغاء التحديد"><svg class="i"><use href="#i-x"/></svg></button>
@@ -3242,7 +3253,7 @@ function renderMp(){
   const mpAll = state.invoices.filter(v=>v.showMp).sort((a,b)=>num(a.order)-num(b.order));
   const nReady = mpAll.filter(mpReady).length, readyAmt = mpAll.filter(mpReady).reduce((a,v)=>a+mpRow(v).approved,0);
   const mpList = state.mpReadyOnly ? mpAll.filter(mpReady) : mpAll;
-  $("#mpReadyBar").innerHTML = `<button type="button" class="rdy-f ${state.mpReadyOnly?"on":""}" data-mpready aria-pressed="${!!state.mpReadyOnly}">${ico("money")}جاهز فعليًا للدفع <b class="num">${nReady}</b>${nReady?`<span class="num">${fmt(readyAmt)} ${esc(state.cfg.currency||"ج.م")}</span>`:""}</button>${nReady&&state.canWrite?`<button type="button" class="btn sm" data-mpselready>${ico("check")}تحديد الجاهز</button>`:""}<span class="faint small">${nReady?"حدّد وابعت من زرار «واتساب» في الشريط اللي تحت":"علّم «جاهز فعليًا للدفع» من نافذة القوة العاملة لما المبلغ يبقى نهائي"}</span>`;
+  $("#mpReadyBar").innerHTML = `<button type="button" class="rdy-f ${state.mpReadyOnly?"on":""}" data-mpready aria-pressed="${!!state.mpReadyOnly}">${ico("money")}جاهز فعليًا للدفع <b class="num">${nReady}</b>${nReady?`<span class="num">${fmt(readyAmt)} ${esc(state.cfg.currency||"ج.م")}</span>`:""}</button>${nReady&&state.canWrite?`<button type="button" class="btn sm" data-mpselready>${ico("check")}تحديد الجاهز</button>`:""}<span class="faint small">${nReady?"حدّد وابعت من «واتساب» أو اطبع «نموذج مطالبة» من الشريط اللي تحت":"علّم «جاهز فعليًا للدفع» من نافذة القوة العاملة لما المبلغ يبقى نهائي"}</span>`;
   const rows = mpList.map(mpRow);
   const tot = rows.reduce((s,r)=>s+r.approved,0);
   const def = rows.filter(r=>!r.wageOwn).length;
@@ -3261,6 +3272,192 @@ function renderMp(){
   }</tbody><tfoot><tr><td colspan="10">الإجمالي</td><td class="n">${money(tot)}</td></tr></tfoot>`;
 }
 
+
+/* ===================== نموذج مطالبة (تأمينات / قوة عاملة) — PDF جاهز للطباعة للحسابات ===================== */
+/* المبلغ بالحروف (جنيه مصري وقروش) */
+function arWords(n){
+  n=Math.floor(Math.abs(n)); if(!n) return "صفر";
+  const ones=["","واحد","اثنان","ثلاثة","أربعة","خمسة","ستة","سبعة","ثمانية","تسعة","عشرة","أحد عشر","اثنا عشر","ثلاثة عشر","أربعة عشر","خمسة عشر","ستة عشر","سبعة عشر","ثمانية عشر","تسعة عشر"];
+  const tens=["","","عشرون","ثلاثون","أربعون","خمسون","ستون","سبعون","ثمانون","تسعون"];
+  const hund=["","مائة","مائتان","ثلاثمائة","أربعمائة","خمسمائة","ستمائة","سبعمائة","ثمانمائة","تسعمائة"];
+  const g3=x=>{ const h=Math.floor(x/100), r=x%100, o=[]; if(h) o.push(hund[h]); if(r){ if(r<20) o.push(ones[r]); else { const u=r%10, t=Math.floor(r/10); o.push(u?`${ones[u]} و${tens[t]}`:tens[t]); } } return o.join(" و"); };
+  const sc=[["","","",""],["ألف","ألفان","آلاف","ألف"],["مليون","مليونان","ملايين","مليون"],["مليار","ملياران","مليارات","مليار"]];
+  const parts=[]; let i=0;
+  while(n>0 && i<sc.length){ const g=n%1000; n=Math.floor(n/1000);
+    if(g){ let w; if(!i) w=g3(g); else if(g===1) w=sc[i][0]; else if(g===2) w=sc[i][1]; else if(g<=10) w=`${g3(g)} ${sc[i][2]}`; else w=`${g3(g)} ${sc[i][3]}`; parts.unshift(w); }
+    i++; }
+  return parts.join(" و");
+}
+const f2 = v => Number(num(v)).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+function amountWords(v){ const t=Math.round(num(v)*100), lb=Math.floor(t/100), pt=t%100;
+  return `فقط ${arWords(lb)} جنيه مصري${pt?` و${arWords(pt)} قرش`:""} لا غير`; }
+
+const CLAIM = {
+  ins:{ lab:"التأمينات الاجتماعية", title:"مذكرة طلب صرف — مستحقات التأمينات الاجتماعية", payee:"الهيئة القومية للتأمين الاجتماعي",
+    purpose:"سداد مستحقات ملفات التأمينات الاجتماعية، واستخراج شهادات التأمينات اللازمة لصرف المستخلصات", code:"INS",
+    cols:[["المشروع","p"],["رقم العقد","c"],["المستخلص","cert"],["رقم ملف التأمينات","file"],["صافي المستخلص","net","n"],["المبلغ المطلوب","amt","n"]] },
+  mp:{ lab:"القوة العاملة", title:"مذكرة طلب صرف — مبالغ القوة العاملة", payee:"مكتب القوة العاملة — صندوق العمالة غير المنتظمة",
+    purpose:"سداد المبالغ المقدّرة لصندوق العمالة غير المنتظمة، واستخراج شهادات القوة العاملة اللازمة لصرف المستخلصات", code:"MP",
+    cols:[["المشروع","p"],["رقم العقد","c"],["المستخلص","cert"],["أساس الحساب","base","n"],["نسبة الأجور","wage","n"],["المبلغ المطلوب","amt","n"]] }
+};
+/* بيانات سطر من مستخلص أو ملف تأمينات */
+function claimRow(kind, src, isFile){
+  if(kind==="ins"){
+    const r = isFile ? src : (insForInv(src.id) || state.ins.find(x=>x.raiseInvoiceId===src.id) || null);
+    const iv = r ? (insInv(r) || (isFile?null:src)) : src, k = iv ? calc(iv) : {}, p = (r ? proj(r.projectId) : k.p) || {};
+    const reqs = r ? (r.requests||[]).filter(x=>x.no).map(x=>x.no) : [];
+    return { p:pName(p,true), c:p.contractNo||"", cert:iv?certLabel(iv):"—", file:realId(p.insFileNo)||r?.fileNo||"—",
+      net:iv&&k.net!=null?num(k.net):"", amt:r?num(r.amountDue):0, note:r?.required||"" };
+  }
+  const v=isFile ? insInv(src) : src; if(!v) return {p:pName(proj(src.projectId)||{},true), c:proj(src.projectId)?.contractNo||"", cert:"—", base:"", wage:"", amt:0, note:""};
+  const r=mpRow(v), k=r.k, p=k.p||{};
+  return { p:pName(p,true), c:p.contractNo||"", cert:certLabel(v), base:r.base, wage:r.wage, amt:r.approved, note:v.mpNote||"" };
+}
+function claimDialog(kind, srcs, isFile=false){
+  if(!srcs.length){ toast("حدد مستخلص أو ملف واحد على الأقل"); return; }
+  const fromIns = isFile;
+  let o; try{ o=JSON.parse(localStorage.getItem("claimOpts")||"null"); }catch{}
+  o = {to:"السيد الأستاذ / مدير الإدارة المالية والحسابات", by:(names.get(myId)||$("#meName")?.textContent||"").trim(), ...(o||{})};
+  let rows = srcs.map(x=>claimRow(kind,x,isFile)), note="";
+  const C=()=>CLAIM[kind];
+  const rowsHtml = () => rows.map((r,i)=>`<div class="cl-r"><span class="num cl-i">${i+1}</span><div class="cl-t"><b>${esc(r.p)}</b><span class="sub2">${esc(r.cert)}${r.c?` · عقد ${esc(r.c)}`:""}</span></div><input class="cell num" data-ca="${i}" inputmode="decimal" value="${esc(r.amt?String(Math.round(r.amt*100)/100):"")}" placeholder="0" aria-label="المبلغ المطلوب"><button type="button" class="btn sm ghost x" data-crm="${i}" title="شيل من المطالبة" aria-label="شيل">${ico("x")}</button></div>`).join("");
+  const tot = () => rows.reduce((a,r)=>a+num(r.amt),0);
+  openDlg({ title:`${ico("print")}نموذج مطالبة للحسابات`, sub:"راجع المبالغ والبيانات، وبعدين «فتح PDF» — هيفتح جاهز للطباعة أو الحفظ PDF",
+    body:`<section class="sec"><h3>${ico("doc")}نوع المطالبة</h3>
+        <div class="seg" id="clKind" ${fromIns?'style="pointer-events:none;opacity:.7"':""}><button type="button" data-k="ins" aria-pressed="${kind==="ins"}">التأمينات الاجتماعية</button><button type="button" data-k="mp" aria-pressed="${kind==="mp"}">القوة العاملة</button></div>
+        <div class="fields" style="margin-top:12px">
+          <div class="f wide"><label for="clTitle">عنوان المذكرة</label><input id="clTitle" value="${esc(C().title)}"></div>
+          <div class="f wide"><label for="clTo">إلى</label><input id="clTo" value="${esc(o.to)}"></div>
+          <div class="f wide"><label for="clPayee">يُصرف لصالح</label><input id="clPayee" value="${esc(o["payee_"+kind]||C().payee)}"></div>
+          <div class="f wide"><label for="clSig">خانات التوقيع بالترتيب (افصل بفاصلة — الأولى «إعداد» والأخيرة «اعتماد» واللي في النص «مراجعة»)</label><input id="clSig" value="${esc(o.sig||"المكتب الفني، رئيس مجلس الإدارة")}"></div>
+          <div class="f"><label for="clRef">رقم المذكرة</label><input id="clRef" class="num" value="${C().code}-${today().replace(/-/g,"")}-${String(new Date().getHours()).padStart(2,"0")}${String(new Date().getMinutes()).padStart(2,"0")}"></div>
+          <label class="chk wide"><input type="checkbox" id="clAtt" ${o.att!==false?"checked":""}> مرفق صورة المطالبة من المنظومة</label>
+          <div class="f wide"><label for="clNote">تعليمات الصرف (اختياري)</label><textarea id="clNote" rows="2" placeholder="مثال: برجاء الصرف بشيك باسم الهيئة"></textarea></div>
+        </div></section>
+      <section class="sec"><h3>${ico("money")}المستخلصات والمبالغ <span class="r faint small" style="font-weight:500">تقدر تعدّل أي مبلغ قبل الطباعة</span></h3>
+        <div id="clRows" class="cl-rows">${rowsHtml()}</div>
+        <div class="cl-tot"><span>الإجمالي</span><b class="num" id="clTot">${f2(tot())}</b></div>
+        <p class="hint" id="clWords">${esc(amountWords(tot()))}</p></section>`,
+    foot:`<button type="button" class="btn primary" id="clGo">${ico("print")}فتح PDF</button><button type="button" class="btn" id="clDl">${ico("dl")}تنزيل الملف</button><button class="btn ghost" type="button" data-cancel>${ico("x")}إلغاء</button>`,
+    onMount:()=>{
+      const box=form.querySelector("#clRows");
+      const upd=()=>{ form.querySelector("#clTot").textContent=f2(tot()); form.querySelector("#clWords").textContent=amountWords(tot()); };
+      box.addEventListener("input",e=>{ const i=e.target.dataset.ca; if(i==null) return; rows[+i].amt=num(String(e.target.value).replace(/,/g,"")); upd(); });
+      box.addEventListener("click",e=>{ const b=e.target.closest("[data-crm]"); if(!b) return; if(rows.length===1){ toast("لازم يفضل مستخلص واحد على الأقل"); return; } rows.splice(+b.dataset.crm,1); srcs.splice(+b.dataset.crm,1); box.innerHTML=rowsHtml(); upd(); });
+      form.querySelector("#clKind").onclick=e=>{ const b=e.target.closest("[data-k]"); if(!b||b.dataset.k===kind) return; kind=b.dataset.k;
+        form.querySelectorAll("#clKind button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+        rows=srcs.map(x=>claimRow(kind,x,isFile)); box.innerHTML=rowsHtml(); upd();
+        form.querySelector("#clTitle").value=C().title; form.querySelector("#clPayee").value=o["payee_"+kind]||C().payee;
+        const rf=form.querySelector("#clRef"); rf.value=rf.value.replace(/^(INS|MP)/,C().code); };
+      const build=()=>{ const d={title:val("clTitle").trim()||C().title, to:val("clTo").trim(), payee:val("clPayee").trim(), by:"", ref:val("clRef").trim(), note:val("clNote").trim(), att:form.querySelector("#clAtt").checked, sig:val("clSig").trim()};
+        o.att=d.att; o.sig=d.sig; o.to=d.to; o.by=d.by; o["payee_"+kind]=d.payee; try{ localStorage.setItem("claimOpts",JSON.stringify(o)); }catch{}
+        return claimHtml(kind, rows, d); };
+      form.querySelector("#clGo").onclick=()=>{ if(!tot()){ toast("الإجمالي صفر — اكتب المبالغ المطلوبة"); return; }
+        const html=build(), u=URL.createObjectURL(new Blob([html],{type:"text/html;charset=utf-8"})), w=window.open(u,"_blank");
+        if(!w){ offer(`مطالبة ${C().lab} ${today()}.html`, html); toast("المتصفح منع فتح نافذة — اتنزل الملف، افتحه واطبعه"); } else setTimeout(()=>URL.revokeObjectURL(u),60000);
+        logAct(`أصدر نموذج مطالبة ${C().lab} (${val("clRef")}) — ${rows.length} ${rows.length===1?"مستخلص":"مستخلصات"} — الإجمالي ${fmt(tot())}`, "", ""); };
+      form.querySelector("#clDl").onclick=()=>{ if(!tot()){ toast("الإجمالي صفر — اكتب المبالغ المطلوبة"); return; } offer(`مطالبة ${C().lab} ${today()}.html`, build()); };
+      formDirty=false;
+    } });
+}
+function claimHtml(kind, rows, d){
+  const C=CLAIM[kind], cur=esc(state.cfg.currency||"ج.م"), co=esc(state.cfg.companyName||"شركة الدمام للمقاولات العامة");
+  const total=rows.reduce((a,r)=>a+num(r.amt),0);
+  const money=new Set(["net","amt","base"]);
+  const head=c=>`${c[0]}${money.has(c[1])?` <small>(${cur})</small>`:""}`;
+  const cell=(r,[,k,t])=>{ const v=r[k];
+    if(t==="n"){ const x = v===""||v==null ? "—" : k==="wage" ? (v?pctTxt(v):"—") : k==="amt" ? f2(v) : fmt(v); return `<td class="n${k==="amt"?" amt":""}"><span dir="ltr">${x}</span></td>`; }
+    return `<td class="${k==="p"?"pn":k==="file"?"fl":k==="c"?"cn":""}">${k==="file"?`<span dir="ltr">${esc(v||"—")}</span>`:esc(v||"—")}</td>`; };
+  const dd=today().split("-").reverse().join("/"), now=new Date(), tm=`${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+  const sigs=(d.sig||"المكتب الفني، رئيس مجلس الإدارة").split(/[،,|]/).map(x=>x.trim()).filter(Boolean).slice(0,4);
+  const role=(i,n)=> n===1 ? "اعتماد" : i===0 ? "إعداد" : i===n-1 ? "اعتماد" : "مراجعة";
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(d.title)} — ${esc(d.ref)}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap">
+<style>
+@page{size:A4;margin:12mm 13mm 13mm;@bottom-center{content:"صفحة " counter(page) " من " counter(pages);font-family:Cairo,sans-serif;font-size:8.5pt;color:#7a8597}@bottom-right{content:${JSON.stringify("صدر من نظام متابعة المستخلصات — "+dd+" "+tm)};font-family:Cairo,sans-serif;font-size:8pt;color:#7a8597}@bottom-left{content:${JSON.stringify(String(d.ref||""))};font-family:Cairo,sans-serif;font-size:8pt;color:#7a8597}}
+*{box-sizing:border-box}
+body{margin:0;font-family:Cairo,"Segoe UI",Tahoma,sans-serif;color:#1a2433;font-size:13.5px;line-height:1.65;background:#e9edf3}
+.bar{position:sticky;top:0;background:#0c2156;color:#fff;padding:10px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between;z-index:2;font-weight:600}
+.bar button{font:inherit;font-weight:700;background:#fff;color:#0c2156;border:0;border-radius:6px;padding:8px 18px;cursor:pointer}
+.pg{background:#fff;width:210mm;min-height:297mm;margin:16px auto;padding:12mm 13mm;box-shadow:0 10px 40px rgba(12,33,86,.12);display:flex;flex-direction:column}
+/* الترويسة */
+header{display:flex;align-items:center;gap:16px;padding-bottom:9px;border-bottom:2.5px solid #0c2156}
+header img{height:68px}
+header .co b{display:block;font-size:23px;font-weight:800;color:#0c2156;line-height:1.35}
+header .co span{color:#5b6677;font-size:13px;font-weight:600}
+table.meta{margin-inline-start:auto;border-collapse:collapse;font-size:12.5px;min-width:240px}
+table.meta th,table.meta td{border:1px solid #b9c3d3;padding:4px 10px;text-align:start}
+table.meta th{background:#f1f4f9;color:#0c2156;font-weight:700;width:118px;white-space:nowrap}
+table.meta td{font-weight:700;font-variant-numeric:tabular-nums}table.meta tr.hl th,table.meta tr.hl td{background:#0c2156;color:#fff}
+/* العنوان */
+h1{margin:12px auto 8px;text-align:center;font-size:21px;font-weight:800;color:#0c2156;padding-bottom:6px;border-bottom:2px solid #0c2156;display:table}
+.to{font-weight:700;font-size:14.5px}
+.greet{margin:2px 0 4px;font-weight:700;text-align:center;font-size:14.5px}
+p.body{margin:0 0 10px;text-align:justify;font-size:14px}
+p.body b{color:#0c2156}
+/* ملخص المبلغ */
+.sum{display:grid;grid-template-columns:1fr 1.4fr;border:1px solid #b9c3d3;margin-bottom:10px}
+.sum div{padding:5px 14px}.sum div+div{border-inline-start:1px solid #b9c3d3}
+.sum span{display:block;font-size:11.5px;color:#5b6677;font-weight:600}
+.sum b{font-size:17px;color:#0c2156;font-weight:800;line-height:1.5}.sum b.am{white-space:nowrap}
+h2{font-size:14.5px;font-weight:800;color:#0c2156;margin:0 0 6px}
+/* الجدول */
+table.t{width:100%;border-collapse:collapse;border:1px solid #b9c3d3}
+table.t th{background:#0c2156;color:#fff;font-weight:700;padding:9px 8px;border:1px solid #b9c3d3;border-top-color:#0c2156;font-size:12.5px;line-height:1.4}
+table.t th small{font-weight:600;font-size:11px;opacity:.9}
+table.t td{border:1px solid #b9c3d3;padding:8px 8px;vertical-align:middle;text-align:center;font-size:13px}
+table.t tbody tr:nth-child(even) td{background:#f6f8fb}
+td.c{color:#5b6677;width:34px}
+td.pn{text-align:start;font-weight:700;font-size:13.5px}
+td.n,td.fl,td.cn{white-space:nowrap;font-variant-numeric:tabular-nums}
+td.amt{font-weight:800;color:#0c2156;font-size:14px}
+table.t tfoot td{background:#e6ebf4;font-weight:800;color:#0c2156;font-size:14.5px;border-top:1.5px solid #0c2156;padding:10px 8px}
+table.t tfoot td:first-child{text-align:start}
+/* المبلغ بالحروف */
+.words{margin-top:10px;border:1px solid #b9c3d3;background:#f5f6f8;padding:9px 14px;font-weight:700;font-size:14.5px;color:#1a2433}
+.words span{display:block;font-size:11.5px;color:#5b6677;font-weight:600}
+/* المرفقات وتعليمات الصرف */
+.ext{margin-top:10px;border:1px solid #b9c3d3}
+.ext h3{margin:0;background:#f1f4f9;border-bottom:1px solid #b9c3d3;padding:5px 14px;font-size:12.5px;color:#0c2156;font-weight:800}
+.ext div{display:grid;grid-template-columns:118px 1fr;padding:6px 14px;font-size:13px}.ext div+div{border-top:1px solid #b9c3d3}
+.ext div b{color:#0c2156}
+.thanks{margin:10px 0 0;font-weight:700;text-align:center}
+/* التوقيعات والفوتر في آخر الصفحة */
+.end{margin-top:auto;padding-top:10px}
+.sig{display:grid;grid-template-columns:repeat(${sigs.length},1fr);border:1px solid #b9c3d3}
+.sig>div{padding:8px 12px 10px;text-align:center}.sig>div+div{border-inline-start:1px solid #b9c3d3}
+.sig .r{display:block;font-size:11.5px;color:#5b6677;font-weight:700;letter-spacing:.3px}
+.sig b{display:block;font-size:14px;color:#0c2156;font-weight:800}
+.sig .nm{min-height:20px;font-size:12px;color:#5b6677}
+.sig .sp{height:64px}
+.sig .ln{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#5b6677;border-top:1px solid #b9c3d3;padding-top:4px}
+footer{margin-top:8px;padding-top:6px;border-top:1px solid #c9d1de;display:flex;justify-content:space-between;color:#7a8597;font-size:10.5px}
+thead{display:table-header-group}tr{break-inside:avoid}.words,.ext,.sig,.sum{break-inside:avoid}
+@media print{body{background:#fff}.bar{display:none}footer{display:none}.pg{box-shadow:none;margin:0;padding:0;width:auto;min-height:262mm}}
+</style></head><body>
+<div class="bar"><span>${esc(d.title)} · ${esc(d.ref)}</span><button onclick="print()">طباعة / حفظ PDF</button></div>
+<div class="pg">
+<header><img src="${LOGO_NAVY}" alt=""><div class="co"><b>${co}</b><span>إدارة متابعة المستخلصات</span></div>
+  <table class="meta"><tr><th>رقم المذكرة</th><td><span dir="ltr">${esc(d.ref)}</span></td></tr><tr><th>التاريخ</th><td><span dir="ltr">${dd}</span></td></tr><tr><th>عدد المستخلصات</th><td>${rows.length}</td></tr><tr class="hl"><th>المبلغ المطلوب</th><td><span dir="ltr">${f2(total)}</span> ${cur}</td></tr></table></header>
+<h1>${esc(d.title)}</h1>
+${d.to?`<div class="to">${esc(d.to)}</div>`:""}
+<div class="greet">تحية طيبة وبعد،،،</div>
+<p class="body">نرجو من سيادتكم التكرم بالموافقة على صرف مبلغ إجمالي وقدره <b><span dir="ltr">${f2(total)}</span> ${cur}</b> لصالح <b>${esc(d.payee||C.payee)}</b>، وذلك لـ${esc(C.purpose)}، وفقًا للبيان التالي:</p>
+<h2>بيان المستخلصات</h2>
+<table class="t"><thead><tr><th>م</th>${C.cols.map(c=>`<th>${head(c)}</th>`).join("")}</tr></thead>
+<tbody>${rows.map((r,i)=>`<tr><td class="c">${i+1}</td>${C.cols.map(c=>cell(r,c)).join("")}</tr>`).join("")}</tbody>
+<tfoot><tr><td colspan="${C.cols.length}">الإجمالي المطلوب صرفه (${cur})</td><td class="n"><span dir="ltr">${f2(total)}</span></td></tr></tfoot></table>
+<div class="words"><span>المبلغ بالحروف</span>${esc(amountWords(total))}</div>
+${d.att||d.note?`<div class="ext"><h3>المرفقات وتعليمات الصرف</h3>${d.att?`<div><b>المرفقات</b><span>صورة المطالبة من المنظومة.</span></div>`:""}${d.note?`<div><b>تعليمات الصرف</b><span>${esc(d.note)}</span></div>`:""}</div>`:""}
+<div class="thanks">وتفضلوا بقبول فائق الاحترام والتقدير،،،</div>
+<div class="end">
+<div class="sig">${sigs.map((t,i)=>`<div><span class="r">${role(i,sigs.length)}</span><b>${esc(t)}</b><div class="sp"></div><div class="ln"><span>التوقيع</span><span>التاريخ: &nbsp; / &nbsp; / ${new Date().getFullYear()}</span></div></div>`).join("")}</div>
+<footer><span>صدر من نظام متابعة المستخلصات — <span dir="ltr">${dd} ${tm}</span></span><span dir="ltr">${esc(d.ref)}</span></footer>
+</div>
+</div>
+<script>window.addEventListener("load",()=>{ (document.fonts&&document.fonts.ready||Promise.resolve()).then(()=>setTimeout(()=>print(),400)); });<\/script>
+</body></html>`;
+}
 /* ---------- الدرج الجانبي ---------- */
 const dlg=$("#dlg"), form=$("#dlgForm");
 /* النوافذ: نافذة واحدة في نص الشاشة، ولو فتحت نافذة من جوه نافذة (مستخلص من جوه مشروع) القديمة بتستنى تحتها وترجعلها بزرار «رجوع» */
@@ -3463,7 +3660,7 @@ function invDialog(v, projectId){
           ${fld("vMpPaid","تاريخ سداد المبلغ",d.mpPaidDate||"","date")}
           <div class="f wide"><label for="vMpNote">ملاحظات القوة العاملة</label><textarea id="vMpNote" placeholder="مثال: الملف عند المكتب ومنتظر التقدير">${esc(d.mpNote||"")}</textarea></div>
         </div>
-        ${v?(()=>{ const r=mpRow(v); return `<div class="calcs"><div><span>أساس الحساب</span><b class="num">${fmt(r.base)}</b><small>${r.byContract?"إجمالي العقد":"المستخلص"}</small></div><div><span>نسبة الأجور</span><b class="num">${pctTxt(r.wage)}</b>${r.wageOwn?"":"<small>افتراضي</small>"}</div><div><span>مسدد سابقًا</span><b class="num">${r.prevPaid?fmt(r.prevPaid):"—"}</b></div><div class="hl"><span>المتوقع سداده</span><b class="num">${fmt(r.expected)}</b></div><div><span>المعتمد للسداد</span><b class="num">${fmt(r.approved)}</b></div></div><p class="hint">الحسبة على آخر بيانات محفوظة للمستخلص.</p>`; })():`<p class="hint">الحسبة بتظهر بعد حفظ المستخلص.</p>`}
+        ${v?(()=>{ const r=mpRow(v); return `<div class="calcs"><div><span>أساس الحساب</span><b class="num">${fmt(r.base)}</b><small>${r.byContract?"إجمالي العقد":"المستخلص"}</small></div><div><span>نسبة الأجور</span><b class="num">${pctTxt(r.wage)}</b>${r.wageOwn?"":"<small>افتراضي</small>"}</div><div><span>مسدد سابقًا</span><b class="num">${r.prevPaid?fmt(r.prevPaid):"—"}</b></div><div class="hl"><span>المتوقع سداده</span><b class="num">${fmt(r.expected)}</b></div><div><span>المعتمد للسداد</span><b class="num">${fmt(r.approved)}</b></div></div><p class="hint">الحسبة على آخر بيانات محفوظة للمستخلص.</p><div class="vf-f"><button type="button" class="btn sm" id="vClaimMp">${ico("print")}نموذج مطالبة القوة العاملة (PDF)</button></div>`; })():`<p class="hint">الحسبة بتظهر بعد حفظ المستخلص.</p>`}
       </section>
       <section class="sec" data-tab="ins"><h3>${ico("shield")}شهادة التأمينات للمستخلص</h3>
         <div class="fields">
@@ -3489,7 +3686,7 @@ function invDialog(v, projectId){
         <h4 class="vf-h">${ico("clock")}متابعات الملف</h4>
         <div style="display:flex;gap:8px;align-items:flex-start"><textarea class="cell" id="vfNote" rows="2" placeholder="اكتب ما تم في ملف التأمينات… ستُسجل باسمك وبتاريخ اليوم" style="flex:1;min-height:46px;resize:vertical"></textarea><button type="button" class="btn" id="vfAddNote">${ico("plus")}إضافة</button></div>
         <div id="vfLogBox">${vfLogHtml()}</div>
-        <div class="vf-f"><button type="button" class="btn sm" id="vfOpen">${ico("doc")}فتح الملف كامل (الطلبات والحاسبة)</button></div>`
+        <div class="vf-f"><button type="button" class="btn sm" id="vfOpen">${ico("doc")}فتح الملف كامل (الطلبات والحاسبة)</button><button type="button" class="btn sm" id="vClaimIns">${ico("print")}نموذج مطالبة التأمينات (PDF)</button></div>`
         : v ? `<p class="hint">المستخلص ده ملوش ملف تأمينات.</p><div class="vf-f"><button type="button" class="btn sm" id="vfNew">${ico("plus")}فتح ملف تأمينات للمستخلص ده</button></div>`
         : `<p class="hint">احفظ المستخلص الأول، وبعدها تقدر تفتح له ملف تأمينات من هنا.</p>`}
       </section>
@@ -3578,6 +3775,8 @@ function invDialog(v, projectId){
         form.querySelector("#vSteps").innerHTML = stepperHtml(t, calc(t), true); };
       form.querySelector("#vfAddNote")?.addEventListener("click", ()=>{ const t=val("vfNote").trim(); if(!t) return; insF.log.push({date:today(), by:myId||"", text:t}); form.querySelector("#vfNote").value=""; form.querySelector("#vfLogBox").innerHTML=vfLogHtml(); form.dispatchEvent(new Event("input",{bubbles:true})); toast("أُضيفت المتابعة على ملف التأمينات. اضغط «حفظ المستخلص» لتسجيلها"); });
       form.querySelector("#vfOpen")?.addEventListener("click", ()=>insDialog(insF0));
+      form.querySelector("#vClaimMp")?.addEventListener("click", ()=>claimDialog("mp", [v]));
+      form.querySelector("#vClaimIns")?.addEventListener("click", ()=>claimDialog("ins", [insF0], true));
       form.querySelector("#vfNew")?.addEventListener("click", ()=>insDialog(null, v.id));
       form.querySelector("#vReady").addEventListener("change", e => { const on=e.target.value==="نعم"; form.querySelectorAll(".readyf").forEach(x=>x.hidden=!on); if(on && !val("vReadyDate")) form.querySelector("#vReadyDate").value=today(); });
       ["vMp","vIns","vReady","vPaid","vType","vRaise","vRaiseDate","vReadyDate","vPaidDate"].forEach(id=>{ const el=form.querySelector("#"+id); el?.addEventListener("change",stepsLive); el?.addEventListener("input",stepsLive); });
@@ -4636,7 +4835,7 @@ function renderIns(){
     $("#nStatusF").classList.toggle("on", !!f.status); }
   const rowsAll = insFiltered(), rows = state.insReadyOnly ? rowsAll.filter(([r])=>insReadyPay(r)) : rowsAll;
   { const rd=state.ins.filter(insReadyPay), amt=rd.reduce((a,r)=>a+num(r.amountDue),0); [...state.isel].forEach(id=>{ if(!state.ins.some(r=>r.id===id)) state.isel.delete(id); });
-    $("#insReadyBar").innerHTML = `<button type="button" class="rdy-f ${state.insReadyOnly?"on":""}" data-insready aria-pressed="${state.insReadyOnly}">${ico("money")}جاهز فعليًا للدفع <b class="num">${rd.length}</b>${rd.length?`<span class="num">${fmt(amt)} ${esc(state.cfg.currency||"ج.م")}</span>`:""}</button>${rd.length?`<button type="button" class="btn sm" data-inselready>${ico("check")}تحديد الجاهز</button>`:""}${state.isel.size?`<button type="button" class="btn sm wa-send" data-inswa>${ico("wa")}واتساب (${state.isel.size})</button><button type="button" class="btn sm ghost" data-inselclr>${ico("x")}إلغاء التحديد</button>`:`<span class="faint small">${rd.length?"حدّد الملفات من المربع اللي جنب اسم المشروع":"علّم «جاهز فعليًا للدفع» من جوه ملف التأمينات لما المبلغ يبقى نهائي"}</span>`}`; }
+    $("#insReadyBar").innerHTML = `<button type="button" class="rdy-f ${state.insReadyOnly?"on":""}" data-insready aria-pressed="${state.insReadyOnly}">${ico("money")}جاهز فعليًا للدفع <b class="num">${rd.length}</b>${rd.length?`<span class="num">${fmt(amt)} ${esc(state.cfg.currency||"ج.م")}</span>`:""}</button>${rd.length?`<button type="button" class="btn sm" data-inselready>${ico("check")}تحديد الجاهز</button>`:""}${state.isel.size?`<button type="button" class="btn sm wa-send" data-inswa>${ico("wa")}واتساب (${state.isel.size})</button><button type="button" class="btn sm" data-insclaim>${ico("print")}نموذج مطالبة (${state.isel.size})</button><button type="button" class="btn sm ghost" data-inselclr>${ico("x")}إلغاء التحديد</button>`:`<span class="faint small">${rd.length?"حدّد الملفات من المربع اللي جنب اسم المشروع":"علّم «جاهز فعليًا للدفع» من جوه ملف التأمينات لما المبلغ يبقى نهائي"}</span>`}`; }
   $("#insCount").textContent = `${rows.length} ملف`;
   if(!rows.length){
     $("#insT").innerHTML = `<tbody><tr><td><div class="empty">${ico("shield")}<div>${state.ins.length?"لا توجد ملفات بالفلاتر الحالية.":"لا توجد ملفات تأمينات بعد. اضغط «ملف تأمينات» أو اختر مشروعًا من القائمة أدناه."}</div></div></td></tr></tbody>`;
@@ -5301,6 +5500,7 @@ document.addEventListener("click", e=>{
   if(e.target.closest("[data-inselready]")){ state.ins.filter(insReadyPay).forEach(r=>state.isel.add(r.id)); renderIns(); return; }
   if(e.target.closest("[data-inselclr]")){ state.isel.clear(); renderIns(); return; }
   if(e.target.closest("[data-inswa]")){ waDialog([...state.isel], "ins"); return; }
+  if(e.target.closest("[data-insclaim]")){ claimDialog("ins", [...state.isel].map(id=>state.ins.find(r=>r.id===id)).filter(Boolean), true); return; }
 });
 document.addEventListener("change", e=>{ const c=e.target.closest("[data-isel]"); if(!c) return; c.checked?state.isel.add(c.dataset.isel):state.isel.delete(c.dataset.isel); c.closest("tr")?.classList.toggle("picked",c.checked); renderIns(); });
 $("#acPer").onclick=e=>{ const b=e.target.closest("button"); if(!b) return; state.ac.per=b.dataset.v; state.ac.day=""; $("#acDay").value=""; state.ac.limit=150; renderAct(); };
@@ -5368,6 +5568,7 @@ $("#bulk").addEventListener("click", e=>{ const b=e.target.closest("[data-bulk]"
   if(k==="all"){ selectAllVisible(); return; }
   if(k==="xlsx"){ exportSelXlsx(b); return; }
   if(k==="wa"){ waDialog(null, state.tab==="mp"?"mp":"inv"); return; }
+  if(k==="claim"){ claimDialog(state.tab==="ins"?"ins":"mp", [...state.sel].map(id=>state.invoices.find(v=>v.id===id)).filter(Boolean)); return; }
   if(k==="fill"){ fillDialog(); return; }
   askBulk(k); });
 document.addEventListener("keydown", e=>{ if((e.key==="Enter"||e.key===" ") && e.target.matches?.("[data-pipe]")){ e.preventDefault(); e.target.click(); return; } if(e.key==="Enter" && e.target.matches?.("tr[data-inv]")){ const v=state.invoices.find(x=>x.id===e.target.dataset.inv); if(v) invDialog(v); return; } if((e.key==="Enter"||e.key===" ") && e.target.matches?.(".pc2")){ e.preventDefault(); const p=proj(e.target.dataset.proj); if(p) projDialog(p); } });
