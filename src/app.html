@@ -292,7 +292,7 @@ table{border-collapse:collapse;width:100%}
 .bulk .bk-yes{background:#fff;color:var(--side);border-color:#fff}
 .bulk .bk-yes:hover{background:#e8ecf8}
 .bulk .bk-no{background:none}
-.bulk.confirming #bulkInvActs,.bulk.confirming #bulkSep2,.bulk.confirming .bk-g:last-child{display:none}
+.bulk.confirming #bulkInvActs,.bulk.confirming #bulkSep2,.bulk.confirming #bulkMore{display:none}
 .pcsel{margin-inline-start:auto;width:30px;height:30px;flex:none;cursor:pointer;border-radius:8px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);opacity:0;transition:opacity .15s}
 .pc2:hover .pcsel,.pc2.picked .pcsel,.pcsel:focus-within,.selmode .pcsel{opacity:1}
 .pc2.picked{outline:2px solid var(--accent);outline-offset:1px;background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
@@ -2261,6 +2261,60 @@ form.dlg-push,form.dlg-pop{animation-duration:.16s}
 html:root[data-font="cairo"]{--f-display:"Cairo",Tahoma,sans-serif;--f-body:"Cairo",Tahoma,sans-serif}
 html:root[data-font="plex"]{--f-display:"IBM Plex Sans Arabic",Tahoma,sans-serif;--f-body:"IBM Plex Sans Arabic",Tahoma,sans-serif}
 html:root[data-font="tajawal"]{--f-display:"Tajawal",Tahoma,sans-serif;--f-body:"Tajawal",Tahoma,sans-serif}
+/* شريط التحديد: الأساسي ظاهر والباقي في قوايم */
+.bulk .bk-car{width:12px!important;height:12px!important;opacity:.7;margin-inline-start:-2px}
+.bulk .bk-dd[aria-expanded="true"]{background:rgba(255,255,255,.2)}
+.bulk .bk-dd[aria-expanded="true"] .bk-car{transform:rotate(180deg)}
+.bk-menu{position:absolute;bottom:calc(100% + 8px);z-index:2;min-width:220px;background:var(--side);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:6px;display:flex;flex-direction:column;gap:2px;box-shadow:0 18px 40px rgba(5,10,40,.4);animation:bkm .14s ease-out}
+.bk-menu[hidden]{display:none}
+@keyframes bkm{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.bulk .bk-menu button{background:none;border-color:transparent;justify-content:flex-start;padding:9px 10px;width:100%;border-radius:9px}
+.bulk .bk-menu button:hover,.bulk .bk-menu button:focus-visible{background:rgba(255,255,255,.12);outline:none}
+.bulk .bk-menu .bk-wa svg.i{color:#4ade80}
+.bulk .bk-menu .bk-xl svg.i{color:#6ee7a0}
+.bulk .bk-menu .bk-wa,.bulk .bk-menu .bk-xl{background:none;border-color:transparent}
+.bulk .bk-menu .bk-wa:hover,.bulk .bk-menu .bk-xl:hover{background:rgba(255,255,255,.12)}
+.bk-mh{font-size:.7rem;color:var(--side-muted);padding:8px 10px 2px;border-top:1px solid rgba(255,255,255,.1);margin-top:4px}
+.bulk.confirming .bk-menu{display:none}
+@media (max-width:700px){ .bk-menu{bottom:calc(100% + 6px)} .bulk #bulkMore .bk-dd{flex:1;justify-content:center} }
+/* ===== تحسين الموبايل والتابلت ===== */
+.bnav{display:none}
+@media (max-width:900px){
+  .bnav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;bottom:0;left:0;right:0;z-index:35;background:var(--surface);border-top:1px solid var(--line);padding:6px max(6px,env(safe-area-inset-left,0px)) calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 24px -14px rgba(10,20,40,.25)}
+  .bnav button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:12px;color:var(--muted);font-size:.7rem;font-weight:600;position:relative;-webkit-tap-highlight-color:transparent;min-height:44px;justify-content:center}
+  .bnav button svg.i{width:22px;height:22px}
+  .bnav button[aria-current="page"]{color:var(--accent)}
+  .bnav button[aria-current="page"] svg.i{background:color-mix(in srgb,var(--accent) 14%,transparent);border-radius:999px;padding:3px 14px;box-sizing:content-box;margin-block:-3px}
+  .bnav button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .bn-b{position:absolute;top:2px;inset-inline-start:calc(50% + 8px);min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#d92d20;color:#fff;font-size:.62rem;display:grid;place-items:center;font-weight:700;box-sizing:border-box}
+  .bn-b[hidden]{display:none}
+  .has-bulk .bnav{display:none}
+  body:not(.has-bulk) .fab{bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+  body:not(.has-bulk) .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  body:not(.has-bulk) .dstash{bottom:calc(146px + env(safe-area-inset-bottom,0px))}
+  body:not(.has-bulk) .main{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+}
+@media (orientation:landscape) and (max-height:500px){ .bnav{display:none!important} body:not(.has-bulk) .fab{bottom:calc(18px + env(safe-area-inset-bottom,0px))} }
+@media (max-width:700px){
+  /* صفوف الفلاتر/التنبيهات: سطر واحد بيتحرك بالعرض بدل ما ياخد نص الشاشة */
+  :is(#pHealth,#coChips,#satAlerts){flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-inline:-16px;padding:2px 16px 4px;scroll-padding-inline:16px;mask-image:linear-gradient(to left,transparent 0,#000 14px,#000 calc(100% - 14px),transparent)}
+  :is(#pHealth,#coChips,#satAlerts)::-webkit-scrollbar{display:none}
+  :is(#pHealth,#coChips,#satAlerts)>*{flex:none}
+  .sx-alerts{flex-wrap:nowrap}
+  .sx-alerts #satAlerts{flex:1;min-width:0;margin-inline:0 -14px;padding-inline:0 14px}
+  /* تابات النافذة: إشارة إن فيه تابات تانية لو اتسحبت */
+  .dtabs{mask-image:linear-gradient(to left,transparent 0,#000 18px,#000 calc(100% - 18px),transparent)}
+}
+@media (pointer:coarse){
+  /* أماكن لمس أكبر للمربعات والروابط الصغيرة */
+  .selbox,.chk input[type=checkbox],input.isb{width:22px;height:22px}
+  .lnkb,.aclink,.link,.pname{padding-block:6px;margin-block:-6px}
+}
+/* مشروع لسه ما طلعلوش عقد: علامة برتقالي واضحة */
+.nocon{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:700;color:#b54708;background:#fef0c7;border:1px solid #fedf89;border-radius:6px;padding:0 8px;line-height:1.7;white-space:nowrap}
+.nocon::before{content:"";width:7px;height:7px;border-radius:50%;background:#f79009;box-shadow:0 0 0 3px rgba(247,144,9,.22)}
+:root[data-theme="dark"] .nocon{color:#fec84b;background:rgba(247,144,9,.14);border-color:rgba(247,144,9,.35)}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .nocon{color:#fec84b;background:rgba(247,144,9,.14);border-color:rgba(247,144,9,.35)} }
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2530,6 +2584,13 @@ html:root[data-font="tajawal"]{--f-display:"Tajawal",Tahoma,sans-serif;--f-body:
   </main>
 </div>
 <button class="fab" id="fab" aria-label="مستخلص جديد"><svg class="i"><use href="#i-plus"/></svg></button>
+<nav class="bnav" id="bnav" aria-label="تنقل سريع">
+  <button type="button" data-go="home"><svg class="i"><use href="#i-home"/></svg><span>الرئيسية</span></button>
+  <button type="button" data-go="sat"><svg class="i"><use href="#i-sat"/></svg><span>الكشف</span><b class="bn-b" data-src="aSat" hidden></b></button>
+  <button type="button" data-go="ins"><svg class="i"><use href="#i-shield"/></svg><span>التأمينات</span><b class="bn-b" data-src="aIns" hidden></b></button>
+  <button type="button" data-go="mp"><svg class="i"><use href="#i-users"/></svg><span>القوة العاملة</span></button>
+  <button type="button" data-go="menu" aria-label="باقي الأقسام"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>القائمة</span></button>
+</nav>
 
 <div class="bulk" id="bulk" hidden role="region" aria-label="إجراءات على المحدد">
   <div class="bk-sum"><span class="bk-n num" id="bulkN">0</span><div><b id="bulkT">مستخلص محدد</b><span class="s" id="bulkS">—</span></div></div>
@@ -2538,20 +2599,27 @@ html:root[data-font="tajawal"]{--f-display:"Tajawal",Tahoma,sans-serif;--f-body:
     <label class="bk-sel" title="نقل المحدد لمكان"><svg class="i"><use href="#i-route"/></svg><select id="bulkStage" aria-label="نقل إلى مكان"></select></label>
     <button type="button" data-bulk="paid" title="تسجيل صرف المحدد"><svg class="i"><use href="#i-check"/></svg><span>تسجيل صرف</span></button>
     <button type="button" data-bulk="ins" title="تم استخراج شهادة التأمينات"><svg class="i"><use href="#i-shield"/></svg><span>شهادة التأمينات</span></button>
-    <button type="button" data-bulk="satOn" title="إضافة لكشف المتابعة"><svg class="i"><use href="#i-plus"/></svg><span>للكشف</span></button>
-    <button type="button" data-bulk="satOff" title="إزالة من كشف المتابعة"><svg class="i"><use href="#i-x"/></svg><span>من الكشف</span></button>
-    <button type="button" data-bulk="mpOn" title="إضافة لكشف القوة العاملة"><svg class="i"><use href="#i-users"/></svg><span>لكشف القوة العاملة</span></button>
-    <button type="button" data-bulk="mpOff" title="إزالة من كشف القوة العاملة"><svg class="i"><use href="#i-x"/></svg><span>من القوة العاملة</span></button>
   </div>
   <div class="bk-confirm" id="bkConfirm" hidden><span class="q" id="bkQ"></span><button type="button" class="bk-yes" id="bkYes"><svg class="i"><use href="#i-check"/></svg><span>تأكيد</span></button><button type="button" class="bk-no" id="bkNo"><span>إلغاء</span></button></div>
   <span class="bk-sep" id="bulkSep2"></span>
-  <div class="bk-g">
-    <button type="button" data-bulk="all" title="تحديد كل المعروض في الصفحة"><svg class="i"><use href="#i-list"/></svg><span>تحديد الكل</span></button>
-    <button type="button" data-bulk="fill" title="تكملة البيانات الناقصة للمحدد مرة واحدة"><svg class="i"><use href="#i-pen"/></svg><span>تكملة البيانات</span></button>
-    <button type="button" data-bulk="claim" title="نموذج مطالبة PDF للحسابات (تأمينات أو قوة عاملة)"><svg class="i"><use href="#i-print"/></svg><span>نموذج مطالبة</span></button>
-    <button type="button" class="bk-wa" data-bulk="wa" title="إرسال المحدد كرسالة واتساب"><svg class="i"><use href="#i-wa"/></svg><span>واتساب</span></button>
-    <button type="button" class="bk-xl" data-bulk="xlsx" title="تنزيل كشف Excel منسق للمحدد"><svg class="i"><use href="#i-dl"/></svg><span>تنزيل Excel</span></button>
-    <button type="button" class="bk-x" data-bulk="clear" title="إلغاء التحديد" aria-label="إلغاء التحديد"><svg class="i"><use href="#i-x"/></svg></button>
+  <div class="bk-g" id="bulkMore">
+    <button type="button" class="bk-dd" data-bkmenu="out" aria-haspopup="true" aria-expanded="false" title="واتساب · Excel · نموذج مطالبة"><svg class="i"><use href="#i-wa"/></svg><span>إرسال وطباعة</span><svg class="i bk-car"><use href="#i-up"/></svg></button>
+    <button type="button" class="bk-dd" data-bkmenu="more" aria-haspopup="true" aria-expanded="false" title="باقي الإجراءات"><svg class="i"><use href="#i-list"/></svg><span>المزيد</span><svg class="i bk-car"><use href="#i-up"/></svg></button>
+    <button type="button" class="bk-x" data-bulk="clear" title="إلغاء التحديد (Esc)" aria-label="إلغاء التحديد"><svg class="i"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="bk-menu" id="bkMenu-out" role="menu" hidden>
+    <button type="button" role="menuitem" class="bk-wa" data-bulk="wa"><svg class="i"><use href="#i-wa"/></svg><span>رسالة واتساب</span></button>
+    <button type="button" role="menuitem" class="bk-xl" data-bulk="xlsx"><svg class="i"><use href="#i-dl"/></svg><span>تنزيل كشف Excel</span></button>
+    <button type="button" role="menuitem" data-bulk="claim"><svg class="i"><use href="#i-print"/></svg><span>نموذج مطالبة PDF</span></button>
+  </div>
+  <div class="bk-menu" id="bkMenu-more" role="menu" hidden>
+    <button type="button" role="menuitem" data-bulk="all"><svg class="i"><use href="#i-list"/></svg><span>تحديد كل المعروض</span></button>
+    <button type="button" role="menuitem" data-bulk="fill"><svg class="i"><use href="#i-pen"/></svg><span>تكملة البيانات الناقصة</span></button>
+    <span class="bk-mh">الكشوف</span>
+    <button type="button" role="menuitem" data-bulk="satOn"><svg class="i"><use href="#i-plus"/></svg><span>إضافة لكشف المتابعة</span></button>
+    <button type="button" role="menuitem" data-bulk="satOff"><svg class="i"><use href="#i-x"/></svg><span>من الكشف</span></button>
+    <button type="button" role="menuitem" data-bulk="mpOn"><svg class="i"><use href="#i-users"/></svg><span>إضافة لكشف القوة العاملة</span></button>
+    <button type="button" role="menuitem" data-bulk="mpOff"><svg class="i"><use href="#i-x"/></svg><span>إزالة من كشف القوة العاملة</span></button>
   </div>
 </div>
 <dialog class="cmd" id="cmd"><div class="cmd"><input id="cmdIn" placeholder="ابحث عن مشروع أو مستخلص أو رقم عقد…" autocomplete="off" aria-label="بحث سريع"><ul id="cmdList"></ul><div class="hint2">↑ ↓ للتنقل · Enter للفتح · Esc للإغلاق</div></div></dialog>
@@ -2784,13 +2852,15 @@ function renderBulk(){
     const onSat = vs.filter(v=>v.showSat).length;
     $('[data-bulk="satOn"]').hidden = state.tab==="sat" || onSat===vs.length;
     $('[data-bulk="satOff"]').hidden = onSat===0;
-    $('[data-bulk="satOff"] span').textContent = state.tab==="sat" ? "إزالة من الكشف" : "من الكشف";
+    $('[data-bulk="satOff"] span').textContent = "إزالة من كشف المتابعة";
     $('[data-bulk="paid"]').hidden = vs.every(v=>v.paid==="نعم");
     const onMp = vs.filter(v=>v.showMp).length;
     $('[data-bulk="mpOn"]').hidden = state.tab==="mp" || onMp===vs.length;
     $('[data-bulk="mpOff"]').hidden = onMp===0;
     $("#bulkStage").innerHTML = `<option value="">نقل إلى مكان…</option>` + (state.cfg.stages||[]).map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");
   }
+  if(projMode || !state.canWrite) ["satOn","satOff","mpOn","mpOff"].forEach(k=>$(`[data-bulk="${k}"]`).hidden=true);
+  bkMenuClose?.();
 }
 /* Esc: يشيل التحديد لو فيه حاجة متحددة، ولو مفيش يمسح فلاتر كشف المتابعة
    (بس لو مفيش نافذة أو قايمة مفتوحة، ومش بتكتب في خانة) */
@@ -2918,7 +2988,7 @@ function render(){
   $("#cProj").textContent = state.projects.length;
   $("#cMp").textContent = state.invoices.filter(v=>v.showMp).length;
   $("#cIns").textContent = state.ins.length;
-  $("#dlContracts").innerHTML = state.projects.map(p=>`<option value="${esc(p.contractNo)}">${esc(pName(p,true))}</option>`).join("");
+  $("#dlContracts").innerHTML = state.projects.filter(p=>realId(p.contractNo)).map(p=>`<option value="${esc(p.contractNo)}">${esc(pName(p,true))}</option>`).join("");
   // السرعة: بنرسم الصفحة المفتوحة بس، والباقي بيترسم لما تفتحه (render بتتنده مع كل تغيير صفحة)
   const R={home:renderHome, sat:renderSat, act:renderAct, dq:renderDq, moves:renderMoves, inv:renderInv, proj:renderProj, ins:renderIns, co:renderCo, mp:renderMp};
   (R[state.tab]||renderHome)();
@@ -3253,8 +3323,8 @@ function renderProj(){
     <div class="kpi ${base.some(([p,s])=>s.noIns)?"wn":""}"><span class="lbl">${ico("shield")}مشاريع عليها شهادات تأمينات</span><span class="val num">${base.filter(([p,s])=>s.noIns).length}</span><span class="sub">${sum(base,([p,s])=>s.noIns)} مستخلص دون شهادة</span></div>`;
   const hc = h => base.filter(([p,s])=>s.health===h).length;
   const hb = (key,label,n,color) => `<button type="button" class="alert st" data-phealth="${key}" aria-pressed="${state.pHealth===key}" ${n||state.pHealth===key||key===""?"":"hidden"}>${color?`<i class="dt" style="background:${color}"></i>`:""}${label} <b class="num">${n}</b></button>`;
-  $("#pHealth").innerHTML = hb("","كل المشاريع",base.length) + ["late","due","ok","done","none"].map(h=>hb(h,HEALTH[h].t,hc(h),HEALTH[h].c)).join("") + hb("stale","بدون متابعة من +30 يوم",base.filter(([p,s])=>isStale(p,s)).length,"var(--warn)");
-  let rows = base.filter(([p,s])=>!state.pHealth || (state.pHealth==="stale" ? isStale(p,s) : s.health===state.pHealth));
+  $("#pHealth").innerHTML = hb("","كل المشاريع",base.length) + ["late","due","ok","done","none"].map(h=>hb(h,HEALTH[h].t,hc(h),HEALTH[h].c)).join("") + hb("stale","بدون متابعة من +30 يوم",base.filter(([p,s])=>isStale(p,s)).length,"var(--warn)") + hb("nocon","لم يصدر عقد",base.filter(([p])=>!realId(p.contractNo)).length,"#f79009");
+  let rows = base.filter(([p,s])=>!state.pHealth || (state.pHealth==="stale" ? isStale(p,s) : state.pHealth==="nocon" ? !realId(p.contractNo) : s.health===state.pHealth));
   const sk = {unpaid:([p,s])=>-s.unpaid, recent:([p,s])=>-Math.max(s.last,num(p.order)/1000), exec:([p,s])=>-(s.exec??-1), value:([p,s])=>-s.cv}[so] || (([p,s])=>-s.unpaid);
   rows.sort((a,b)=>sk(a)-sk(b));
   $("#projSub").textContent = `${rows.length} مشروع معروض`;
@@ -3753,7 +3823,7 @@ function invDialog(v, projectId){
     foot: footBtns("حفظ المستخلص", v?"vDel":""),
     onSubmit: async () => {
       if(ro) return;
-      const p = state.projects.find(x=>x.contractNo.trim()===val("vContract").trim());
+      const p = projByNo(val("vContract"));
       if(!p){ toast("رقم العقد غير موجود في المشاريع. أضف المشروع أولًا."); form._showTab?.("data"); form.querySelector("#vContract").focus(); return; }
       { const pn=val("vNote").trim(); if(pn){ d.log.push({date:today(), by:myId||"", text:pn}); form.querySelector("#vNotes").value=pn; } }
       const data = {...stripId(d)}; delete data._draft;
@@ -3794,7 +3864,7 @@ function invDialog(v, projectId){
         // آخر متابعة تتنقل لـ«ملاحظات الكشف» كمان (الاتنين نفس المعنى)
         { const nt=form.querySelector("#vNotes"); if(nt){ nt.value=t; nt.dispatchEvent(new Event("input",{bubbles:true})); } } form.querySelector("#vLogBox").innerHTML=vLogHtml(); toast("أُضيفت المتابعة واتكتبت في ملاحظات الكشف. اضغط «حفظ المستخلص» لتسجيلها"); };
       const refresh = () => {
-        const p = state.projects.find(x=>x.contractNo.trim()===val("vContract").trim());
+        const p = projByNo(val("vContract"));
         d.projectId = p?.id || ""; d.type = val("vType"); d.gross = nval("vGross");
         const cardEl = form.querySelector("#vProjCard");
         if(!val("vContract").trim()) cardEl.innerHTML = "";
@@ -3863,7 +3933,7 @@ function projDialog(p){
   const vs = p ? state.invoices.filter(v=>v.projectId===p.id).sort((a,b)=>num(a.order)-num(b.order)) : [];
   const msOpt = !!(p && vs.length && realId(p.contractNo));
   const msSec = `<section class="sec ms closed" id="msSec"><h3><button type="button" class="ms-tg" id="msTg" aria-expanded="false" aria-controls="msBox">${ico("flag")}<span>مراحل المشروع${msOpt?` <small class="faint">(اختياري — المشروع ليه عقد ومستخلصات)</small>`:""}</span><span class="r faint small" id="msCount" style="font-weight:500"></span><svg class="i ms-ch" aria-hidden="true"><use href="#i-up"/></svg></button></h3><div id="msBox"></div></section>`;
-  openDlg({ title: p?esc(p.shortName||p.name):"مشروع جديد", sub: p?`عقد <span class="code">${esc(p.contractNo)}</span> · ${esc(p.location||"")}`:"",
+  openDlg({ title: p?esc(p.shortName||p.name):"مشروع جديد", sub: p?`${realId(p.contractNo)?`عقد <span class="code">${esc(p.contractNo)}</span>`:`<span class="nocon">لم يصدر عقد</span>`} · ${esc(p.location||"")}`:"",
     body: `<fieldset class="bare" ${state.canWrite?"":"disabled"}>
       ${p&&!(vs.length&&realId(p.contractNo))?msSec:""}${p?"":`<p class="hint">مراحل المشروع (جواب الميزانية، المقايسة، اللجان، العقد…) هتظهر هنا بعد ما تحفظ المشروع.</p>`}
       ${p?`<section class="sec"><h3>${ico("list")}مستخلصات المشروع (${vs.length})${state.canWrite?`<span class="r"><button type="button" class="btn sm" id="jNewInv">${ico("plus")}مستخلص جديد</button></span>`:""}</h3>
@@ -3877,7 +3947,7 @@ function projDialog(p){
         <div id="plBox"></div></section>`:""}
       <section class="sec lk"><h3>${ico("bld")}بيانات المشروع${p&&state.canWrite?`<span class="r"><button type="button" class="btn sm ghost" data-unlockall>${ico("pen")}تعديل الكل</button></span>`:""}</h3>
       <div class="fields">
-        ${fld("jNo","رقم العقد",d.contractNo)}
+        ${fld("jNo","رقم العقد (اختياري لو لسه ما طلعش)",d.contractNo)}
         ${fld("jShort","اسم مختصر للعرض",d.shortName)}
         <div class="f wide"><label for="jName">اسم المشروع</label><textarea id="jName" style="min-height:52px">${esc(d.name||"")}</textarea></div>
         <div class="f"><label for="jLoc">موقع المشروع</label><input id="jLoc" list="dlLoc" value="${esc(d.location||"")}"><datalist id="dlLoc">${uniq(state.projects.map(x=>x.location)).map(x=>`<option value="${esc(x)}">`).join("")}</datalist></div>
@@ -3903,8 +3973,7 @@ function projDialog(p){
     foot: footBtns("حفظ المشروع", p?"jDel":""),
     onSubmit: async () => {
       const no = val("jNo").trim();
-      if(!no){ toast("اكتب رقم العقد"); return; }
-      if(state.projects.some(x=>x.id!==p?.id && x.contractNo.trim()===no)){ toast("رقم العقد مسجل لمشروع آخر"); return; }
+      if(realId(no) && state.projects.some(x=>x.id!==p?.id && String(x.contractNo||"").trim()===no)){ toast("رقم العقد مسجل لمشروع آخر"); return; }
       if(!val("jName").trim()){ toast("اكتب اسم المشروع"); return; }
       if(form.querySelector("#jRedOn").checked && !(num(val("jRed"))>0)){ toast("اكتب قيمة العقد بعد التخفيض"); form.querySelector("#jRed").focus(); return; }
       const data = {...stripId(d), contractNo:no, name:val("jName").trim(), shortName:val("jShort").trim(), location:val("jLoc").trim(), dept:val("jDept"), company:val("jCompany"),
@@ -4191,8 +4260,9 @@ const coTag = c => `<span class="cot" style="--cc:${coVar(c)}">${esc(coShort(c))
 const coLegend = () => `<span class="colg">${uniq([...(state.cfg.companies||[]), ...state.projects.map(p=>p.company)]).filter(c=>c&&c!=="غير محدد").map(c=>coTag(c)).join("")}</span>`;
 const GROUP_HEX = ["#1e3a6e","#2d6a64","#5d4a7e","#7c6233","#3d6189","#7a4545","#4b6a3a"];
 const gcol = (L,key,i) => { const ix=L.order.indexOf(key); return GROUP_HEX[(ix<0?i:ix)%GROUP_HEX.length]; };
+const projByNo = no => { const t=realId(no); return t ? state.projects.find(x=>String(x.contractNo||"").trim()===t) : undefined; };
 const realId = x => { const t=String(x??"").trim(); return t && !/^[-–—_.\s]+$/.test(t) ? t : ""; };
-const idChips = p0 => { const p={contractNo:realId(p0.contractNo), unifiedCode:realId(p0.unifiedCode), boqNo:realId(p0.boqNo)}; return `<span class="ids">${p.contractNo?`<span class="idc"><i>عقد</i><span class="code">${esc(p.contractNo)}</span></span>`:""}${p.unifiedCode?`<span class="idc idc-u"><i>كود موحد</i><span class="num">${esc(p.unifiedCode)}</span></span>`:""}${p.boqNo&&p.boqNo!==p.contractNo?`<span class="idc"><i>مقايسة</i><span class="code">${esc(p.boqNo)}</span></span>`:""}</span>`; };
+const idChips = p0 => { const p={contractNo:realId(p0.contractNo), unifiedCode:realId(p0.unifiedCode), boqNo:realId(p0.boqNo)}; return `<span class="ids">${p.contractNo?`<span class="idc"><i>عقد</i><span class="code">${esc(p.contractNo)}</span></span>`:`<span class="nocon">لم يصدر عقد</span>`}${p.unifiedCode?`<span class="idc idc-u"><i>كود موحد</i><span class="num">${esc(p.unifiedCode)}</span></span>`:""}${p.boqNo&&p.boqNo!==p.contractNo?`<span class="idc"><i>مقايسة</i><span class="code">${esc(p.boqNo)}</span></span>`:""}</span>`; };
 const gAmt = (li, tot, ptot, curH) => li===0 ? `<span class="gt">${money(tot)} ${curH}</span>` : (li===1 && Math.abs(tot-(ptot??-1))>0.5) ? `<span class="gt gt2">${money(tot)}</span>` : "";
 const lvOrd = L => (a,b) => { const ia=L.order.indexOf(a), ib=L.order.indexOf(b); return ((ia<0?99:ia)-(ib<0?99:ib)) || (ia<0&&ib<0 ? String(a).localeCompare(String(b),"ar") : 0); };
 /* ---------- الصرف والشهادات (نافذة صغيرة) ---------- */
@@ -4298,7 +4368,7 @@ function mpDialog(v0){
     foot: state.canWrite ? `<button class="btn primary" type="submit">${ico("check")}حفظ</button><button class="btn ghost" type="button" data-cancel>إلغاء</button>${v0?`<span style="flex:1"></span><button class="btn" type="button" id="mOpen">${ico("doc")}فتح المستخلص</button><button class="btn danger" type="button" id="mRemove">إزالة من القوة العاملة</button>`:""}` : "",
     onMount: () => {
       const refresh = () => {
-        if(!v0){ const p=state.projects.find(x=>x.contractNo.trim()===val("mContract").trim()); pid=p?.id||"";
+        if(!v0){ const p=projByNo(val("mContract")); pid=p?.id||"";
           const list = p ? state.invoices.filter(v=>v.projectId===p.id).sort((a,b)=>num(b.order)-num(a.order)) : [];
           const sel=form.querySelector("#mInv"), cur=sel.value;
           sel.innerHTML = `<option value="">${p?(list.length?"اختر المستخلص":"لا توجد مستخلصات على العقد ده"):"اختر رقم العقد أولًا"}</option>` + list.map(v=>`<option value="${esc(v.id)}" ${v.showMp?"disabled":""}>${esc(certLabel(v))} · ${fmt(calc(v).net)}${v.showMp?" (مربوط بالفعل)":""}</option>`).join("");
@@ -4964,7 +5034,7 @@ function insDialog(r, preId){
     </fieldset>`,
     foot: footBtns("حفظ الملف", r?"nDel":""),
     onSubmit: async () => {
-      const p = r ? proj(d.projectId) : state.projects.find(x=>x.contractNo.trim()===val("nContract").trim());
+      const p = r ? proj(d.projectId) : projByNo(val("nContract"));
       if(!p){ toast("رقم العقد غير موجود في المشاريع"); return; }
       const invId = val("nInvSel");
       if(!invId){ toast("اختر المستخلص اللي الملف ده خاص بيه"); form.querySelector("#nInvSel").focus(); return; }
@@ -4987,7 +5057,7 @@ function insDialog(r, preId){
     onMount: () => {
       let raiseTouched = !!(r && r.raiseInvoiceId);
       const refresh = () => {
-        const p = r ? proj(d.projectId) : state.projects.find(x=>x.contractNo.trim()===val("nContract").trim());
+        const p = r ? proj(d.projectId) : projByNo(val("nContract"));
         d.projectId = p?.id || d.projectId;
         form.querySelector("#nProj").innerHTML = !p ? (val("nContract").trim()?`<div class="warnline">⚠ رقم العقد غير موجود في المشاريع</div>`:"") :
           `<div class="pinfo"><div class="w">${esc(p.name)}</div><div><span>رقم العقد</span><span class="code">${esc(p.contractNo)}</span></div><div><span>رقم المقايسة</span><span class="code">${esc(p.boqNo||"—")}</span></div><div><span>كود العقد الموحد</span><span class="num">${esc(p.unifiedCode||"—")}</span></div><div><span>الشركة</span>${esc(p.company||"—")}</div><div><span>جهة الإسناد</span>${esc(p.dept||"—")}</div><div><span>نسبة الأجور</span>${num(p.wageRatio)>0?pctTxt(num(p.wageRatio)):"—"}</div></div>`;
@@ -5609,7 +5679,17 @@ function endAsk(){ bkPending=null; $("#bulk").classList.remove("confirming"); $(
 $("#bkYes").onclick=()=>{ const p=bkPending; endAsk(); if(p) runBulk(p.kind, p.stage); };
 $("#bkNo").onclick=endAsk;
 $("#bulkStage").addEventListener("change", e=>{ if(e.target.value) askBulk("stage", e.target.value); });
-$("#bulk").addEventListener("click", e=>{ const b=e.target.closest("[data-bulk]"); if(!b) return; const k=b.dataset.bulk;
+function bkMenuClose(){ document.querySelectorAll("#bulk .bk-menu").forEach(m=>m.hidden=true); document.querySelectorAll("#bulk [data-bkmenu]").forEach(b=>b.setAttribute("aria-expanded","false")); }
+function bkMenuOpen(btn){ const m=$("#bkMenu-"+btn.dataset.bkmenu), was=!m.hidden; bkMenuClose(); if(was) return;
+  const bar=$("#bulk"), br=bar.getBoundingClientRect(), r=btn.getBoundingClientRect();
+  m.querySelectorAll(".bk-mh").forEach(h=>{ let n=h.nextElementSibling, any=false; while(n && !n.classList.contains("bk-mh")){ if(!n.hidden) any=true; n=n.nextElementSibling; } h.hidden=!any; });
+  m.hidden=false; btn.setAttribute("aria-expanded","true");
+  const w=m.offsetWidth; m.style.left=Math.max(6, Math.min(r.right-br.left-w, br.width-w-6))+"px";
+  m.querySelector("button:not([hidden])")?.focus({preventScroll:true}); }
+document.addEventListener("pointerdown", e=>{ if(!e.target.closest("#bulk .bk-menu,#bulk [data-bkmenu]")) bkMenuClose(); }, true);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && document.querySelector("#bulk .bk-menu:not([hidden])")){ e.preventDefault(); e.stopPropagation(); bkMenuClose(); } }, true);
+$("#bulk").addEventListener("click", e=>{ const mb=e.target.closest("[data-bkmenu]"); if(mb){ bkMenuOpen(mb); return; } });
+$("#bulk").addEventListener("click", e=>{ const b=e.target.closest("[data-bulk]"); if(!b) return; const k=b.dataset.bulk; if(b.closest(".bk-menu")) bkMenuClose();
   if(k==="clear"){ clearSel(); return; }
   if(k==="all"){ selectAllVisible(); return; }
   if(k==="xlsx"){ exportSelXlsx(b); return; }
@@ -5696,6 +5776,18 @@ function openSkin(){
   const h=pop.offsetHeight; pop.style.top=Math.max(8, r.top-h-8)+"px";
 }
 $("#btnSkin").addEventListener("click", openSkin);
+/* ===== شريط التنقل السفلي (موبايل/تابلت): بيستخدم نفس أزرار القائمة الجانبية ===== */
+{
+  const bn=$("#bnav");
+  bn.addEventListener("click", e=>{ const b=e.target.closest("[data-go]"); if(!b) return; const g=b.dataset.go;
+    if(g==="menu"){ $("#mMenu").click(); return; }
+    document.querySelector(`.nav button[data-tab="${g}"]`)?.click(); window.scrollTo({top:0}); });
+  const sync=()=>{ const cur=state.tab; bn.querySelectorAll("[data-go]").forEach(b=>{ const on=b.dataset.go===cur || (b.dataset.go==="menu" && !["home","sat","ins","mp"].includes(cur)); if(on) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+    bn.querySelectorAll(".bn-b").forEach(x=>{ const src=$("#"+x.dataset.src); const n=src && !src.hidden ? src.textContent.trim() : ""; x.hidden=!n || n==="0"; x.textContent=n; }); };
+  new MutationObserver(sync).observe($(".nav"),{subtree:true,attributes:true,childList:true,characterData:true,attributeFilter:["aria-current","hidden"]});
+  sync();
+}
+
 $("#btnSearch").onclick=openCmd; $("#mSearch").onclick=openCmd; $("#mbSearch").onclick=openCmd;
 const setMenu = o => { document.body.classList.toggle("menu-open", o); $("#mMenu").setAttribute("aria-expanded", String(o)); };
 $("#mMenu").onclick=()=>setMenu(!document.body.classList.contains("menu-open"));
