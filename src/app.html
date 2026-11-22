@@ -2277,6 +2277,39 @@ html:root[data-font="tajawal"]{--f-display:"Tajawal",Tahoma,sans-serif;--f-body:
 .bk-mh{font-size:.7rem;color:var(--side-muted);padding:8px 10px 2px;border-top:1px solid rgba(255,255,255,.1);margin-top:4px}
 .bulk.confirming .bk-menu{display:none}
 @media (max-width:700px){ .bk-menu{bottom:calc(100% + 6px)} .bulk #bulkMore .bk-dd{flex:1;justify-content:center} }
+/* ===== تحسين الموبايل والتابلت ===== */
+.bnav{display:none}
+@media (max-width:900px){
+  .bnav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;bottom:0;left:0;right:0;z-index:35;background:var(--surface);border-top:1px solid var(--line);padding:6px max(6px,env(safe-area-inset-left,0px)) calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 24px -14px rgba(10,20,40,.25)}
+  .bnav button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:12px;color:var(--muted);font-size:.7rem;font-weight:600;position:relative;-webkit-tap-highlight-color:transparent;min-height:44px;justify-content:center}
+  .bnav button svg.i{width:22px;height:22px}
+  .bnav button[aria-current="page"]{color:var(--accent)}
+  .bnav button[aria-current="page"] svg.i{background:color-mix(in srgb,var(--accent) 14%,transparent);border-radius:999px;padding:3px 14px;box-sizing:content-box;margin-block:-3px}
+  .bnav button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .bn-b{position:absolute;top:2px;inset-inline-start:calc(50% + 8px);min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#d92d20;color:#fff;font-size:.62rem;display:grid;place-items:center;font-weight:700;box-sizing:border-box}
+  .bn-b[hidden]{display:none}
+  .has-bulk .bnav{display:none}
+  body:not(.has-bulk) .fab{bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+  body:not(.has-bulk) .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  body:not(.has-bulk) .dstash{bottom:calc(146px + env(safe-area-inset-bottom,0px))}
+  body:not(.has-bulk) .main{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+}
+@media (orientation:landscape) and (max-height:500px){ .bnav{display:none!important} body:not(.has-bulk) .fab{bottom:calc(18px + env(safe-area-inset-bottom,0px))} }
+@media (max-width:700px){
+  /* صفوف الفلاتر/التنبيهات: سطر واحد بيتحرك بالعرض بدل ما ياخد نص الشاشة */
+  :is(#pHealth,#coChips,#satAlerts){flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-inline:-16px;padding:2px 16px 4px;scroll-padding-inline:16px;mask-image:linear-gradient(to left,transparent 0,#000 14px,#000 calc(100% - 14px),transparent)}
+  :is(#pHealth,#coChips,#satAlerts)::-webkit-scrollbar{display:none}
+  :is(#pHealth,#coChips,#satAlerts)>*{flex:none}
+  .sx-alerts{flex-wrap:nowrap}
+  .sx-alerts #satAlerts{flex:1;min-width:0;margin-inline:0 -14px;padding-inline:0 14px}
+  /* تابات النافذة: إشارة إن فيه تابات تانية لو اتسحبت */
+  .dtabs{mask-image:linear-gradient(to left,transparent 0,#000 18px,#000 calc(100% - 18px),transparent)}
+}
+@media (pointer:coarse){
+  /* أماكن لمس أكبر للمربعات والروابط الصغيرة */
+  .selbox,.chk input[type=checkbox],input.isb{width:22px;height:22px}
+  .lnkb,.aclink,.link,.pname{padding-block:6px;margin-block:-6px}
+}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2546,6 +2579,13 @@ html:root[data-font="tajawal"]{--f-display:"Tajawal",Tahoma,sans-serif;--f-body:
   </main>
 </div>
 <button class="fab" id="fab" aria-label="مستخلص جديد"><svg class="i"><use href="#i-plus"/></svg></button>
+<nav class="bnav" id="bnav" aria-label="تنقل سريع">
+  <button type="button" data-go="home"><svg class="i"><use href="#i-home"/></svg><span>الرئيسية</span></button>
+  <button type="button" data-go="sat"><svg class="i"><use href="#i-sat"/></svg><span>الكشف</span><b class="bn-b" data-src="aSat" hidden></b></button>
+  <button type="button" data-go="ins"><svg class="i"><use href="#i-shield"/></svg><span>التأمينات</span><b class="bn-b" data-src="aIns" hidden></b></button>
+  <button type="button" data-go="mp"><svg class="i"><use href="#i-users"/></svg><span>القوة العاملة</span></button>
+  <button type="button" data-go="menu" aria-label="باقي الأقسام"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>القائمة</span></button>
+</nav>
 
 <div class="bulk" id="bulk" hidden role="region" aria-label="إجراءات على المحدد">
   <div class="bk-sum"><span class="bk-n num" id="bulkN">0</span><div><b id="bulkT">مستخلص محدد</b><span class="s" id="bulkS">—</span></div></div>
@@ -5731,6 +5771,18 @@ function openSkin(){
   const h=pop.offsetHeight; pop.style.top=Math.max(8, r.top-h-8)+"px";
 }
 $("#btnSkin").addEventListener("click", openSkin);
+/* ===== شريط التنقل السفلي (موبايل/تابلت): بيستخدم نفس أزرار القائمة الجانبية ===== */
+{
+  const bn=$("#bnav");
+  bn.addEventListener("click", e=>{ const b=e.target.closest("[data-go]"); if(!b) return; const g=b.dataset.go;
+    if(g==="menu"){ $("#mMenu").click(); return; }
+    document.querySelector(`.nav button[data-tab="${g}"]`)?.click(); window.scrollTo({top:0}); });
+  const sync=()=>{ const cur=state.tab; bn.querySelectorAll("[data-go]").forEach(b=>{ const on=b.dataset.go===cur || (b.dataset.go==="menu" && !["home","sat","ins","mp"].includes(cur)); if(on) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+    bn.querySelectorAll(".bn-b").forEach(x=>{ const src=$("#"+x.dataset.src); const n=src && !src.hidden ? src.textContent.trim() : ""; x.hidden=!n || n==="0"; x.textContent=n; }); };
+  new MutationObserver(sync).observe($(".nav"),{subtree:true,attributes:true,childList:true,characterData:true,attributeFilter:["aria-current","hidden"]});
+  sync();
+}
+
 $("#btnSearch").onclick=openCmd; $("#mSearch").onclick=openCmd; $("#mbSearch").onclick=openCmd;
 const setMenu = o => { document.body.classList.toggle("menu-open", o); $("#mMenu").setAttribute("aria-expanded", String(o)); };
 $("#mMenu").onclick=()=>setMenu(!document.body.classList.contains("menu-open"));
