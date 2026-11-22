@@ -64,6 +64,7 @@
     constructor(c, id){ this.collection = c; this.id = id; }
     async set(data){ if(profile && !["admin","editor"].includes(profile.role)){ const e = new Error("no"); e.code = "invalid_argument"; throw e; } await writeLocal(this.collection, this.id, "set", data); }
     async delete(){ await writeLocal(this.collection, this.id, "delete", null); }
+    peek(){ const v = view(K(this.collection, this.id)); return v == null ? null : JSON.parse(JSON.stringify(v)); }
     onSnapshot(cb){ const id = this.id; return live(this.collection, {}, s => { const d = s.docs.find(x => x.id === id); cb(d ? { id, exists: true, data: d.data } : { id, exists: false, data: () => undefined }); }); }
   }
   class Coll {
