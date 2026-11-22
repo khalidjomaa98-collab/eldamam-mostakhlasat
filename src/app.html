@@ -292,7 +292,7 @@ table{border-collapse:collapse;width:100%}
 .bulk .bk-yes{background:#fff;color:var(--side);border-color:#fff}
 .bulk .bk-yes:hover{background:#e8ecf8}
 .bulk .bk-no{background:none}
-.bulk.confirming #bulkInvActs,.bulk.confirming #bulkSep2,.bulk.confirming .bk-g:last-child{display:none}
+.bulk.confirming #bulkInvActs,.bulk.confirming #bulkSep2,.bulk.confirming #bulkMore{display:none}
 .pcsel{margin-inline-start:auto;width:30px;height:30px;flex:none;cursor:pointer;border-radius:8px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);opacity:0;transition:opacity .15s}
 .pc2:hover .pcsel,.pc2.picked .pcsel,.pcsel:focus-within,.selmode .pcsel{opacity:1}
 .pc2.picked{outline:2px solid var(--accent);outline-offset:1px;background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
@@ -2261,6 +2261,22 @@ form.dlg-push,form.dlg-pop{animation-duration:.16s}
 html:root[data-font="cairo"]{--f-display:"Cairo",Tahoma,sans-serif;--f-body:"Cairo",Tahoma,sans-serif}
 html:root[data-font="plex"]{--f-display:"IBM Plex Sans Arabic",Tahoma,sans-serif;--f-body:"IBM Plex Sans Arabic",Tahoma,sans-serif}
 html:root[data-font="tajawal"]{--f-display:"Tajawal",Tahoma,sans-serif;--f-body:"Tajawal",Tahoma,sans-serif}
+/* شريط التحديد: الأساسي ظاهر والباقي في قوايم */
+.bulk .bk-car{width:12px!important;height:12px!important;opacity:.7;margin-inline-start:-2px}
+.bulk .bk-dd[aria-expanded="true"]{background:rgba(255,255,255,.2)}
+.bulk .bk-dd[aria-expanded="true"] .bk-car{transform:rotate(180deg)}
+.bk-menu{position:absolute;bottom:calc(100% + 8px);z-index:2;min-width:220px;background:var(--side);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:6px;display:flex;flex-direction:column;gap:2px;box-shadow:0 18px 40px rgba(5,10,40,.4);animation:bkm .14s ease-out}
+.bk-menu[hidden]{display:none}
+@keyframes bkm{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.bulk .bk-menu button{background:none;border-color:transparent;justify-content:flex-start;padding:9px 10px;width:100%;border-radius:9px}
+.bulk .bk-menu button:hover,.bulk .bk-menu button:focus-visible{background:rgba(255,255,255,.12);outline:none}
+.bulk .bk-menu .bk-wa svg.i{color:#4ade80}
+.bulk .bk-menu .bk-xl svg.i{color:#6ee7a0}
+.bulk .bk-menu .bk-wa,.bulk .bk-menu .bk-xl{background:none;border-color:transparent}
+.bulk .bk-menu .bk-wa:hover,.bulk .bk-menu .bk-xl:hover{background:rgba(255,255,255,.12)}
+.bk-mh{font-size:.7rem;color:var(--side-muted);padding:8px 10px 2px;border-top:1px solid rgba(255,255,255,.1);margin-top:4px}
+.bulk.confirming .bk-menu{display:none}
+@media (max-width:700px){ .bk-menu{bottom:calc(100% + 6px)} .bulk #bulkMore .bk-dd{flex:1;justify-content:center} }
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2538,20 +2554,27 @@ html:root[data-font="tajawal"]{--f-display:"Tajawal",Tahoma,sans-serif;--f-body:
     <label class="bk-sel" title="نقل المحدد لمكان"><svg class="i"><use href="#i-route"/></svg><select id="bulkStage" aria-label="نقل إلى مكان"></select></label>
     <button type="button" data-bulk="paid" title="تسجيل صرف المحدد"><svg class="i"><use href="#i-check"/></svg><span>تسجيل صرف</span></button>
     <button type="button" data-bulk="ins" title="تم استخراج شهادة التأمينات"><svg class="i"><use href="#i-shield"/></svg><span>شهادة التأمينات</span></button>
-    <button type="button" data-bulk="satOn" title="إضافة لكشف المتابعة"><svg class="i"><use href="#i-plus"/></svg><span>للكشف</span></button>
-    <button type="button" data-bulk="satOff" title="إزالة من كشف المتابعة"><svg class="i"><use href="#i-x"/></svg><span>من الكشف</span></button>
-    <button type="button" data-bulk="mpOn" title="إضافة لكشف القوة العاملة"><svg class="i"><use href="#i-users"/></svg><span>لكشف القوة العاملة</span></button>
-    <button type="button" data-bulk="mpOff" title="إزالة من كشف القوة العاملة"><svg class="i"><use href="#i-x"/></svg><span>من القوة العاملة</span></button>
   </div>
   <div class="bk-confirm" id="bkConfirm" hidden><span class="q" id="bkQ"></span><button type="button" class="bk-yes" id="bkYes"><svg class="i"><use href="#i-check"/></svg><span>تأكيد</span></button><button type="button" class="bk-no" id="bkNo"><span>إلغاء</span></button></div>
   <span class="bk-sep" id="bulkSep2"></span>
-  <div class="bk-g">
-    <button type="button" data-bulk="all" title="تحديد كل المعروض في الصفحة"><svg class="i"><use href="#i-list"/></svg><span>تحديد الكل</span></button>
-    <button type="button" data-bulk="fill" title="تكملة البيانات الناقصة للمحدد مرة واحدة"><svg class="i"><use href="#i-pen"/></svg><span>تكملة البيانات</span></button>
-    <button type="button" data-bulk="claim" title="نموذج مطالبة PDF للحسابات (تأمينات أو قوة عاملة)"><svg class="i"><use href="#i-print"/></svg><span>نموذج مطالبة</span></button>
-    <button type="button" class="bk-wa" data-bulk="wa" title="إرسال المحدد كرسالة واتساب"><svg class="i"><use href="#i-wa"/></svg><span>واتساب</span></button>
-    <button type="button" class="bk-xl" data-bulk="xlsx" title="تنزيل كشف Excel منسق للمحدد"><svg class="i"><use href="#i-dl"/></svg><span>تنزيل Excel</span></button>
-    <button type="button" class="bk-x" data-bulk="clear" title="إلغاء التحديد" aria-label="إلغاء التحديد"><svg class="i"><use href="#i-x"/></svg></button>
+  <div class="bk-g" id="bulkMore">
+    <button type="button" class="bk-dd" data-bkmenu="out" aria-haspopup="true" aria-expanded="false" title="واتساب · Excel · نموذج مطالبة"><svg class="i"><use href="#i-wa"/></svg><span>إرسال وطباعة</span><svg class="i bk-car"><use href="#i-up"/></svg></button>
+    <button type="button" class="bk-dd" data-bkmenu="more" aria-haspopup="true" aria-expanded="false" title="باقي الإجراءات"><svg class="i"><use href="#i-list"/></svg><span>المزيد</span><svg class="i bk-car"><use href="#i-up"/></svg></button>
+    <button type="button" class="bk-x" data-bulk="clear" title="إلغاء التحديد (Esc)" aria-label="إلغاء التحديد"><svg class="i"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="bk-menu" id="bkMenu-out" role="menu" hidden>
+    <button type="button" role="menuitem" class="bk-wa" data-bulk="wa"><svg class="i"><use href="#i-wa"/></svg><span>رسالة واتساب</span></button>
+    <button type="button" role="menuitem" class="bk-xl" data-bulk="xlsx"><svg class="i"><use href="#i-dl"/></svg><span>تنزيل كشف Excel</span></button>
+    <button type="button" role="menuitem" data-bulk="claim"><svg class="i"><use href="#i-print"/></svg><span>نموذج مطالبة PDF</span></button>
+  </div>
+  <div class="bk-menu" id="bkMenu-more" role="menu" hidden>
+    <button type="button" role="menuitem" data-bulk="all"><svg class="i"><use href="#i-list"/></svg><span>تحديد كل المعروض</span></button>
+    <button type="button" role="menuitem" data-bulk="fill"><svg class="i"><use href="#i-pen"/></svg><span>تكملة البيانات الناقصة</span></button>
+    <span class="bk-mh">الكشوف</span>
+    <button type="button" role="menuitem" data-bulk="satOn"><svg class="i"><use href="#i-plus"/></svg><span>إضافة لكشف المتابعة</span></button>
+    <button type="button" role="menuitem" data-bulk="satOff"><svg class="i"><use href="#i-x"/></svg><span>من الكشف</span></button>
+    <button type="button" role="menuitem" data-bulk="mpOn"><svg class="i"><use href="#i-users"/></svg><span>إضافة لكشف القوة العاملة</span></button>
+    <button type="button" role="menuitem" data-bulk="mpOff"><svg class="i"><use href="#i-x"/></svg><span>إزالة من كشف القوة العاملة</span></button>
   </div>
 </div>
 <dialog class="cmd" id="cmd"><div class="cmd"><input id="cmdIn" placeholder="ابحث عن مشروع أو مستخلص أو رقم عقد…" autocomplete="off" aria-label="بحث سريع"><ul id="cmdList"></ul><div class="hint2">↑ ↓ للتنقل · Enter للفتح · Esc للإغلاق</div></div></dialog>
@@ -2784,13 +2807,15 @@ function renderBulk(){
     const onSat = vs.filter(v=>v.showSat).length;
     $('[data-bulk="satOn"]').hidden = state.tab==="sat" || onSat===vs.length;
     $('[data-bulk="satOff"]').hidden = onSat===0;
-    $('[data-bulk="satOff"] span').textContent = state.tab==="sat" ? "إزالة من الكشف" : "من الكشف";
+    $('[data-bulk="satOff"] span').textContent = "إزالة من كشف المتابعة";
     $('[data-bulk="paid"]').hidden = vs.every(v=>v.paid==="نعم");
     const onMp = vs.filter(v=>v.showMp).length;
     $('[data-bulk="mpOn"]').hidden = state.tab==="mp" || onMp===vs.length;
     $('[data-bulk="mpOff"]').hidden = onMp===0;
     $("#bulkStage").innerHTML = `<option value="">نقل إلى مكان…</option>` + (state.cfg.stages||[]).map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join("");
   }
+  if(projMode || !state.canWrite) ["satOn","satOff","mpOn","mpOff"].forEach(k=>$(`[data-bulk="${k}"]`).hidden=true);
+  bkMenuClose?.();
 }
 /* Esc: يشيل التحديد لو فيه حاجة متحددة، ولو مفيش يمسح فلاتر كشف المتابعة
    (بس لو مفيش نافذة أو قايمة مفتوحة، ومش بتكتب في خانة) */
@@ -5609,7 +5634,17 @@ function endAsk(){ bkPending=null; $("#bulk").classList.remove("confirming"); $(
 $("#bkYes").onclick=()=>{ const p=bkPending; endAsk(); if(p) runBulk(p.kind, p.stage); };
 $("#bkNo").onclick=endAsk;
 $("#bulkStage").addEventListener("change", e=>{ if(e.target.value) askBulk("stage", e.target.value); });
-$("#bulk").addEventListener("click", e=>{ const b=e.target.closest("[data-bulk]"); if(!b) return; const k=b.dataset.bulk;
+function bkMenuClose(){ document.querySelectorAll("#bulk .bk-menu").forEach(m=>m.hidden=true); document.querySelectorAll("#bulk [data-bkmenu]").forEach(b=>b.setAttribute("aria-expanded","false")); }
+function bkMenuOpen(btn){ const m=$("#bkMenu-"+btn.dataset.bkmenu), was=!m.hidden; bkMenuClose(); if(was) return;
+  const bar=$("#bulk"), br=bar.getBoundingClientRect(), r=btn.getBoundingClientRect();
+  m.querySelectorAll(".bk-mh").forEach(h=>{ let n=h.nextElementSibling, any=false; while(n && !n.classList.contains("bk-mh")){ if(!n.hidden) any=true; n=n.nextElementSibling; } h.hidden=!any; });
+  m.hidden=false; btn.setAttribute("aria-expanded","true");
+  const w=m.offsetWidth; m.style.left=Math.max(6, Math.min(r.right-br.left-w, br.width-w-6))+"px";
+  m.querySelector("button:not([hidden])")?.focus({preventScroll:true}); }
+document.addEventListener("pointerdown", e=>{ if(!e.target.closest("#bulk .bk-menu,#bulk [data-bkmenu]")) bkMenuClose(); }, true);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape" && document.querySelector("#bulk .bk-menu:not([hidden])")){ e.preventDefault(); e.stopPropagation(); bkMenuClose(); } }, true);
+$("#bulk").addEventListener("click", e=>{ const mb=e.target.closest("[data-bkmenu]"); if(mb){ bkMenuOpen(mb); return; } });
+$("#bulk").addEventListener("click", e=>{ const b=e.target.closest("[data-bulk]"); if(!b) return; const k=b.dataset.bulk; if(b.closest(".bk-menu")) bkMenuClose();
   if(k==="clear"){ clearSel(); return; }
   if(k==="all"){ selectAllVisible(); return; }
   if(k==="xlsx"){ exportSelXlsx(b); return; }
