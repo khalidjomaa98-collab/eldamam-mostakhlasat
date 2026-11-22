@@ -2239,6 +2239,8 @@ form.dlg-push,form.dlg-pop{animation-duration:.16s}
 .cl-tot b{font-size:1.15rem}
 @media (max-width:640px){ .cl-r{grid-template-columns:22px minmax(0,1fr) auto} .cl-r input{grid-column:2 / 4} }
 .vf-f{gap:8px;flex-wrap:wrap}
+/* الرسالة بتظهر فوق النوافذ المفتوحة (top layer) */
+.toast[popover]{top:auto;right:auto;margin:0;border:0;overflow:visible;inset-inline:auto;left:50%}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2535,7 +2537,7 @@ form.dlg-push,form.dlg-pop{animation-duration:.16s}
 <dialog class="cmd" id="cmd"><div class="cmd"><input id="cmdIn" placeholder="ابحث عن مشروع أو مستخلص أو رقم عقد…" autocomplete="off" aria-label="بحث سريع"><ul id="cmdList"></ul><div class="hint2">↑ ↓ للتنقل · Enter للفتح · Esc للإغلاق</div></div></dialog>
 <dialog class="drawer" id="dlg"><form method="dialog" class="dw" id="dlgForm" dir="rtl" novalidate></form></dialog>
 <datalist id="dlContracts"></datalist>
-<div class="toast" id="toast" hidden></div>
+<div class="toast" id="toast" popover="manual" hidden></div>
 <div class="stpop" id="stPop" hidden role="dialog" aria-label="الصرف والشهادات"></div>
 
 <script>
@@ -2852,7 +2854,7 @@ function applyFlash(){
 const skelKpis = n => Array.from({length:n},()=>`<div class="kpi"><span class="skel" style="width:55%"></span><span class="skel" style="height:26px;width:75%;margin-top:6px"></span><span class="skel" style="width:40%;margin-top:6px"></span></div>`).join("");
 const skelRows = n => `<div class="skel-rows">${Array.from({length:n},(_,i)=>`<span class="skel" style="width:${92-i*9}%"></span>`).join("")}</div>`;
 window.toast = (...a) => toast(...a);
-function toast(msg){ const t=$("#toast"); t.innerHTML=`${ico("check")}<span></span>`; t.querySelector("span").textContent=msg; t.hidden=false; t.classList.remove("show"); void t.offsetWidth; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2800); }
+function toast(msg){ const t=$("#toast"); t.innerHTML=`${ico("check")}<span></span>`; t.querySelector("span").textContent=msg; t.hidden=false; try{ t.hidePopover(); t.showPopover(); }catch{} t.classList.remove("show"); void t.offsetWidth; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>{ t.hidden=true; try{ t.hidePopover(); }catch{} },2800); }
 function showGate(){ document.body.classList.add("nodb"); $("#gate").hidden=false; }
 function setStatus(msg, warn){ const s=$("#status"); if(!msg){s.hidden=true;return;} s.hidden=false; s.textContent=msg; s.classList.toggle("warn",!!warn); }
 const opts = (list, sel, all, lab) => (all!=null?`<option value="">${all}</option>`:"") + list.map(x=>`<option value="${esc(x)}" ${x===sel?"selected":""}>${esc(lab?lab(x):x)}</option>`).join("");
@@ -3883,7 +3885,7 @@ function projDialog(p){
             ${state.canWrite?`<div class="pm-add"><input class="cell" id="msNew" placeholder="مرحلة خاصة بالمشروع ده (اختياري)…"><button type="button" class="btn sm" id="msAdd">${ico("plus")}إضافة مرحلة</button></div>`:""}`; };
         const commit = async (ms, text) => { const cur=state.projects.find(x=>x.id===p.id)||p;
           if(await save(db.collection("projects").doc(p.id), {...stripId(cur), milestones:ms, updatedAt:new Date().toISOString()})){ d.milestones=ms; editing=-1; doing=-1; draw(); toast(text); logAct(`${pName(cur,true)}: ${text}`, "", p.id); } };
-        box.addEventListener("click", async e=>{ const L=list(), ms=(d.milestones||[]).slice(), dateOf=b=>b.closest("li").querySelector(".pm-d")?.value||today();
+        box.addEventListener("click", async e=>{ const L=list(), ms=(d.milestones||[]).slice(), dateOf=b=>b.closest("li").querySelector('input[type="date"].pm-d')?.value||today();
           const b1=e.target.closest("[data-msdo]"); if(b1){ const x=L[+b1.dataset.msdo], dt=dateOf(b1); if(dt>today()){ toast("التاريخ في المستقبل"); return; } ms.push({name:x.name, date:dt, by:myId||"", at:new Date().toISOString()}); await commit(ms, `تم «${x.name}» بتاريخ ${dmy(dt)}`); return; }
           const b2=e.target.closest("[data-msedit]"); if(b2){ editing=+b2.dataset.msedit; draw(); box.querySelector(".pm-d")?.focus(); return; }
           const b3=e.target.closest("[data-msok]"); if(b3){ const x=L[+b3.dataset.msok], dt=dateOf(b3); if(!dt||dt>today()){ toast("اكتب تاريخ صحيح"); return; } const j=ms.findIndex(m=>m.name===x.name); if(ms[j].date===dt){ editing=-1; draw(); return; } ms[j]={...ms[j], date:dt, at:new Date().toISOString(), by:myId||""}; await commit(ms, `عدّل تاريخ «${x.name}» إلى ${dmy(dt)}`); return; }
