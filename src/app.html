@@ -2310,6 +2310,11 @@ html:root[data-font="tajawal"]{--f-display:"Tajawal",Tahoma,sans-serif;--f-body:
   .selbox,.chk input[type=checkbox],input.isb{width:22px;height:22px}
   .lnkb,.aclink,.link,.pname{padding-block:6px;margin-block:-6px}
 }
+/* مشروع لسه ما طلعلوش عقد: علامة برتقالي واضحة */
+.nocon{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:700;color:#b54708;background:#fef0c7;border:1px solid #fedf89;border-radius:6px;padding:0 8px;line-height:1.7;white-space:nowrap}
+.nocon::before{content:"";width:7px;height:7px;border-radius:50%;background:#f79009;box-shadow:0 0 0 3px rgba(247,144,9,.22)}
+:root[data-theme="dark"] .nocon{color:#fec84b;background:rgba(247,144,9,.14);border-color:rgba(247,144,9,.35)}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .nocon{color:#fec84b;background:rgba(247,144,9,.14);border-color:rgba(247,144,9,.35)} }
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2983,7 +2988,7 @@ function render(){
   $("#cProj").textContent = state.projects.length;
   $("#cMp").textContent = state.invoices.filter(v=>v.showMp).length;
   $("#cIns").textContent = state.ins.length;
-  $("#dlContracts").innerHTML = state.projects.map(p=>`<option value="${esc(p.contractNo)}">${esc(pName(p,true))}</option>`).join("");
+  $("#dlContracts").innerHTML = state.projects.filter(p=>realId(p.contractNo)).map(p=>`<option value="${esc(p.contractNo)}">${esc(pName(p,true))}</option>`).join("");
   // السرعة: بنرسم الصفحة المفتوحة بس، والباقي بيترسم لما تفتحه (render بتتنده مع كل تغيير صفحة)
   const R={home:renderHome, sat:renderSat, act:renderAct, dq:renderDq, moves:renderMoves, inv:renderInv, proj:renderProj, ins:renderIns, co:renderCo, mp:renderMp};
   (R[state.tab]||renderHome)();
@@ -3318,8 +3323,8 @@ function renderProj(){
     <div class="kpi ${base.some(([p,s])=>s.noIns)?"wn":""}"><span class="lbl">${ico("shield")}مشاريع عليها شهادات تأمينات</span><span class="val num">${base.filter(([p,s])=>s.noIns).length}</span><span class="sub">${sum(base,([p,s])=>s.noIns)} مستخلص دون شهادة</span></div>`;
   const hc = h => base.filter(([p,s])=>s.health===h).length;
   const hb = (key,label,n,color) => `<button type="button" class="alert st" data-phealth="${key}" aria-pressed="${state.pHealth===key}" ${n||state.pHealth===key||key===""?"":"hidden"}>${color?`<i class="dt" style="background:${color}"></i>`:""}${label} <b class="num">${n}</b></button>`;
-  $("#pHealth").innerHTML = hb("","كل المشاريع",base.length) + ["late","due","ok","done","none"].map(h=>hb(h,HEALTH[h].t,hc(h),HEALTH[h].c)).join("") + hb("stale","بدون متابعة من +30 يوم",base.filter(([p,s])=>isStale(p,s)).length,"var(--warn)");
-  let rows = base.filter(([p,s])=>!state.pHealth || (state.pHealth==="stale" ? isStale(p,s) : s.health===state.pHealth));
+  $("#pHealth").innerHTML = hb("","كل المشاريع",base.length) + ["late","due","ok","done","none"].map(h=>hb(h,HEALTH[h].t,hc(h),HEALTH[h].c)).join("") + hb("stale","بدون متابعة من +30 يوم",base.filter(([p,s])=>isStale(p,s)).length,"var(--warn)") + hb("nocon","لم يصدر عقد",base.filter(([p])=>!realId(p.contractNo)).length,"#f79009");
+  let rows = base.filter(([p,s])=>!state.pHealth || (state.pHealth==="stale" ? isStale(p,s) : state.pHealth==="nocon" ? !realId(p.contractNo) : s.health===state.pHealth));
   const sk = {unpaid:([p,s])=>-s.unpaid, recent:([p,s])=>-Math.max(s.last,num(p.order)/1000), exec:([p,s])=>-(s.exec??-1), value:([p,s])=>-s.cv}[so] || (([p,s])=>-s.unpaid);
   rows.sort((a,b)=>sk(a)-sk(b));
   $("#projSub").textContent = `${rows.length} مشروع معروض`;
@@ -3818,7 +3823,7 @@ function invDialog(v, projectId){
     foot: footBtns("حفظ المستخلص", v?"vDel":""),
     onSubmit: async () => {
       if(ro) return;
-      const p = state.projects.find(x=>x.contractNo.trim()===val("vContract").trim());
+      const p = projByNo(val("vContract"));
       if(!p){ toast("رقم العقد غير موجود في المشاريع. أضف المشروع أولًا."); form._showTab?.("data"); form.querySelector("#vContract").focus(); return; }
       { const pn=val("vNote").trim(); if(pn){ d.log.push({date:today(), by:myId||"", text:pn}); form.querySelector("#vNotes").value=pn; } }
       const data = {...stripId(d)}; delete data._draft;
@@ -3859,7 +3864,7 @@ function invDialog(v, projectId){
         // آخر متابعة تتنقل لـ«ملاحظات الكشف» كمان (الاتنين نفس المعنى)
         { const nt=form.querySelector("#vNotes"); if(nt){ nt.value=t; nt.dispatchEvent(new Event("input",{bubbles:true})); } } form.querySelector("#vLogBox").innerHTML=vLogHtml(); toast("أُضيفت المتابعة واتكتبت في ملاحظات الكشف. اضغط «حفظ المستخلص» لتسجيلها"); };
       const refresh = () => {
-        const p = state.projects.find(x=>x.contractNo.trim()===val("vContract").trim());
+        const p = projByNo(val("vContract"));
         d.projectId = p?.id || ""; d.type = val("vType"); d.gross = nval("vGross");
         const cardEl = form.querySelector("#vProjCard");
         if(!val("vContract").trim()) cardEl.innerHTML = "";
@@ -3928,7 +3933,7 @@ function projDialog(p){
   const vs = p ? state.invoices.filter(v=>v.projectId===p.id).sort((a,b)=>num(a.order)-num(b.order)) : [];
   const msOpt = !!(p && vs.length && realId(p.contractNo));
   const msSec = `<section class="sec ms closed" id="msSec"><h3><button type="button" class="ms-tg" id="msTg" aria-expanded="false" aria-controls="msBox">${ico("flag")}<span>مراحل المشروع${msOpt?` <small class="faint">(اختياري — المشروع ليه عقد ومستخلصات)</small>`:""}</span><span class="r faint small" id="msCount" style="font-weight:500"></span><svg class="i ms-ch" aria-hidden="true"><use href="#i-up"/></svg></button></h3><div id="msBox"></div></section>`;
-  openDlg({ title: p?esc(p.shortName||p.name):"مشروع جديد", sub: p?`عقد <span class="code">${esc(p.contractNo)}</span> · ${esc(p.location||"")}`:"",
+  openDlg({ title: p?esc(p.shortName||p.name):"مشروع جديد", sub: p?`${realId(p.contractNo)?`عقد <span class="code">${esc(p.contractNo)}</span>`:`<span class="nocon">لم يصدر عقد</span>`} · ${esc(p.location||"")}`:"",
     body: `<fieldset class="bare" ${state.canWrite?"":"disabled"}>
       ${p&&!(vs.length&&realId(p.contractNo))?msSec:""}${p?"":`<p class="hint">مراحل المشروع (جواب الميزانية، المقايسة، اللجان، العقد…) هتظهر هنا بعد ما تحفظ المشروع.</p>`}
       ${p?`<section class="sec"><h3>${ico("list")}مستخلصات المشروع (${vs.length})${state.canWrite?`<span class="r"><button type="button" class="btn sm" id="jNewInv">${ico("plus")}مستخلص جديد</button></span>`:""}</h3>
@@ -3942,7 +3947,7 @@ function projDialog(p){
         <div id="plBox"></div></section>`:""}
       <section class="sec lk"><h3>${ico("bld")}بيانات المشروع${p&&state.canWrite?`<span class="r"><button type="button" class="btn sm ghost" data-unlockall>${ico("pen")}تعديل الكل</button></span>`:""}</h3>
       <div class="fields">
-        ${fld("jNo","رقم العقد",d.contractNo)}
+        ${fld("jNo","رقم العقد (اختياري لو لسه ما طلعش)",d.contractNo)}
         ${fld("jShort","اسم مختصر للعرض",d.shortName)}
         <div class="f wide"><label for="jName">اسم المشروع</label><textarea id="jName" style="min-height:52px">${esc(d.name||"")}</textarea></div>
         <div class="f"><label for="jLoc">موقع المشروع</label><input id="jLoc" list="dlLoc" value="${esc(d.location||"")}"><datalist id="dlLoc">${uniq(state.projects.map(x=>x.location)).map(x=>`<option value="${esc(x)}">`).join("")}</datalist></div>
@@ -3968,8 +3973,7 @@ function projDialog(p){
     foot: footBtns("حفظ المشروع", p?"jDel":""),
     onSubmit: async () => {
       const no = val("jNo").trim();
-      if(!no){ toast("اكتب رقم العقد"); return; }
-      if(state.projects.some(x=>x.id!==p?.id && x.contractNo.trim()===no)){ toast("رقم العقد مسجل لمشروع آخر"); return; }
+      if(realId(no) && state.projects.some(x=>x.id!==p?.id && String(x.contractNo||"").trim()===no)){ toast("رقم العقد مسجل لمشروع آخر"); return; }
       if(!val("jName").trim()){ toast("اكتب اسم المشروع"); return; }
       if(form.querySelector("#jRedOn").checked && !(num(val("jRed"))>0)){ toast("اكتب قيمة العقد بعد التخفيض"); form.querySelector("#jRed").focus(); return; }
       const data = {...stripId(d), contractNo:no, name:val("jName").trim(), shortName:val("jShort").trim(), location:val("jLoc").trim(), dept:val("jDept"), company:val("jCompany"),
@@ -4256,8 +4260,9 @@ const coTag = c => `<span class="cot" style="--cc:${coVar(c)}">${esc(coShort(c))
 const coLegend = () => `<span class="colg">${uniq([...(state.cfg.companies||[]), ...state.projects.map(p=>p.company)]).filter(c=>c&&c!=="غير محدد").map(c=>coTag(c)).join("")}</span>`;
 const GROUP_HEX = ["#1e3a6e","#2d6a64","#5d4a7e","#7c6233","#3d6189","#7a4545","#4b6a3a"];
 const gcol = (L,key,i) => { const ix=L.order.indexOf(key); return GROUP_HEX[(ix<0?i:ix)%GROUP_HEX.length]; };
+const projByNo = no => { const t=realId(no); return t ? state.projects.find(x=>String(x.contractNo||"").trim()===t) : undefined; };
 const realId = x => { const t=String(x??"").trim(); return t && !/^[-–—_.\s]+$/.test(t) ? t : ""; };
-const idChips = p0 => { const p={contractNo:realId(p0.contractNo), unifiedCode:realId(p0.unifiedCode), boqNo:realId(p0.boqNo)}; return `<span class="ids">${p.contractNo?`<span class="idc"><i>عقد</i><span class="code">${esc(p.contractNo)}</span></span>`:""}${p.unifiedCode?`<span class="idc idc-u"><i>كود موحد</i><span class="num">${esc(p.unifiedCode)}</span></span>`:""}${p.boqNo&&p.boqNo!==p.contractNo?`<span class="idc"><i>مقايسة</i><span class="code">${esc(p.boqNo)}</span></span>`:""}</span>`; };
+const idChips = p0 => { const p={contractNo:realId(p0.contractNo), unifiedCode:realId(p0.unifiedCode), boqNo:realId(p0.boqNo)}; return `<span class="ids">${p.contractNo?`<span class="idc"><i>عقد</i><span class="code">${esc(p.contractNo)}</span></span>`:`<span class="nocon">لم يصدر عقد</span>`}${p.unifiedCode?`<span class="idc idc-u"><i>كود موحد</i><span class="num">${esc(p.unifiedCode)}</span></span>`:""}${p.boqNo&&p.boqNo!==p.contractNo?`<span class="idc"><i>مقايسة</i><span class="code">${esc(p.boqNo)}</span></span>`:""}</span>`; };
 const gAmt = (li, tot, ptot, curH) => li===0 ? `<span class="gt">${money(tot)} ${curH}</span>` : (li===1 && Math.abs(tot-(ptot??-1))>0.5) ? `<span class="gt gt2">${money(tot)}</span>` : "";
 const lvOrd = L => (a,b) => { const ia=L.order.indexOf(a), ib=L.order.indexOf(b); return ((ia<0?99:ia)-(ib<0?99:ib)) || (ia<0&&ib<0 ? String(a).localeCompare(String(b),"ar") : 0); };
 /* ---------- الصرف والشهادات (نافذة صغيرة) ---------- */
@@ -4363,7 +4368,7 @@ function mpDialog(v0){
     foot: state.canWrite ? `<button class="btn primary" type="submit">${ico("check")}حفظ</button><button class="btn ghost" type="button" data-cancel>إلغاء</button>${v0?`<span style="flex:1"></span><button class="btn" type="button" id="mOpen">${ico("doc")}فتح المستخلص</button><button class="btn danger" type="button" id="mRemove">إزالة من القوة العاملة</button>`:""}` : "",
     onMount: () => {
       const refresh = () => {
-        if(!v0){ const p=state.projects.find(x=>x.contractNo.trim()===val("mContract").trim()); pid=p?.id||"";
+        if(!v0){ const p=projByNo(val("mContract")); pid=p?.id||"";
           const list = p ? state.invoices.filter(v=>v.projectId===p.id).sort((a,b)=>num(b.order)-num(a.order)) : [];
           const sel=form.querySelector("#mInv"), cur=sel.value;
           sel.innerHTML = `<option value="">${p?(list.length?"اختر المستخلص":"لا توجد مستخلصات على العقد ده"):"اختر رقم العقد أولًا"}</option>` + list.map(v=>`<option value="${esc(v.id)}" ${v.showMp?"disabled":""}>${esc(certLabel(v))} · ${fmt(calc(v).net)}${v.showMp?" (مربوط بالفعل)":""}</option>`).join("");
@@ -5029,7 +5034,7 @@ function insDialog(r, preId){
     </fieldset>`,
     foot: footBtns("حفظ الملف", r?"nDel":""),
     onSubmit: async () => {
-      const p = r ? proj(d.projectId) : state.projects.find(x=>x.contractNo.trim()===val("nContract").trim());
+      const p = r ? proj(d.projectId) : projByNo(val("nContract"));
       if(!p){ toast("رقم العقد غير موجود في المشاريع"); return; }
       const invId = val("nInvSel");
       if(!invId){ toast("اختر المستخلص اللي الملف ده خاص بيه"); form.querySelector("#nInvSel").focus(); return; }
@@ -5052,7 +5057,7 @@ function insDialog(r, preId){
     onMount: () => {
       let raiseTouched = !!(r && r.raiseInvoiceId);
       const refresh = () => {
-        const p = r ? proj(d.projectId) : state.projects.find(x=>x.contractNo.trim()===val("nContract").trim());
+        const p = r ? proj(d.projectId) : projByNo(val("nContract"));
         d.projectId = p?.id || d.projectId;
         form.querySelector("#nProj").innerHTML = !p ? (val("nContract").trim()?`<div class="warnline">⚠ رقم العقد غير موجود في المشاريع</div>`:"") :
           `<div class="pinfo"><div class="w">${esc(p.name)}</div><div><span>رقم العقد</span><span class="code">${esc(p.contractNo)}</span></div><div><span>رقم المقايسة</span><span class="code">${esc(p.boqNo||"—")}</span></div><div><span>كود العقد الموحد</span><span class="num">${esc(p.unifiedCode||"—")}</span></div><div><span>الشركة</span>${esc(p.company||"—")}</div><div><span>جهة الإسناد</span>${esc(p.dept||"—")}</div><div><span>نسبة الأجور</span>${num(p.wageRatio)>0?pctTxt(num(p.wageRatio)):"—"}</div></div>`;
