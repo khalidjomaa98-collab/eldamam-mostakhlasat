@@ -2315,6 +2315,18 @@ html:root[data-font="tajawal"]{--f-display:"Tajawal",Tahoma,sans-serif;--f-body:
 .nocon::before{content:"";width:7px;height:7px;border-radius:50%;background:#f79009;box-shadow:0 0 0 3px rgba(247,144,9,.22)}
 :root[data-theme="dark"] .nocon{color:#fec84b;background:rgba(247,144,9,.14);border-color:rgba(247,144,9,.35)}
 @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .nocon{color:#fec84b;background:rgba(247,144,9,.14);border-color:rgba(247,144,9,.35)} }
+/* الموبايل: كروت أقصر في الكشف والسجل والتأمينات (نفس البيانات، مسافات أقل) */
+@media (max-width:700px){
+  :is(#satList,#v-inv):not(#_):not(#_) tr.r td.pj .ids .idc:not(:first-child){display:none}
+  #satList:not(#_):not(#_) tr.r td:not(.sel):not(.idx){padding-block:5px}
+  :is(#satList,#v-inv):not(#_):not(#_) tr.r td.pj .pjm{margin-top:1px}
+  #insT:not(#_):not(#_) tbody tr td:not(.sel){padding:4px 8px}
+  #insT:not(#_):not(#_) tbody tr td.pn{padding-top:8px}
+  #insT:not(#_):not(#_) tbody tr td .ist-s{padding-block:3px}
+  #insT:not(#_):not(#_) tbody tr{position:relative;row-gap:2px}
+  #insT:not(#_):not(#_) tbody tr td.sel{position:absolute;top:8px;left:8px;padding:6px;z-index:1}
+  #insT:not(#_):not(#_) tbody tr td.icv{padding-inline-end:40px}
+}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2849,9 +2861,9 @@ function renderBulk(){
     const net=vs.reduce((a,v)=>a+num(calc(v).net),0), un=vs.filter(v=>v.paid!=="نعم").reduce((a,v)=>a+num(calc(v).net),0);
     $("#bulkN").textContent = vs.length; $("#bulkT").textContent = "مستخلص محدد";
     $("#bulkS").textContent = `${new Set(vs.map(v=>v.projectId)).size} مشروع · صافي ${fmt(net)}${un&&un!==net?` · لم يُصرف ${fmt(un)}`:""}`;
-    const onSat = vs.filter(v=>v.showSat).length;
-    $('[data-bulk="satOn"]').hidden = state.tab==="sat" || onSat===vs.length;
-    $('[data-bulk="satOff"]').hidden = onSat===0;
+    const nSat = vs.filter(onSat).length, unpaid = vs.filter(v=>v.paid!=="نعم").length;
+    $('[data-bulk="satOn"]').hidden = state.tab==="sat" || nSat===unpaid;
+    $('[data-bulk="satOff"]').hidden = nSat===0;
     $('[data-bulk="satOff"] span').textContent = "إزالة من كشف المتابعة";
     $('[data-bulk="paid"]').hidden = vs.every(v=>v.paid==="نعم");
     const onMp = vs.filter(v=>v.showMp).length;
@@ -2892,7 +2904,7 @@ async function runBulk(kind, stage){
     stage: v=>({stage, stageDate:today(), stageLog:[...(v.stageLog||[]),{stage,date:today(),from:v.stage||"",by:myId||"",at:new Date().toISOString()}]}),
     paid: v=>({paid:"نعم", paidDate:v.paidDate||today()}),
     ins: v=>({insStatus:"نعم"}),
-    satOn: v=>({showSat:true}), satOff: v=>({showSat:false}), mpOn: v=>({showMp:true}), mpOff: v=>({showMp:false}),
+    satOn: v=>(v.paid==="نعم" ? {} : {showSat:true}), satOff: v=>({showSat:false}), mpOn: v=>({showMp:true}), mpOff: v=>({showMp:false}),
   }[kind];
   const label = {stage:`نقل إلى «${stage}»`, paid:"تسجيل صرف", ins:"تم استخراج شهادة التأمينات", satOn:"إضافة لكشف المتابعة", satOff:"إزالة من كشف المتابعة", mpOn:"إضافة لكشف القوة العاملة", mpOff:"إزالة من كشف القوة العاملة"}[kind];
   $("#bulk").querySelectorAll("button,select").forEach(x=>x.disabled=true);
@@ -2981,8 +2993,8 @@ function render(){
   { const nb=document.querySelector(`.nav button[data-tab="${state.tab}"] .lbl`); $("#mbPage").textContent = nb ? nb.textContent : ""; }
   navInd();
   ["#btnNew","#btnNewInv","#btnNewProject","#btnNewIns","#btnSettings","#fab","#insNew","#mpNew"].forEach(s => $(s).disabled = !state.canWrite || !db);
-  $("#cSat").textContent = state.invoices.filter(v=>v.showSat).length;
-  { const nl = state.invoices.filter(v=>v.showSat && calc(v).late).length; $("#aSat").hidden=!nl; $("#aSat").textContent=nl;
+  $("#cSat").textContent = state.invoices.filter(onSat).length;
+  { const nl = state.invoices.filter(v=>onSat(v) && calc(v).late).length; $("#aSat").hidden=!nl; $("#aSat").textContent=nl;
     const il = state.ins.filter(r=>!insDone(r) && r.nextDate && r.nextDate<today()).length; $("#aIns").hidden=!il; $("#aIns").textContent=il; }
   $("#cInv").textContent = state.invoices.length;
   $("#cProj").textContent = state.projects.length;
@@ -3015,7 +3027,7 @@ function satBase(ignoreAlert){
   const f = state.satFilter;
   const q = qNorm(state.satQ||"");
   return state.invoices.filter(v=>{
-    if(!v.showSat) return false;
+    if(!onSat(v)) return false;
     const k = calc(v);
     if(q && !qMatch(v,k,q)) return false;
     if(f.dept && !msHas(f.dept,k.dept)) return false;
@@ -3179,7 +3191,7 @@ function rowHtml(v,k,o){
     <td class="amtc">${amt}</td>
     <td class="stt">${statusBtn(v,k)}</td>
     <td class="stc">${(v.paid==="نعم" && !v.stage) ? `<span class="faint small">—</span>` : stageCell(v,k)}${v.stageDate&&k.hs&&v.paid!=="نعم"?`<div class="since">منذ <span class="dte">${dmy(v.stageDate)}</span>${movedRecently(v)?` <span class="moved" title="نُقل خلال آخر 7 أيام">· نُقل مؤخرًا</span>`:""}</div>`:""}</td>
-    <td class="c dys">${daysCell(k)}${o.satMark&&(v.showSat||v.showMp)?`<div class="satm">${v.showSat?`<span title="ظاهر في كشف المتابعة">${ico("sat")}</span>`:""}${v.showMp?`<span title="ظاهر في كشف القوة العاملة">${ico("users")}</span>`:""}</div>`:""}</td>
+    <td class="c dys">${daysCell(k)}${o.satMark&&(onSat(v)||v.showMp)?`<div class="satm">${onSat(v)?`<span title="ظاهر في كشف المتابعة">${ico("sat")}</span>`:""}${v.showMp?`<span title="ظاهر في كشف القوة العاملة">${ico("users")}</span>`:""}</div>`:""}</td>
   </tr>`;
 }
 function satRow(v,k,n,i,newp){ return rowHtml(v,k,{idx:n, proj:true, short:state.satFilter.short, zb:i%2, newp}); }
@@ -3209,7 +3221,7 @@ function invBase(){
     if(co && k.company!==co) return false;
     if(de && k.dept!==de) return false;
     if(ty && (v.type||"مستخلص أعمال")!==ty) return false;
-    if(so && !v.showSat) return false;
+    if(so && !onSat(v)) return false;
     if(mo && !v.showMp) return false;
     if(stf && k.stage!==stf) return false;
     if(q && !`${k.p?.name} ${k.p?.shortName} ${k.p?.contractNo} ${k.p?.boqNo} ${k.p?.location} ${v.certNo} ${v.type} ${v.notes}`.toLowerCase().includes(q)) return false;
@@ -3685,6 +3697,7 @@ function rebase(list, id, orig, data){
   return out;
 }
 async function save(ref, data){
+  if(ref.collection==="invoices" && data && data.paid==="نعم" && data.showSat) data = {...data, showSat:false};
   const cap=undoCap; undoAdd(cap, ref);
   try { await ref.set(data); return true; }
   catch(e){ if(cap) cap.fail=true;
@@ -3808,7 +3821,7 @@ function invDialog(v, projectId){
       </section>
       <section class="sec" data-tab="data"><h3>${ico("sat")}الكشوف والملاحظات</h3>
         <div class="fields">
-          <label class="chk"><input type="checkbox" id="vSat" ${d.showSat?"checked":""}> عرض في كشف المتابعة</label>
+          <label class="chk"><input type="checkbox" id="vSat" ${onSat(d)?"checked":""} ${d.paid==="نعم"?"disabled":""}> عرض في كشف المتابعة <small class="faint" id="vSatHint" ${d.paid==="نعم"?"":"hidden"}>— اتصرف، فبيتشال من الكشف تلقائي</small></label>
           <div class="f wide"><label for="vNotes">ملاحظات الكشف</label><textarea id="vNotes" placeholder="مثال: متوقف على نقل الخامات — وأي متابعة جديدة بتتكتب هنا لوحدها">${esc(d.notes||"")}</textarea></div>
           ${sfld("vCompany","الشركة (لو مختلفة عن شركة المشروع)",uniq([...(cfg.companies||[]),...state.projects.map(p=>p.company)]),d.company,"نفس شركة المشروع")}
         </div>
@@ -3860,6 +3873,8 @@ function invDialog(v, projectId){
         logAct(v ? `عدّل ${lab}${ch.length?" — "+ch.join(" | "):""}` : `سجّل مستخلص جديد: ${lab} — القيمة: ${fmt(data.gross)} | النوع: ${data.type}${data.stage?` | المكان: ${data.stage}`:""}`, ref.id, p.id); }
     },
     onMount: () => {
+      { const ps=form.querySelector("#vPaid"), cb=form.querySelector("#vSat"), h=form.querySelector("#vSatHint");
+        if(ps && cb) ps.addEventListener("change", ()=>{ const pd=ps.value==="نعم"; cb.disabled=pd; h.hidden=!pd; if(pd) cb.checked=false; }); }
       form.querySelector("#vAddNote").onclick=()=>{ const t=val("vNote").trim(); if(!t) return; d.log.push({date:today(), by:myId||"", text:t}); form.querySelector("#vNote").value="";
         // آخر متابعة تتنقل لـ«ملاحظات الكشف» كمان (الاتنين نفس المعنى)
         { const nt=form.querySelector("#vNotes"); if(nt){ nt.value=t; nt.dispatchEvent(new Event("input",{bubbles:true})); } } form.querySelector("#vLogBox").innerHTML=vLogHtml(); toast("أُضيفت المتابعة واتكتبت في ملاحظات الكشف. اضغط «حفظ المستخلص» لتسجيلها"); };
@@ -4260,6 +4275,8 @@ const coTag = c => `<span class="cot" style="--cc:${coVar(c)}">${esc(coShort(c))
 const coLegend = () => `<span class="colg">${uniq([...(state.cfg.companies||[]), ...state.projects.map(p=>p.company)]).filter(c=>c&&c!=="غير محدد").map(c=>coTag(c)).join("")}</span>`;
 const GROUP_HEX = ["#1e3a6e","#2d6a64","#5d4a7e","#7c6233","#3d6189","#7a4545","#4b6a3a"];
 const gcol = (L,key,i) => { const ix=L.order.indexOf(key); return GROUP_HEX[(ix<0?i:ix)%GROUP_HEX.length]; };
+/* المستخلص المصروف بيتشال من كشف المتابعة تلقائي (وبيفضل في مشروعه وسجل المستخلصات) */
+const onSat = v => !!v.showSat && v.paid!=="نعم";
 const projByNo = no => { const t=realId(no); return t ? state.projects.find(x=>String(x.contractNo||"").trim()===t) : undefined; };
 const realId = x => { const t=String(x??"").trim(); return t && !/^[-–—_.\s]+$/.test(t) ? t : ""; };
 const idChips = p0 => { const p={contractNo:realId(p0.contractNo), unifiedCode:realId(p0.unifiedCode), boqNo:realId(p0.boqNo)}; return `<span class="ids">${p.contractNo?`<span class="idc"><i>عقد</i><span class="code">${esc(p.contractNo)}</span></span>`:`<span class="nocon">لم يصدر عقد</span>`}${p.unifiedCode?`<span class="idc idc-u"><i>كود موحد</i><span class="num">${esc(p.unifiedCode)}</span></span>`:""}${p.boqNo&&p.boqNo!==p.contractNo?`<span class="idc"><i>مقايسة</i><span class="code">${esc(p.boqNo)}</span></span>`:""}</span>`; };
@@ -4547,7 +4564,7 @@ function renderMoves(){
   const stays=mv.filter(e=>e.stay!=null);
   const cur=`<small>${esc(cfg.currency||"")}</small>`;
   const perTxt = {"7":"آخر أسبوع","30":"آخر شهر","90":"آخر 3 شهور","0":"من الأول"}[m.per];
-  const stuck = state.invoices.filter(v=>v.showSat && calc(v).late);
+  const stuck = state.invoices.filter(v=>onSat(v) && calc(v).late);
   $("#mvKpis").innerHTML = `
     <div class="kpi lead"><span class="lbl">${ico("route")}تنقلات · ${perTxt}</span><span class="val num">${mv.length}</span><span class="sub">${new Set(mv.map(e=>e.v.id)).size} مستخلص تم نقله</span></div>
     <div class="kpi"><span class="lbl">${ico("check")}تم الصرف · ${perTxt}</span><span class="val">${pd.length?`${money(pd.reduce((a,e)=>a+num(e.k.net),0))}${cur}`:"—"}</span><span class="sub">${pd.length?`${pd.length} مستخلص`:"لا يوجد صرف مسجل في الفترة"}</span></div>
