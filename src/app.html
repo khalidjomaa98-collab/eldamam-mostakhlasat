@@ -2327,6 +2327,23 @@ html:root[data-font="tajawal"]{--f-display:"Tajawal",Tahoma,sans-serif;--f-body:
   #insT:not(#_):not(#_) tbody tr td.sel{position:absolute;top:8px;left:8px;padding:6px;z-index:1}
   #insT:not(#_):not(#_) tbody tr td.icv{padding-inline-end:40px}
 }
+/* الموبايل: فلاتر مطوية + رؤوس صفحات أخف + كروت القوة العاملة أقصر */
+.mfbtn{display:none}
+@media (max-width:700px){
+  .fbar.mf .mfbtn{display:inline-flex;flex:none;align-self:end;gap:6px}
+  .fbar.mf .mfbtn .mf-n{background:var(--accent);color:var(--accent-ink,#fff);border-radius:999px;min-width:18px;height:18px;font-size:.7rem;display:grid;place-items:center;padding:0 5px}
+  .fbar.mf .mfbtn .mf-n[hidden]{display:none}
+  .fbar.mf .mfbtn[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+  .fbar.mf:not(.open){display:flex!important;flex-wrap:nowrap;gap:8px;align-items:end}
+  .fbar.mf:not(.open)>*:not(.mfbtn):not(input[type="search"]):not(:has(input[type="search"])){display:none!important}
+  .fbar.mf:not(.open)>:is(input[type="search"],:has(input[type="search"])){flex:1 1 auto;min-width:0}
+  .fbar.mf:not(.open):not(:has(input[type="search"])){justify-content:flex-start}
+  .ph .sub:not([id]){display:none}
+  .ph h1{font-size:1.3rem}
+  #mpTable:not(#_):not(#_) tbody tr{position:relative;row-gap:2px}
+  #mpTable:not(#_):not(#_) tbody tr td:not(.sel){padding:4px 8px}
+  #mpTable:not(#_):not(#_) tbody tr td.sel{position:absolute;top:8px;left:8px;padding:6px;z-index:1}
+}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -5793,6 +5810,19 @@ function openSkin(){
   const h=pop.offsetHeight; pop.style.top=Math.max(8, r.top-h-8)+"px";
 }
 $("#btnSkin").addEventListener("click", openSkin);
+/* ===== الموبايل: الفلاتر بتتطوي ورا زرار، والبحث فاضل ظاهر ===== */
+document.querySelectorAll(".main .fbar:not(.fold)").forEach(fb=>{
+  fb.classList.add("mf");
+  const b=document.createElement("button"); b.type="button"; b.className="btn mfbtn"; b.setAttribute("aria-expanded","false");
+  b.innerHTML=`${ico("list")}<span>الفلاتر</span><b class="mf-n" hidden></b>`;
+  const srch=fb.querySelector('input[type="search"]'); const host=srch ? (srch.closest(".fbar > *")||srch) : null;
+  if(host && host.nextSibling) fb.insertBefore(b, host.nextSibling); else fb.prepend(b);
+  b.onclick=()=>{ const o=fb.classList.toggle("open"); b.setAttribute("aria-expanded",String(o)); };
+  const cnt=()=>{ let n=0; fb.querySelectorAll("select:not([hidden])").forEach(x=>{ if(x.value && x.selectedIndex>0) n++; }); fb.querySelectorAll('input[type="checkbox"]').forEach(x=>{ if(x.checked) n++; }); fb.querySelectorAll('input[type="date"]').forEach(x=>{ if(x.value) n++; });
+    const e=b.querySelector(".mf-n"); e.hidden=!n; e.textContent=n; };
+  fb.addEventListener("change", ()=>setTimeout(cnt)); fb.addEventListener("click", ()=>setTimeout(cnt)); setTimeout(cnt, 1500);
+});
+
 /* ===== شريط التنقل السفلي (موبايل/تابلت): بيستخدم نفس أزرار القائمة الجانبية ===== */
 {
   const bn=$("#bnav");
