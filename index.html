@@ -2524,6 +2524,103 @@ html{-webkit-tap-highlight-color:transparent}
   table.dt tbody td :is(.cos,.chip,.ist-s,.stgl,.certp){white-space:normal;max-width:100%;overflow-wrap:anywhere}
 }
 @media (max-width:820px){ #coTable:not(#_):not(#_) tbody tr td{padding:4px 8px} #coTable:not(#_):not(#_) tbody tr td:first-child{padding-top:8px} }
+/* خانة التحديد كلها بتتداس */
+td.sel{cursor:pointer}
+@media (pointer:coarse){ :is(tr.r,tr.cor,.pc2){-webkit-touch-callout:none} }
+/* ===== الرئيسية الجديدة ===== */
+.kpi .dl{font-weight:700;font-size:.74rem;margin-inline-start:4px}
+.kpi .dl.good{color:var(--ok)} .kpi .dl.bad{color:var(--bad)} .kpi .dl.eq{color:var(--muted)}
+.kpi .bad-t{color:var(--bad)}
+.need-l{display:flex;flex-direction:column;gap:6px}
+.need-i{all:unset;cursor:pointer;display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line2);border-radius:12px;background:var(--surface)}
+.need-i:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--line));background:color-mix(in srgb,var(--accent) 4%,var(--surface))}
+.need-i:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.need-d{width:10px;height:10px;border-radius:50%}
+.need-i.bad .need-d{background:var(--bad)} .need-i.warn .need-d{background:var(--warn)}
+.need-t{display:flex;flex-direction:column;min-width:0}
+.need-t b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.need-t small{color:var(--muted);font-size:.76rem}
+.need-v{font-size:1rem}
+.ag-bar{display:flex;height:16px;border-radius:8px;overflow:hidden;gap:2px;background:var(--line2)}
+.ag-bar i{display:block;min-width:4px}
+.ag-l{display:flex;flex-direction:column;gap:2px;margin-top:12px}
+.ag-r{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto 44px;gap:10px;align-items:center;padding:7px 2px;border-bottom:1px dashed var(--line2)}
+.ag-r:last-child{border-bottom:0}
+.ag-d{width:12px;height:12px;border-radius:4px}
+.ag-p{color:var(--muted);text-align:end;font-size:.8rem}
+.tr-ch{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;align-items:end;height:190px}
+.tr-c{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;min-width:0}
+.tr-c i{display:block;width:100%;max-width:34px;border-radius:6px 6px 2px 2px;background:color-mix(in srgb,var(--accent) 55%,transparent)}
+.tr-c.cur i{background:var(--accent)}
+.tr-c:hover i{background:var(--accent)}
+.tr-v{font-size:.6rem;color:var(--muted);white-space:nowrap;writing-mode:horizontal-tb;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.tr-m{font-size:.68rem;color:var(--muted)}
+.tr-c.cur .tr-m{color:var(--accent-strong);font-weight:700}
+@media (max-width:700px){
+  .need-i{grid-template-columns:10px minmax(0,1fr);row-gap:2px}
+  .need-v{grid-column:2}
+  .ag-r{grid-template-columns:12px minmax(0,1fr) auto;row-gap:0}
+  .ag-r .faint,.ag-p{display:none}
+  .tr-ch{height:150px;gap:3px}
+  .tr-v{display:none}
+}
+/* ===== حركة المستخلصات ===== */
+.mv-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+.mv-side{position:sticky;top:12px}
+.stc-l{display:flex;flex-direction:column;gap:8px}
+.stc-c{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:3px;padding:10px 12px;border:1px solid var(--line2);border-radius:12px;border-inline-start:4px solid var(--sc);background:var(--surface)}
+.stc-c:hover,.stc-c.on{background:color-mix(in srgb,var(--accent) 6%,var(--surface));border-color:color-mix(in srgb,var(--accent) 35%,var(--line2));border-inline-start-color:var(--sc)}
+.stc-c:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.stc-n{font-weight:700}
+.stc-a b{font-size:1.25rem}
+.stc-a small{color:var(--muted)}
+.stc-s{font-size:.76rem;color:var(--muted)}
+.mvday2+.mvday2{margin-top:14px}
+.mvd2{position:sticky;top:0;z-index:1;display:flex;gap:10px;align-items:baseline;padding:8px 4px;background:var(--surface);border-bottom:1px solid var(--line)}
+.mvd2 .c{margin-inline-start:auto;color:var(--muted);font-size:.78rem}
+.mvd2 .dte{color:var(--muted);font-size:.8rem}
+.mvr{all:unset;cursor:pointer;box-sizing:border-box;width:100%;display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 6px;border-bottom:1px solid var(--line2)}
+.mvr:hover{background:color-mix(in srgb,var(--accent) 5%,var(--surface))}
+.mvr:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.mvr-i{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent-strong)}
+.mvr.paid .mvr-i{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.mvr-i svg.i{width:17px;height:17px}
+.mvr-b{display:flex;flex-direction:column;gap:5px;min-width:0}
+.mvr-t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mvr-f{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.mvr-ar{color:var(--muted)}
+.mvchip{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:999px;font-size:.76rem;font-weight:600;background:color-mix(in srgb,var(--sc) 14%,var(--surface));border:1px solid color-mix(in srgb,var(--sc) 40%,transparent)}
+.mvchip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--sc)}
+.mvr-m{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:end}
+.mvr-m small{font-size:.72rem;color:var(--muted)}
+.mvr .tn{font-size:.76rem;color:var(--muted)}
+@media (max-width:1060px){ .mv-grid{grid-template-columns:minmax(0,1fr)} .mv-side{position:static;order:-1} .stc-l{flex-direction:row;overflow-x:auto;scrollbar-width:none;padding-bottom:4px} .stc-l::-webkit-scrollbar{display:none} .stc-c{flex:0 0 220px} }
+@media (max-width:700px){
+  .mvr{grid-template-columns:30px minmax(0,1fr);row-gap:4px}
+  .mvr-i{width:30px;height:30px}
+  .mvr-m{grid-column:2;flex-direction:row;align-items:baseline;gap:10px;justify-content:flex-start}
+  .stc-c{flex-basis:190px}
+}
+/* ===== كشف المتابعة: شريط ثابت + تابات + طي التوزيع ===== */
+.sat-stick{position:sticky;top:var(--mbarH,0px);z-index:20;display:flex;flex-direction:column;gap:8px;padding:6px 0 8px;margin:-6px 0 -8px;background:linear-gradient(var(--bg) 85%,transparent)}
+.qtabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.qtabs::-webkit-scrollbar{display:none}
+.qtab{all:unset;cursor:pointer;flex:none;display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:.84rem;font-weight:600;white-space:nowrap}
+.qtab b{min-width:22px;padding:1px 7px;border-radius:999px;background:var(--sunk);text-align:center;font-size:.78rem}
+.qtab.bad b{background:color-mix(in srgb,var(--bad) 14%,var(--surface));color:var(--bad)}
+.qtab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink,#fff)}
+.qtab[aria-selected="true"] b{background:rgba(255,255,255,.22);color:inherit}
+.qtab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pipe-tg{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.pipe-tg svg.i{width:16px;height:16px;transition:transform .15s;transform:rotate(180deg)}
+.pipe-tg[aria-expanded="false"] svg.i{transform:rotate(90deg)}
+.pipe-mini{display:none;gap:12px;flex-wrap:wrap}
+.pipe-mini span{display:inline-flex;align-items:center;gap:5px}
+.pipe-mini i{width:8px;height:8px;border-radius:50%}
+.sumx.pipe-closed .pipe-mini{display:inline-flex}
+.sumx.pipe-closed :is(#satPipe,#satPipeE,#mxWrap,#mxToggle,.pipe-hint){display:none!important}
+.msort{display:inline-flex}
+@media (max-width:700px){ .sat-stick{margin-inline:-16px;padding-inline:16px} .pipe-mini{font-size:.74rem;gap:8px} }
 </style>
 <style>
 [hidden]{display:none!important}
@@ -2983,16 +3080,14 @@ body.side-mini .syncpill{font-size:0;gap:0;padding:7px;justify-content:center}
     <div id="v-home" style="display:flex;flex-direction:column;gap:16px" hidden>
       <div class="ph"><div><h1>نظرة عامة</h1><div class="sub" id="homeSub"></div></div></div>
       <div class="kpis" id="homeKpis"></div>
-      <section class="panel hal" id="hAlP" hidden><div class="hd"><h2>تنبيهات محتاجة مراجعة</h2></div><div class="bd" id="hAl"></div></section>
-      <section class="panel" id="hCoP"><div class="hd"><h2>مستحقات الشركة بعد الختامي</h2><button type="button" class="btn sm ghost" data-gotab="co">الكشف والتنبيهات ←</button></div><div class="bd"><div class="kpis co-kpis" id="hCo"></div></div></section>
+      <section class="panel" id="hNeedP"><div class="hd"><h2>محتاج تدخل</h2><button type="button" class="btn sm ghost" data-go-late="1">كل المتأخر في الكشف ←</button></div><div class="bd" id="hNeed"></div></section>
       <div class="home-grid">
-        <section class="panel"><div class="hd"><h2>لم يُصرف حسب مكان المستخلص</h2><span class="muted">اضغط على أي صف لعرض مستخلصاته</span></div><div class="bd" id="hStage"></div></section>
-        <section class="panel"><div class="hd"><h2>لم يُصرف حسب الإدارة</h2><span class="muted">اضغط لعرض مستخلصات الإدارة</span></div><div class="bd" id="hDept"></div></section>
-        <section class="panel"><div class="hd"><h2>مدة بقاء المستخلص في مكانه</h2><span class="muted">المستخلصات غير المصروفة</span></div><div class="bd" id="hAge"></div></section>
+        <section class="panel"><div class="hd"><h2>أعمار الفلوس اللي لسه ما اتصرفتش</h2><span class="muted">من تاريخ المستخلص</span></div><div class="bd" id="hAging"></div></section>
+        <section class="panel"><div class="hd"><h2>التحصيل آخر 12 شهر</h2><button type="button" class="btn sm ghost" data-gotab="paylog">سجل الصرف ←</button></div><div class="bd" id="hTrend"></div></section>
+        <section class="panel"><div class="hd"><h2>الفلوس فين؟</h2><span class="muted">اللي لسه ما اتصرفش حسب مكان المستخلص</span></div><div class="bd" id="hStage"></div></section>
         <section class="panel"><div class="hd"><h2>أكبر المشاريع في المستحقات</h2><span class="muted">اضغط لفتح المشروع</span></div><div class="bd" id="hTop"></div></section>
-        <section class="panel"><div class="hd"><h2>حركة آخر 7 أيام</h2><button type="button" class="btn sm ghost" data-gotab="moves">كل الحركة ←</button></div><div class="bd" id="hWeek"></div></section>
-        <section class="panel"><div class="hd"><h2>آخر التعديلات</h2><span class="muted">المستخدم والتعديل</span></div><div class="bd" id="hAct"></div></section>
       </div>
+      <section class="panel hal" id="hAlP" hidden><div class="hd"><h2>بيانات محتاجة مراجعة</h2></div><div class="bd" id="hAl"></div></section>
     </div>
 
     <div id="v-sat" style="display:flex;flex-direction:column;gap:16px">
@@ -3000,7 +3095,10 @@ body.side-mini .syncpill{font-size:0;gap:0;padding:7px;justify-content:center}
         <div><h1 id="satTitle">كشف المتابعة</h1><div class="sub" id="satSub"></div></div>
         <div class="tools"><button class="btn" id="satXlsx" hidden><svg class="i"><use href="#i-dl"/></svg>Excel</button><button class="btn" id="satHtml" hidden><svg class="i"><use href="#i-print"/></svg>تقرير PDF</button></div>
       </div>
+      <div class="sat-stick">
       <div class="qbar"><svg class="i"><use href="#i-search"/></svg><input id="sQ" type="search" placeholder="ابحث في الكشف: اسم المشروع، رقم العقد، الكود الموحد، المقايسة، الموقع، رقم المستخلص، الملاحظات…" aria-label="بحث في كشف المتابعة" autocomplete="off"><span class="qcnt" id="sQn" hidden></span></div>
+        <div class="qtabs" id="satTabs" role="tablist" aria-label="عرض سريع"></div>
+      </div>
       <div class="pres" id="sPresets"></div>
       <button class="btn fbtn" id="fToggle" aria-expanded="false"><svg class="i"><use href="#i-list"/></svg><span id="fToggleTxt">الفلاتر</span></button>
       <div class="fbar fold" id="satFbar">
@@ -3018,12 +3116,12 @@ body.side-mini .syncpill{font-size:0;gap:0;padding:7px;justify-content:center}
       <section class="panel sumx">
         <div class="sx-nums" id="satKpis"></div>
         <div class="sx-sec">
-          <div class="sx-h"><h2>توزيع المستخلصات على الأماكن</h2><span class="muted">اضغط على المكان لعرض مستخلصاته فقط</span><button type="button" class="btn sm ghost" id="mxToggle" aria-expanded="false" style="margin-inline-start:auto">جدول الإدارة × المكان</button></div>
+          <div class="sx-h"><button type="button" class="pipe-tg" id="pipeTg" aria-expanded="false"><svg class="i"><use href="#i-up"/></svg><h2>توزيع المستخلصات على الأماكن</h2></button><span class="muted pipe-mini" id="pipeMini"></span><span class="muted pipe-hint">اضغط على المكان لعرض مستخلصاته فقط</span><button type="button" class="btn sm ghost" id="mxToggle" aria-expanded="false" style="margin-inline-start:auto">جدول الإدارة × المكان</button></div>
           <div class="pipe" id="satPipe"></div>
           <div class="pipe-empty" id="satPipeE"></div>
         </div>
         <div class="tscroll" id="mxWrap" hidden><table class="mx" id="satMatrix"></table></div>
-        <div class="sx-alerts"><span class="sx-lbl">تحتاج متابعة</span><div id="satAlerts"></div></div>
+        <div class="sx-alerts" hidden><span class="sx-lbl">تحتاج متابعة</span><div id="satAlerts"></div></div>
       </section>
       <div id="satList" style="display:flex;flex-direction:column;gap:22px"></div>
     </div>
@@ -3034,14 +3132,16 @@ body.side-mini .syncpill{font-size:0;gap:0;padding:7px;justify-content:center}
         <div class="tools"><button class="btn" id="mvXlsx"><svg class="i"><use href="#i-dl"/></svg>Excel</button></div>
       </div>
       <div class="fbar">
+        <input type="search" id="mvQ" placeholder="ابحث باسم المشروع أو رقم العقد أو المستخلص…" aria-label="بحث">
         <div class="fi"><span>الفترة</span><div class="seg" id="mvPer"><button data-v="7">آخر أسبوع</button><button data-v="30">آخر شهر</button><button data-v="90">آخر 3 شهور</button><button data-v="0">الكل</button></div></div>
         <label class="fi"><span>المكان</span><select id="mvStage"></select></label>
         <label class="fi"><span>نوع الحركة</span><select id="mvKind"><option value="">الكل</option><option value="stage">تنقلات</option><option value="paid">صرف</option></select></label>
-        <label class="fi" style="flex:1"><span>بحث</span><input type="search" id="mvQ" placeholder="اسم المشروع أو رقم العقد أو المستخلص"></label>
       </div>
       <div class="kpis" id="mvKpis"></div>
-      <section class="panel"><div class="hd"><h2>مدة البقاء في كل مكان</h2><span class="muted">محسوبة من الحركات المسجلة · اضغط على المكان لعرض حركته</span></div><div class="tscroll" id="mvStay"></div></section>
-      <section class="panel"><div class="hd"><h2>سجل الحركة</h2><span class="muted" id="mvCnt"></span></div><div class="bd" id="mvList"></div></section>
+      <div class="mv-grid">
+        <section class="panel mv-main"><div class="hd"><h2>سجل الحركة</h2><span class="muted" id="mvCnt"></span></div><div class="bd" id="mvList"></div></section>
+        <aside class="panel mv-side"><div class="hd"><h2>مدة البقاء في كل مكان</h2><span class="muted">اضغط على المكان لعرض حركته</span></div><div class="bd" id="mvStay"></div></aside>
+      </div>
     </div>
 
     <div id="v-act" style="display:flex;flex-direction:column;gap:16px" hidden>
@@ -3369,45 +3469,58 @@ const hbars = rows => { const max=Math.max(1,...rows.map(r=>r.value)); return `<
 const emptyBox = t => `<div class="empty" style="padding:24px 8px">${t}</div>`;
 
 function renderHome(){
-  if(!state.loaded.i){ $("#homeSub").textContent="جارٍ تحميل البيانات…"; $("#homeKpis").innerHTML=skelKpis(4); ["#hStage","#hDept","#hAge","#hTop","#hWeek","#hAct"].forEach(id=>$(id).innerHTML=skelRows(5)); return; }
-  const cfg = state.cfg, all = state.invoices.map(v=>[v,calc(v)]);
-  const sum = (a,f) => a.reduce((s,x)=>s+num(f(x)),0);
-  const un = all.filter(([v])=>v.paid!=="نعم" && has(v.gross));
-  const ym = today().slice(0,7);
-  const paidM = all.filter(([v])=>v.paid==="نعم" && (v.paidDate||"").startsWith(ym));
-  const late = un.filter(([v,k])=>k.late), noIns = un.filter(([v,k])=>insBad(k));
-  const cur = `<small>${esc(cfg.currency||"")}</small>`;
-  $("#homeSub").textContent = `${state.projects.length} مشروع · ${state.invoices.length} مستخلص · تحديث ${dmy(today())}`;
-  { const cl=coAll(); $("#hCoP").hidden=!cl.length; $("#hCo").innerHTML=coKpisHtml(cl); }
+  if(!state.loaded.i){ $("#homeSub").textContent="جارٍ تحميل البيانات…"; $("#homeKpis").innerHTML=skelKpis(4); ["#hNeed","#hAging","#hTrend","#hStage","#hTop"].forEach(id=>$(id).innerHTML=skelRows(5)); return; }
+  const cfg=state.cfg, all=state.invoices.map(v=>[v,calc(v)]), t=today(), cur=`<small>${esc(cfg.currency||"")}</small>`;
+  const sum=(a,f)=>a.reduce((s,x)=>s+num(f(x)),0), isD=x=>/^\d{4}-\d{2}-\d{2}/.test(x||""), dd=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5);
+  const un=all.filter(([v])=>v.paid!=="نعم" && has(v.gross)), paid=all.filter(([v])=>v.paid==="نعم");
+  const late=un.filter(([v,k])=>k.late), noIns=un.filter(([v,k])=>insBad(k));
+  const m0=t.slice(0,7), dm=new Date(t+"T00:00:00"); dm.setDate(1); dm.setMonth(dm.getMonth()-1); const m1=dm.toISOString().slice(0,7);
+  const pM0=paid.filter(([v])=>(v.paidDate||"").startsWith(m0)), pM1=paid.filter(([v])=>(v.paidDate||"").startsWith(m1));
+  const vM0=sum(pM0,([v,k])=>k.net), vM1=sum(pM1,([v,k])=>k.net);
+  // متوسط مدة التحصيل: من تاريخ المستخلص لتاريخ الصرف — آخر 90 يوم مقارنة بالـ 90 اللي قبلها
+  const d90=new Date(Date.now()-90*864e5).toISOString().slice(0,10), d180=new Date(Date.now()-180*864e5).toISOString().slice(0,10);
+  const cyc=r=>{ const x=r.filter(([v])=>isD(v.date)&&isD(v.paidDate)&&v.paidDate>=v.date).map(([v])=>dd(v.date,v.paidDate)); return x.length?Math.round(x.reduce((a,b)=>a+b,0)/x.length):null; };
+  const c0=cyc(paid.filter(([v])=>(v.paidDate||"")>=d90)), c1=cyc(paid.filter(([v])=>(v.paidDate||"")>=d180&&(v.paidDate||"")<d90));
+  const coL=coAll(), coTot=coL.reduce((a,s)=>a+s.remaining,0);
+  const delta=(a,b,goodUp=true,unit="")=>{ if(b==null||a==null||(!a&&!b)) return ""; if(!b) return `<span class="dl eq">(الشهر اللي فات: 0)</span>`; const d=a-b; if(!d) return `<span class="dl eq">زي الفترة اللي فاتت</span>`;
+    const up=d>0, good=up===goodUp, txt=unit?`${Math.abs(d)} ${unit}`:(b?`${Math.round(Math.abs(d)/b*100)}%`:fmt(Math.abs(d)));
+    return `<span class="dl ${good?"good":"bad"}">${up?"▲":"▼"} ${txt}</span>`; };
+  $("#homeSub").textContent = `${state.projects.length} مشروع · ${state.invoices.length} مستخلص · تحديث ${dmy(t)}`;
+  $("#homeKpis").innerHTML = `
+    <button type="button" class="kpi lead" data-gotab="sat"><span class="lbl">${ico("money")}لسه ما اتصرفش</span><span class="val">${money(sum(un,([v,k])=>k.net))}${cur}</span><span class="sub">${un.length} مستخلص${late.length?` · <b class="bad-t">${late.length} متأخر</b>`:""}</span></button>
+    <button type="button" class="kpi" data-gotab="paylog"><span class="lbl">${ico("check")}اتصرف الشهر ده</span><span class="val">${money(vM0)}${cur}</span><span class="sub">${pM0.length} مستخلص ${vM1?`${delta(vM0,vM1,true)} <small class="faint">عن الشهر اللي فات</small>`:delta(vM0,vM1,true)}</span></button>
+    <button type="button" class="kpi" data-gotab="paylog"><span class="lbl">${ico("clock")}متوسط مدة التحصيل</span><span class="val">${c0==null?"—":`<span class="num">${c0}</span> <small>يوم</small>`}</span><span class="sub">من تاريخ المستخلص للصرف (آخر 3 شهور) ${delta(c0,c1,false,"يوم")}</span></button>
+    <button type="button" class="kpi ${coTot?"wn":""}" data-gotab="co"><span class="lbl">${ico("shield")}مستحقات ما بعد الختامي</span><span class="val">${money(coTot)}${cur}</span><span class="sub">على ${coL.filter(s=>s.remaining>0).length} مشروع — ضمان أعمال وتأمين نهائي</span></button>`;
+  shortKpis($("#homeKpis"));
+  // محتاج تدخل: المتأخر والواقف على الشهادة — الأكبر قيمة الأول
+  const need=[];
+  late.forEach(([v,k])=>need.push({v,k,why:`متأخر ${k.days} يوم في «${k.stage}»`,sev:"bad"}));
+  noIns.filter(([v,k])=>!k.late).forEach(([v,k])=>need.push({v,k,why:"واقف على شهادة التأمينات",sev:"warn"}));
+  need.sort((a,b)=>(a.sev==="bad"?0:1)-(b.sev==="bad"?0:1) || num(b.k.net)-num(a.k.net));
+  $("#hNeed").innerHTML = need.length ? `<div class="need-l">${need.slice(0,6).map(x=>`<button type="button" class="need-i ${x.sev}" data-inv="${esc(x.v.id)}"><span class="need-d"></span><span class="need-t"><b>${esc(pName(x.k.p,true))}</b><small>${esc(certLabel(x.v))} · ${esc(x.why)}</small></span><b class="num need-v">${fmt(x.k.net)}</b></button>`).join("")}</div>${need.length>6?`<p class="hint" style="margin:10px 0 0">و ${need.length-6} كمان — «كل المتأخر في الكشف» تعرضهم كلهم.</p>`:""}` : emptyBox("مفيش حاجة واقفة — كله ماشي في ميعاده 👌");
+  // أعمار الفلوس
+  const B=[["لسه جديد (أقل من 30 يوم)",0,30,"var(--ok)"],["31 – 60 يوم",31,60,"var(--accent)"],["61 – 90 يوم",61,90,"var(--warn)"],["أكتر من 90 يوم",91,1e9,"var(--bad)"]];
+  const ag=B.map(([l,a,b2,c])=>{ const r=un.filter(([v])=>isD(v.date)&&dd(v.date,t)>=a&&dd(v.date,t)<=b2); return {l,c,n:r.length,val:sum(r,([v,k])=>k.net)}; });
+  const nd=un.filter(([v])=>!isD(v.date)); if(nd.length) ag.push({l:"من غير تاريخ مستخلص",c:"var(--faint)",n:nd.length,val:sum(nd,([v,k])=>k.net)});
+  const agT=ag.reduce((a,x)=>a+x.val,0)||1;
+  $("#hAging").innerHTML = un.length ? `<div class="ag-bar">${ag.filter(x=>x.val>0).map(x=>`<i style="flex:${x.val};background:${x.c}" title="${esc(x.l)}: ${fmt(x.val)}"></i>`).join("")}</div>
+    <div class="ag-l">${ag.map(x=>`<div class="ag-r"><span class="ag-d" style="background:${x.c}"></span><span class="ag-n">${esc(x.l)}</span><span class="faint small">${x.n} مستخلص</span><b class="num">${fmt(x.val)}</b><span class="ag-p num">${Math.round(x.val/agT*100)}%</span></div>`).join("")}</div>` : emptyBox("تم صرف كل المستخلصات");
+  // التحصيل آخر 12 شهر
+  const months=[]; { const d=new Date(t+"T00:00:00"); d.setDate(1); for(let i=11;i>=0;i--){ const x=new Date(d); x.setMonth(d.getMonth()-i); months.push(x.toISOString().slice(0,7)); } }
+  const mv=months.map(m=>({m, val:sum(paid.filter(([v])=>(v.paidDate||"").startsWith(m)),([v,k])=>k.net), n:paid.filter(([v])=>(v.paidDate||"").startsWith(m)).length}));
+  const mx=Math.max(1,...mv.map(x=>x.val)), AR=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+  $("#hTrend").innerHTML = `<div class="tr-ch">${mv.map(x=>`<button type="button" class="tr-c ${x.m===m0?"cur":""}" data-gotab="paylog" title="${AR[+x.m.slice(5)-1]} ${x.m.slice(0,4)}: ${fmt(x.val)} (${x.n} مستخلص)"><span class="tr-v">${x.val?(shortAr(x.val)||fmt(x.val)):""}</span><i style="height:${Math.max(x.val?4:0,Math.round(x.val/mx*100))}%"></i><span class="tr-m">${AR[+x.m.slice(5)-1].slice(0,3)}</span></button>`).join("")}</div>
+    <p class="hint" style="margin:8px 0 0">${(()=>{ const noDate=paid.filter(([v])=>!isD(v.paidDate)).length; return noDate?`${noDate} مستخلص مصروف من غير تاريخ صرف مش محسوبين هنا.`:"محسوب بتاريخ الصرف."; })()}</p>`;
+  // الفلوس فين
+  const stages=[...(cfg.stages||[]),"غير محدد"];
+  const byStage=stages.map(st=>{ const r=un.filter(([v,k])=>k.stage===st); return {label:st,value:sum(r,([v,k])=>k.net),count:r.length,color:stageColor(st),dot:stageColor(st),act:`data-go-stage="${esc(st)}"`}; }).filter(r=>r.count).sort((a,b)=>b.value-a.value);
+  const ns=un.filter(([v,k])=>k.stage==="—"); if(ns.length) byStage.push({label:"جهات بدون مراحل",value:sum(ns,([v,k])=>k.net),count:ns.length,color:"var(--faint)",dot:"var(--faint)",act:'data-go-stage="—"'});
+  $("#hStage").innerHTML = byStage.length ? hbars(byStage) : emptyBox("تم صرف كل المستخلصات");
+  const byP=new Map(); un.forEach(([v,k])=>{ const e=byP.get(v.projectId)||{value:0,count:0}; e.value+=num(k.net); e.count++; byP.set(v.projectId,e); });
+  const top=[...byP.entries()].sort((a,b)=>b[1].value-a[1].value).slice(0,6).map(([pid,e])=>({label:pName(proj(pid),true),value:e.value,count:e.count,act:`data-proj="${esc(pid)}"`}));
+  $("#hTop").innerHTML = top.length ? hbars(top) : emptyBox("لا توجد مستحقات");
   { const bad=dqChecks().filter(x=>["over","hidden"].includes(x.k) && x.items.length); $("#hAlP").hidden=!bad.length;
     $("#hAl").innerHTML = `<div class="hal-l">${bad.map(x=>`<button type="button" class="hal-i ${x.sev}" data-dqgo="${x.k}"><span class="dq-dot"></span><span>${esc(x.t)}</span><b class="num">${x.items.length}</b></button>`).join("")}</div>`; }
-  $("#homeKpis").innerHTML = `
-    <div class="kpi lead"><span class="lbl">${ico("money")}إجمالي غير المصروف</span><span class="val">${money(sum(un,([v,k])=>k.net))}${cur}</span><span class="sub">${un.length} مستخلص على ${new Set(un.map(([v])=>v.projectId)).size} مشروع</span></div>
-    ${(()=>{ const pd=all.filter(([v])=>v.paid==="نعم"); return `<div class="kpi"><span class="lbl">${ico("check")}إجمالي المصروف</span><span class="val">${money(sum(pd,([v,k])=>k.net))}${cur}</span><span class="sub">${pd.length} مستخلص${paidM.length?` · منها ${paidM.length} هذا الشهر`:""}</span></div>`; })()}
-    <div class="kpi ${late.length?"hl":""}"><span class="lbl">${ico("clock")}متأخر أكثر من ${num(cfg.lateDays||30)} يوم</span><span class="val num">${late.length}</span><span class="sub">بقيمة ${fmt(sum(late,([v,k])=>k.net))}</span></div>
-    <div class="kpi ${noIns.length?"wn":""}"><span class="lbl">${ico("note")}بدون شهادة تأمينات</span><span class="val num">${noIns.length}</span><span class="sub">من المستخلصات غير المصروفة</span></div>`;
-  const stages=[...(cfg.stages||[]),"غير محدد"];
-  const byStage = stages.map(st=>{ const r=un.filter(([v,k])=>k.stage===st); return {label:st,value:sum(r,([v,k])=>k.net),count:r.length,color:stageColor(st),dot:stageColor(st),act:`data-go-stage="${esc(st)}"`}; }).filter(r=>r.count);
-  const ns = un.filter(([v,k])=>k.stage==="—"); if(ns.length) byStage.push({label:"جهات بدون مراحل",value:sum(ns,([v,k])=>k.net),count:ns.length,color:"var(--faint)",dot:"var(--faint)",act:'data-go-stage="—"'});
-  $("#hStage").innerHTML = byStage.length ? hbars(byStage) : emptyBox("تم صرف كل المستخلصات");
-  const ds = uniq([...deptOrder(), ...un.map(([v,k])=>k.dept)]);
-  const byDept = ds.map(d=>{ const r=un.filter(([v,k])=>k.dept===d); return {label:d,value:sum(r,([v,k])=>k.net),count:r.length,act:`data-go-dept="${esc(d)}"`}; }).filter(r=>r.count).sort((a,b)=>b.value-a.value);
-  $("#hDept").innerHTML = byDept.length ? hbars(byDept) : emptyBox("لا توجد مستحقات");
-  const L = num(cfg.lateDays||30);
-  const buckets = [["أقل من أسبوع",0,7],["من أسبوع لأسبوعين",8,14],[`من أسبوعين لـ ${L} يوم`,15,L],[`من ${L+1} لـ 60 يوم`,L+1,60],["أكثر من 60 يوم",61,1e9]];
-  const withDays = un.filter(([v,k])=>k.days!=null);
-  const age = buckets.map(([lab,a,b])=>{ const r=withDays.filter(([v,k])=>k.days>=a&&k.days<=b); return {label:lab,value:sum(r,([v,k])=>k.net),count:r.length,over:a>L,color:a>L?"var(--bad)":"var(--accent)",act:a>L&&r.length?'data-go-late="1"':""}; });
-  const noStage = un.filter(([v,k])=>k.hs && !v.stage).length;
-  $("#hAge").innerHTML = withDays.length ? hbars(age) + (noStage?`<p class="hint" style="margin-top:8px">${noStage} مستخلص بدون مكان مسجل، غير محسوبة هنا.</p>`:"") : emptyBox("لا توجد مستخلصات مسجل مكانها");
-  const byP = new Map(); un.forEach(([v,k])=>{ const e=byP.get(v.projectId)||{value:0,count:0}; e.value+=num(k.net); e.count++; byP.set(v.projectId,e); });
-  const top = [...byP.entries()].sort((a,b)=>b[1].value-a[1].value).slice(0,8).map(([pid,e])=>({label:pName(proj(pid),true),value:e.value,count:e.count,act:`data-proj="${esc(pid)}"`}));
-  $("#hTop").innerHTML = top.length ? hbars(top) : emptyBox("لا توجد مستحقات");
-  const s7 = since7(), ev=[];
-  all.forEach(([v,k])=>{ (v.stageLog||[]).forEach(x=>{ if(x.date && x.date>=s7) ev.push({date:x.date,v,k,t:`نُقل إلى «${x.stage}»`,kind:"stage"}); }); if(v.paid==="نعم" && v.paidDate && v.paidDate>=s7) ev.push({date:v.paidDate,v,k,t:"تم صرفه",kind:"paid"}); });
-  ev.sort((a,b)=>b.date.localeCompare(a.date));
-  $("#hWeek").innerHTML = ev.length ? `<div class="feed">${ev.slice(0,14).map(e=>`<div class="feed-i"><span class="dot ${e.kind==="paid"?"ok":""}">${ico(e.kind==="paid"?"check":"route")}</span><div><button type="button" class="lnkb" data-inv="${esc(e.v.id)}"><b>${esc(certLabel(e.v))} · ${esc(pName(e.k.p,true))}</b></button><div class="txt">${esc(e.t)}</div></div><span class="when dte">${dmy(e.date)}</span></div>`).join("")}</div>` : emptyBox("لا توجد حركة خلال آخر 7 أيام");
-  const acts = state.activity.slice(0,14);
-  $("#hAct").innerHTML = acts.length ? `<div class="feed">${acts.map(a=>{ const n=who(a.by); return `<div class="feed-i"><span class="dot" title="${esc(n)}">${esc(initials(n))}</span><div>${a.inv&&state.invoices.some(x=>x.id===a.inv)?`<button type="button" class="lnkb" data-inv="${esc(a.inv)}">`:"<div>"}<b>${esc(n)}</b>${a.inv&&state.invoices.some(x=>x.id===a.inv)?"</button>":"</div>"}<div class="txt">${esc(a.text)}</div></div><span class="when">${esc(ago(a.at))}</span></div>`; }).join("")}</div>` : emptyBox("لا توجد تعديلات مسجلة بعد. أي تعديل سيظهر هنا باسم من قام به.");
 }
 function goReg({stage="", dept="", paid="لا"}={}){
   ["#iSearch"].forEach(s=>$(s).value="");
@@ -3696,7 +3809,12 @@ function renderSat(){
   const nLate = base.filter(([v,k])=>k.late).length, nIns = base.filter(([v,k])=>insBad(k)).length, nMp = base.filter(([v])=>v.mpStatus==="لم يتم الاستخراج").length;
   const al = (key, n, bad, t) => (n||f.alert===key) ? `<button type="button" class="fch ${bad?"bad":""}" data-alert="${key}" aria-pressed="${f.alert===key}"><b class="num">${n}</b>${t}<svg class="i xx" aria-hidden="true"><use href="#i-x"/></svg></button>` : "";
   const alHtml = al("late",nLate,true,`متأخر أكثر من ${num(cfg.lateDays||30)} يوم`) + al("noIns",nIns,true,"بدون شهادة تأمينات") + al("noMp",nMp,false,"قوة عاملة لم تُستخرج") + al("ready",base.filter(([v])=>v.readyPay==="نعم"&&v.paid!=="نعم").length,false,"تمت التسوية") + al("unpaid",unpaid.length,false,"لم يُصرف");
+  { const by=new Map(); unpaid.forEach(([v,k])=>{ if(k.stage&&k.stage!=="—") by.set(k.stage,(by.get(k.stage)||0)+1); });
+    $("#pipeMini").innerHTML = [...by].sort((a,b)=>b[1]-a[1]).slice(0,4).map(([st,n])=>`<span><i style="background:${stageColor(st)}"></i>${esc(st)} <b class="num">${n}</b></span>`).join(""); }
   $("#satAlerts").innerHTML = alHtml || `<span class="muted small">${ico("check")} لا توجد تنبيهات</span>`;
+  { const nReady=base.filter(([v])=>v.readyPay==="نعم"&&v.paid!=="نعم").length;
+    const tb=(key,n,t,bad)=>`<button type="button" class="qtab ${bad&&n?"bad":""}" role="tab" data-alert="${key}" aria-selected="${(f.alert||"")===key}">${t}<b class="num">${n}</b></button>`;
+    $("#satTabs").innerHTML = tb("",base.length,"الكل") + tb("late",nLate,`متأخر +${num(cfg.lateDays||30)} يوم`,true) + tb("noIns",nIns,"واقف على شهادة التأمينات",true) + tb("noMp",nMp,"قوة عاملة لم تُستخرج") + tb("ready",nReady,"جاهز للصرف (تمت التسوية)") + tb("unpaid",unpaid.length,"لم يُصرف"); }
 
   // pipeline
   { const fs=f.stage; f.stage=""; const all=satBase(true).map(v=>[v,calc(v)]); f.stage=fs;
@@ -3732,10 +3850,10 @@ function renderSat(){
   { const qn=$("#sQn"); qn.hidden=!state.satQ; if(state.satQ) qn.textContent = `${ks.length} نتيجة`; }
   const box = $("#satList");
   if(!ks.length){ box.innerHTML = `<div class="panel"><div class="empty">${ico("sat")}<div>${state.loaded.i?(base.length?"لا توجد مستخلصات لهذا التنبيه.":"لا توجد مستخلصات في الكشف بالفلاتر الحالية."):"جارٍ التحميل…"}</div></div></div>`; return; }
-  const LV = satLevels(f.group); let n=0;
+  const LV = state.satSort.k==="prio" ? [] : satLevels(f.group); let n=0; /* «الأهم أولًا» بيرتب الكشف كله مرة واحدة من غير تجميع */
   const cur2 = `<small style="opacity:.7">${esc(cfg.currency)}</small>`;
   const build = (arr, li, ptot) => {
-    if(li>=LV.length){ const SS=state.satSort, sv=SS.k==="net"?(x=>num(x[1].net)):SS.k==="days"?(x=>x[1].days??-1):SS.k==="step"?(x=>{ const st=invSteps(x[0],x[1]); let l=-1; st.forEach((y,i)=>{ if(y.st==="y") l=i; }); return l*10+st.filter(y=>y.st!=="n").length; }):null;
+    if(li>=LV.length){ const SS=state.satSort, sv=SS.k==="prio"?(x=>(x[1].late?2:0)*1e14+(insBad(x[1])?1:0)*1e13+Math.max(0,x[1].days??0)*1e9+Math.min(num(x[1].net),9e8)):SS.k==="net"?(x=>num(x[1].net)):SS.k==="days"?(x=>x[1].days??-1):SS.k==="step"?(x=>{ const st=invSteps(x[0],x[1]); let l=-1; st.forEach((y,i)=>{ if(y.st==="y") l=i; }); return l*10+st.filter(y=>y.st!=="n").length; }):null;
       const srt=arr.slice().sort((a,b)=> (sv ? (sv(a)-sv(b))*SS.d : 0) || (num(a[1].p?.order)-num(b[1].p?.order)) || (num(a[0].order)-num(b[0].order))); let lastP=null;
       return srt.map(([v,k],i)=>{ const newp = !sv && lastP!==null && lastP!==v.projectId; lastP=v.projectId; return satRow(v,k,++n,i,newp); }).join(""); }
     const L=LV[li], gs=uniq(arr.map(L.key)).sort(lvOrd(L));
@@ -3745,7 +3863,7 @@ function renderSat(){
       return li===0 ? `<tbody>${head}${inner}</tbody>` : head+inner; }).join("");
   };
   const body = build(ks, 0);
-  box.innerHTML = `<section class="panel"><div class="hd"><h2>الكشف التفصيلي</h2>${coLegend()}<label class="msort"><span>ترتيب</span><select data-msort>${[["","افتراضي"],["net:-1","القيمة: الأكبر"],["net:1","القيمة: الأصغر"],["days:-1","الأيام: الأكتر"],["step:-1","المرحلة: الأبعد"],["step:1","المرحلة: الأقرب"]].map(([v,l])=>`<option value="${v}" ${(state.satSort.k?state.satSort.k+":"+state.satSort.d:"")===v?"selected":""}>${l}</option>`).join("")}</select></label><span class="muted">اضغط على أي مستخلص لفتحه وتعديله</span></div><div class="tscroll"><table class="rt satt"><colgroup><col class="c-sel"><col class="c-idx"><col class="c-pj"><col class="c-amt"><col class="c-st"><col class="c-stg"><col class="c-dy"></colgroup>
+  box.innerHTML = `<section class="panel"><div class="hd"><h2>الكشف التفصيلي</h2>${coLegend()}<label class="msort"><span>ترتيب</span><select data-msort>${[["","افتراضي (حسب المشروع)"],["prio:-1","الأهم أولًا"],["net:-1","القيمة: الأكبر"],["net:1","القيمة: الأصغر"],["days:-1","الأيام: الأكتر"],["step:-1","المرحلة: الأبعد"],["step:1","المرحلة: الأقرب"]].map(([v,l])=>`<option value="${v}" ${(state.satSort.k?state.satSort.k+":"+state.satSort.d:"")===v?"selected":""}>${l}</option>`).join("")}</select></label><span class="muted">اضغط على أي مستخلص لفتحه وتعديله</span></div><div class="tscroll"><table class="rt satt"><colgroup><col class="c-sel"><col class="c-idx"><col class="c-pj"><col class="c-amt"><col class="c-st"><col class="c-stg"><col class="c-dy"></colgroup>
     <thead><tr>${state.canWrite?selHead:"<th></th>"}<th class="c idxh">م</th><th class="pjh">المشروع</th><th>${ssH("net","المستخلص والقيمة")}</th><th>${ssH("step","الموقف")}</th><th>مكان المستخلص</th><th class="c">${ssH("days","أيام")}</th></tr></thead>
     ${body}
     <tfoot><tr><td></td><td class="idx"></td><td>الإجمالي · ${ks.length} مستخلص</td><td><b>${money(sum(ks,([v,k])=>k.net))}</b> <small class="faint">${esc(cfg.currency)}</small></td><td colspan="3"></td></tr></tfoot></table></div></section>`;
@@ -5193,19 +5311,24 @@ function renderMoves(){
   // stay table
   const st=stayStats(), L=num(cfg.lateDays||30);
   const hasStay=[...st.values()].some(x=>x.n);
-  $("#mvStay").innerHTML = `<table class="stay ${hasStay?"":"nostay"}"><thead><tr><th>المكان</th><th class="c">مرات خروج محسوبة</th><th class="c">متوسط البقاء</th><th class="c">أطول مدة</th><th class="c">الموجود حاليًا</th><th class="c">متوسط مدة الموجود</th><th class="c">منها متأخر</th><th class="n">القيمة</th></tr></thead><tbody>${
-    [...st].filter(([name,x])=>x.n||x.now).map(([name,x])=>{ const avg=x.n?Math.round(x.sum/x.n):null, nowAvg=x.now?Math.round(x.nowSum/x.now):null;
-      return `<tr><td><button type="button" class="pname" data-mvstage="${esc(name)}">${esc(name)}</button></td><td class="c num">${x.n||"—"}</td><td class="c">${avg==null?"—":`<b class="num ${avg>L?"bad-t":""}">${avg}</b> يوم`}</td><td class="c num">${x.n?x.max+" يوم":"—"}</td><td class="c num">${x.now||"—"}</td><td class="c">${nowAvg==null?"—":`<span class="num ${nowAvg>L?"bad-t":""}">${nowAvg}</span> يوم`}</td><td class="c">${x.late?`<b class="num bad-t">${x.late}</b>`:"—"}</td><td class="n num">${x.val?fmt(x.val):"—"}</td></tr>`; }).join("")}</tbody></table>${hasStay?"":`<p class="hint" style="padding:10px 16px">متوسط وأطول مدة البقاء سيظهران تلقائيًا بعد تسجيل حركات المستخلصات بين الأماكن.</p>`}`;
+  $("#mvStay").innerHTML = `<div class="stc-l">${[...st].filter(([name,x])=>x.n||x.now).map(([name,x])=>{ const avg=x.n?Math.round(x.sum/x.n):null, nowAvg=x.now?Math.round(x.nowSum/x.now):null;
+      return `<button type="button" class="stc-c ${m.stage===name?"on":""}" data-mvstage="${esc(name)}" style="--sc:${stageColor(name)}"><span class="stc-n">${esc(name)}</span>
+        <span class="stc-a">${avg==null?`<span class="faint">لسه مفيش خروج محسوب</span>`:`<b class="num ${avg>L?"bad-t":""}">${avg}</b> <small>يوم متوسط البقاء</small>`}</span>
+        <span class="stc-s">${x.now?`${x.now} موجود دلوقتي${nowAvg!=null?` · بقالهم ${nowAvg} يوم`:""}${x.late?` · <b class="bad-t">${x.late} متأخر</b>`:""}`:"مفيش مستخلصات فيه دلوقتي"}${x.n?` · أطول مدة ${x.max} يوم`:""}</span></button>`; }).join("") || `<p class="hint">لسه مفيش حركات كفاية لحساب مدة البقاء.</p>`}</div>`;
   // list grouped by day
   $("#mvCnt").textContent = `${ev.length} حركة`;
   if(!ev.length){ $("#mvList").innerHTML=`<div class="empty">${ico("route")}<div>لا توجد حركة في هذه الفترة${m.stage||m.kind||m.q?" بالفلاتر الحالية":""}.</div></div>`; return; }
   const shown=ev.slice(0,m.limit); const days=[]; shown.forEach(e=>{ const d=e.date||"—"; let g=days.at(-1); if(!g||g.d!==d){ g={d,items:[]}; days.push(g);} g.items.push(e); });
   const wd = d => { try{ return new Date(d+"T00:00:00").toLocaleDateString("ar-EG",{weekday:"long"}); }catch{ return ""; } };
-  const rel = d => d===today()?"اليوم":d===addDays(today(),-1)?"أمس":wd(d);
-  $("#mvList").innerHTML = days.map(g=>`<div class="mvday"><div class="mvd"><b>${g.d==="—"?"بدون تاريخ":esc(rel(g.d))}</b>${g.d!=="—"?`<span class="dte">${dmy(g.d)}</span>`:""}<span class="c">${g.items.length}</span></div>${
-    g.items.map(e=>`<button type="button" class="mvi ${e.kind}" style="--cc:${coVar(e.k.company)}" data-inv="${esc(e.v.id)}"><span class="mvic">${ico(e.kind==="paid"?"check":"route")}</span><span class="bd2"><span class="ttl"><b>${esc(pName(e.k.p,true))}</b> ${coTag(e.k.company)} · ${esc(certLabel(e.v))} <span class="num faint">${fmt(e.k.net)}</span></span>
-      <span class="fl">${e.kind==="paid"?`<b class="okt">تم الصرف</b>${e.from?` من «${esc(e.from)}»`:""}`:`${e.from?`<span class="fr">${esc(e.from)}</span> ← `:""}<b>${esc(e.to)}</b>`}${e.stay!=null?` <span class="faint">· بعد ${e.stay} يوم</span>`:""}</span>
-      ${e.note?`<span class="tn">${esc(e.note)}</span>`:""}</span>${e.by?`<span class="by">${esc(who(e.by))}</span>`:""}</button>`).join("")}</div>`).join("")
+  const rel = d => d===today()?"النهارده":d===addDays(today(),-1)?"امبارح":wd(d);
+  const chip = st => `<span class="mvchip" style="--sc:${stageColor(st)}">${esc(st)}</span>`;
+  $("#mvList").innerHTML = days.map(g=>`<div class="mvday2"><div class="mvd2"><b>${g.d==="—"?"بدون تاريخ":esc(rel(g.d))}</b>${g.d!=="—"&&rel(g.d)!==dmy(g.d)?`<span class="dte">${dmy(g.d)}</span>`:""}<span class="c">${g.items.length} ${g.items.length===1?"حركة":"حركات"}</span></div>${
+    g.items.map(e=>`<button type="button" class="mvr ${e.kind}" style="--cc:${coVar(e.k.company)}" data-inv="${esc(e.v.id)}">
+      <span class="mvr-i">${ico(e.kind==="paid"?"check":"route")}</span>
+      <span class="mvr-b"><span class="mvr-t"><b>${esc(pName(e.k.p,true))}</b> <span class="faint">·</span> ${esc(certLabel(e.v))}</span>
+        <span class="mvr-f">${e.kind==="paid"?`<b class="okt">تم الصرف</b>${e.from?` <span class="faint">من</span> ${chip(e.from)}`:""}`:`${e.from?`${chip(e.from)} <span class="mvr-ar">←</span> `:""}${chip(e.to)}`}</span>
+        ${e.note?`<span class="tn">${esc(e.note)}</span>`:""}</span>
+      <span class="mvr-m"><b class="num">${fmt(e.k.net)}</b>${e.stay!=null?`<small>بعد ${e.stay} يوم</small>`:""}${e.by?`<small class="faint">${esc(who(e.by))}</small>`:""}</span></button>`).join("")}</div>`).join("")
     + (ev.length>m.limit?`<div style="text-align:center;padding-top:10px"><button type="button" class="btn" id="mvMore">عرض ${Math.min(80,ev.length-m.limit)} كمان</button></div>`:"");
 }
 async function exportMovesXlsx(){
@@ -6273,6 +6396,7 @@ $("#acXlsx").onclick=async()=>{ try{ const X=await loadXLSX();
   await offer(`سجل الحركات اليومي ${today()}.xlsx`, new Uint8Array(X.write(wb,{bookType:"xlsx",type:"array"}))); }catch{ toast("تعذر تجهيز ملف Excel. تحقق من الاتصال وحاول مرة أخرى."); } };
 { let qt; $("#sQ").addEventListener("input", e=>{ clearTimeout(qt); qt=setTimeout(()=>{ state.satQ=e.target.value; satChanged(); }, 140); });
   $("#sQ").addEventListener("keydown", e=>{ if(e.key==="Escape" && e.target.value){ e.preventDefault(); e.stopPropagation(); e.target.value=""; state.satQ=""; satChanged(); } }); }
+$("#satTabs").onclick=e=>{ const b=e.target.closest("[data-alert]"); if(b){ state.satFilter.alert = b.dataset.alert; satChanged(); } };
 $("#satAlerts").onclick=e=>{ const b=e.target.closest("[data-alert]"); if(b){ state.satFilter.alert = state.satFilter.alert===b.dataset.alert ? "" : b.dataset.alert; satChanged(); } };
 ["#iSearch","#iCompany","#iDept","#iPaid","#iType","#iSatOnly","#iMpOnly","#iGroup","#iStage"].forEach(s=>$(s).addEventListener("input",()=>{clearSel();state.invLimit=60;memo.clear();renderInv();}));
 $("#invMoreBtn").onclick=()=>{ state.invLimit+=60; memo.clear(); renderInv(); };
@@ -6418,6 +6542,40 @@ function openSkin(){
   const h=pop.offsetHeight; pop.style.top=Math.max(8, r.top-h-8)+"px";
 }
 $("#btnSkin").addEventListener("click", openSkin);
+/* كشف المتابعة: طي/فتح «التوزيع على الأماكن» (بيتفتكر على الجهاز) + ارتفاع الشريط العلوي للموبايل */
+{ const sec=document.querySelector("#v-sat .sumx"), tg=$("#pipeTg"); let open=false; try{ open=localStorage.getItem("satPipeOpen")==="1"; }catch{}
+  const ap=()=>{ sec.classList.toggle("pipe-closed",!open); tg.setAttribute("aria-expanded",String(open)); };
+  tg.onclick=()=>{ open=!open; try{ localStorage.setItem("satPipeOpen",open?"1":"0"); }catch{} ap(); }; ap();
+  const mh=()=>{ const m=document.querySelector(".mbar"); document.documentElement.style.setProperty("--mbarH", (m&&m.offsetHeight&&getComputedStyle(m).position==="sticky"?m.offsetHeight:0)+"px"); };
+  addEventListener("resize",mh); mh(); try{ new ResizeObserver(mh).observe(document.querySelector(".mbar")); }catch{} }
+
+/* ===== التحديد أسهل: الدوس في أي حتة في خانة المربع بيحدد، ولو في حاجة متحددة الدوس على السطر/الكارت كله بيحدده،
+   وعلى الموبايل الضغطة الطويلة على أي سطر بتبدأ التحديد ===== */
+{
+  const BOX='input[data-sel],input[data-psel],input[data-isel]';
+  const selActive=()=>state.sel.size||state.psel.size||state.isel.size;
+  const rowOf=t=>t.closest("tr, .pc2");
+  const boxOf=r=>r?.querySelector(BOX);
+  const interactive=t=>t.closest('button:not(.pname), a, select, textarea, input:not([type=checkbox]), label.pcsel, .pen, [data-plundo], [data-paid], [data-stpop], .paybtn');
+  let suppress=false;
+  document.addEventListener("click", e=>{
+    if(suppress){ suppress=false; e.preventDefault(); e.stopPropagation(); return; }
+    if(e.target.matches(BOX)) return;
+    const cell=e.target.closest("td.sel");
+    if(cell){ const b=cell.querySelector(BOX); if(b){ e.preventDefault(); e.stopPropagation(); b.click(); } return; }
+    if(!selActive() || document.querySelector("dialog[open]") || interactive(e.target)) return;
+    const r=rowOf(e.target), b=boxOf(r); if(!b) return;
+    e.preventDefault(); e.stopPropagation(); b.click();
+  }, true);
+  let lp=null, sx=0, sy=0;
+  document.addEventListener("pointerdown", e=>{ if(e.pointerType!=="touch" || document.querySelector("dialog[open]")) return; const r=rowOf(e.target), b=boxOf(r); if(!b || interactive(e.target)) return;
+    sx=e.clientX; sy=e.clientY; clearTimeout(lp); lp=setTimeout(()=>{ lp=null; b.click(); suppress=true; setTimeout(()=>suppress=false,700); try{ navigator.vibrate?.(15); }catch{} }, 480); }, {passive:true});
+  const cancel=()=>{ clearTimeout(lp); lp=null; };
+  document.addEventListener("pointermove", e=>{ if(lp && Math.hypot(e.clientX-sx,e.clientY-sy)>10) cancel(); }, {passive:true});
+  ["pointerup","pointercancel"].forEach(ev=>document.addEventListener(ev, cancel, {passive:true, capture:true}));
+  document.addEventListener("contextmenu", e=>{ if(suppress) e.preventDefault(); });
+}
+
 /* ===================== سجل الصرف: المستخلصات اللي اتصرفت + إلغاء الصرف ===================== */
 const AR_MONTHS=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
 const monthLbl = ym => { const [y,m]=ym.split("-"); return `${AR_MONTHS[+m-1]} ${y}`; };
