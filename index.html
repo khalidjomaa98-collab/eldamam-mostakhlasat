@@ -2772,7 +2772,7 @@ body.side-mini .syncpill{font-size:0;gap:0;padding:7px;justify-content:center}
   sb.auth.onAuthStateChange((ev, s) => { if(s) session = s; });
 
   /* ---------- تحديثات البرنامج نفسه ---------- */
-  if("serviceWorker" in navigator){ navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>{ if(/\/(preview|try)\//.test(r.scope)) r.unregister(); })).catch(()=>{}); }
+  if("serviceWorker" in navigator){ navigator.serviceWorker.getRegistrations().then(rs=>rs.forEach(r=>{ if(/(preview|try)/.test(r.scope)) r.unregister(); })).catch(()=>{}); }
   if(false){
     navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(reg => { window.__swReg = reg; const chk = () => reg.update().catch(() => {}); setInterval(chk, 30 * 60 * 1000); document.addEventListener("visibilitychange", () => { if(!document.hidden) chk(); }); if(reg.waiting && navigator.serviceWorker.controller){ const b = document.getElementById("updBar"); if(b) b.hidden = false; }
       reg.addEventListener("updatefound", () => { const w = reg.installing; w && w.addEventListener("statechange", () => {
