@@ -2419,6 +2419,39 @@ html{-webkit-tap-highlight-color:transparent}
 @media (max-width:820px){
   #satList:not(#_):not(#_):not(#_):not(#_) tr.r td.amtc{background:var(--sunk)!important}
 }
+/* ===== نافذة المستخلص: مكان وطول ثابت + شريط ملخص + حالة كل تاب ===== */
+@media (min-width:701px){
+  dialog.drawer:has(.dtabs){height:min(90vh,940px)!important;height:min(90dvh,940px)!important}
+  dialog.drawer:has(.dtabs) .dw{height:100%!important;max-height:none!important}
+}
+.vsum{display:flex;flex-direction:column;gap:8px;margin-top:10px;padding:10px 12px;border:1px solid var(--line2);border-radius:14px;background:var(--sunk)}
+.vsum-t{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+.vsum-t span{display:inline-flex;gap:6px;align-items:baseline}
+.vsum-t small{font-size:.72rem;color:var(--muted)}
+.vsum-t b{font-size:.92rem}
+.vsum-t b.ok{color:var(--ok)}
+.vsum .istp{max-width:none;min-width:0;padding:2px 0 0}
+.vsum .istp .isp{cursor:pointer}
+.vsum .istp .isp:hover i{transform:scale(1.08)}
+.vsum .istp.big .isp i{width:28px;height:28px}
+.vsum .istp.big .isp+.isp::before{top:13px}
+.vsum .istp.big .isp small{font-size:.7rem}
+.dtabs .dt-n{display:none}
+.dtabs .dt-n:is(.st-y,.st-na,.st-cur,.st-n){display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;margin-inline-start:6px;vertical-align:-3px}
+.dtabs .dt-n svg.i{width:10px;height:10px}
+.dtabs .dt-n.st-y{background:var(--ok);color:#fff}
+.dtabs .dt-n.st-na{background:var(--line);color:var(--muted)}
+.dtabs .dt-n.st-cur{background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent);width:9px;height:9px}
+.dtabs .dt-n.st-n{border:2px solid var(--line);width:10px;height:10px;box-sizing:border-box}
+.na-h{display:none!important}
+.na-note{margin:4px 0 0;padding:10px 12px;border-radius:10px;background:var(--sunk);border:1px dashed var(--line)}
+@media (max-width:700px){
+  .vsum{padding:8px 10px;gap:6px}
+  .vsum-t{gap:4px 12px}
+  .vsum .istp.big .isp i{width:24px;height:24px}
+  .vsum .istp.big .isp+.isp::before{top:11px}
+  .vsum .istp.big .isp small{font-size:.62rem;white-space:nowrap}
+}
 </style>
 <style>
 [hidden]{display:none!important}
@@ -4066,7 +4099,7 @@ function openDlg({title, sub, body, foot, onSubmit, onMount, remake, key, tabs})
     bar.innerHTML=tabs.map(([k,l],i)=>`<button type="button" role="tab" data-dtab="${k}" aria-selected="${i===0}">${esc(l)}<span class="dt-n"></span></button>`).join("")+`<span class="dt-ind"></span>`;
     form.querySelector(".dw-h").append(bar);
     const show = k => { bar.querySelectorAll("[data-dtab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.dtab===k))); bd.querySelectorAll("[data-tab]").forEach(x=>{ x.hidden = x.dataset.tab!==k; }); bd.scrollTop=0;
-      const on=bar.querySelector(`[data-dtab="${k}"]`), ind=bar.querySelector(".dt-ind"); if(on&&ind){ ind.style.width=on.offsetWidth+"px"; ind.style.transform=`translateX(${on.offsetLeft}px)`; }
+      const on=bar.querySelector(`[data-dtab="${k}"]`), ind=bar.querySelector(".dt-ind"); if(on&&ind){ ind.style.width=on.offsetWidth+"px"; ind.style.transform=`translateX(${on.offsetLeft}px)`; } if(on && bar.scrollWidth>bar.clientWidth) bar.scrollTo({left:on.offsetLeft-(bar.clientWidth-on.offsetWidth)/2, behavior:"smooth"});
       bd.querySelectorAll(`[data-tab="${k}"]`).forEach(x=>{ x.classList.remove("tin"); void x.offsetWidth; x.classList.add("tin"); }); };
     bar.addEventListener("click", e=>{ const b=e.target.closest("[data-dtab]"); if(b) show(b.dataset.dtab); });
     const first = dlgInitTab && tabs.some(t=>t[0]===dlgInitTab) ? dlgInitTab : tabs[0][0]; dlgInitTab="";
@@ -4206,14 +4239,12 @@ function invDialog(v, projectId){
         <div id="vProjCard"></div>
         <div class="calcs" id="vCalc"></div>
       </section>
-      <section class="sec" data-tab="mat"><h3>${ico("box")}الخامات المخصومة <span class="r qadd">${["حديد","أسمنت","سولار"].map(n=>`<button type="button" class="btn sm" data-quickmat="${n}">+ ${n}</button>`).join("")}<button type="button" class="btn sm" id="addMat">+ أخرى</button></span></h3>
+      <section class="sec" data-tab="data"><h3>${ico("box")}الخامات المخصومة <span class="r qadd">${["حديد","أسمنت","سولار"].map(n=>`<button type="button" class="btn sm" data-quickmat="${n}">+ ${n}</button>`).join("")}<button type="button" class="btn sm" id="addMat">+ أخرى</button></span></h3>
         <div id="matBox" style="display:flex;flex-direction:column;gap:8px">${matHtml()}</div>
         <div class="mattot" id="matTot"></div>
       </section>
-      <section class="sec" data-tab="steps"><h3>${ico("flag")}مراحل المتابعة <span class="r faint small" style="font-weight:500">قوة عاملة ← تأمينات ← تعلية ← تمت التسوية ← تم الصرف</span></h3>
-        <div id="vSteps"></div>
+      <section class="sec" data-tab="pay"><h3>${ico("check")}التسوية والصرف <span class="r faint small" style="font-weight:500">المرحلتين 4 و5</span></h3>
         <div class="fields">
-          <p class="hint wide" style="grid-column:1/-1">المرحلة 1 (القوة العاملة) والمرحلتين 2 و3 (التأمينات والتعلية) بتتعدّل من تابات «القوة العاملة» و«التأمينات» فوق.</p>
           ${sfld("vReady","4 · التسوية",["نعم"],d.readyPay||"","لسه متسوّاش",x=>"تمت التسوية")}
           <div class="f readyf" ${d.readyPay==="نعم"?"":"hidden"}><label for="vReadyDate">تاريخ التسوية</label><input id="vReadyDate" type="date" value="${esc(d.readyPayDate||"")}"></div>
           ${sfld("vPaid","5 · حالة الصرف",["نعم","لا"],d.paid,"لم يُحدَّث",x=>x==="نعم"?"تم الصرف":"لم يُصرف")}
@@ -4221,7 +4252,7 @@ function invDialog(v, projectId){
           ${fld("vBank","المتوقع تحويله للبنك",d.bankExpected,"number")}
         </div>
       </section>
-      <section class="sec" data-tab="steps"><h3>${ico("route")}مكان المستخلص</h3>
+      <section class="sec" data-tab="place"><h3>${ico("route")}مكان المستخلص</h3>
         <div class="fields" id="stageFields">
           ${sfld("vStage","المكان الحالي",cfg.stages||[],d.stage,"غير محدد")}
           ${fld("vStageDate","تاريخ دخول المكان",d.stageDate,"date")}
@@ -4231,7 +4262,7 @@ function invDialog(v, projectId){
         ${v&&state.canWrite?`<div><button type="button" class="btn sm" data-move="${esc(v.id)}">${ico("route")}تسجيل حركة جديدة</button></div>`:""}
         ${v?timelineHtml(v,true):""}
       </section>
-      ${v&&(isFinalInv(v)||v.type===CO_WG||v.type===CO_FI)?(()=>{ const cs=coState(proj(v.projectId)||{id:""}); return cs?`<section class="sec" data-tab="steps"><h3>${ico("money")}مستحقات ما بعد الختامي<span class="r"><button type="button" class="btn sm" data-co="${esc(v.projectId)}">${ico("up")}فتح المتابعة</button></span></h3><div class="coinv">${v.type===CO_WG?coToneChip(cs.wg.tone,"رد ضمان الأعمال: "+cs.wg.status):v.type===CO_FI?coToneChip(cs.fi.tone,"رد التأمين النهائي: "+cs.fi.status):`${coToneChip(cs.wg.tone,"ضمان الأعمال: "+cs.wg.status)} ${coToneChip(cs.fi.tone,"التأمين النهائي: "+cs.fi.status)}`}${cs.avail?` <span class="sub2">متاح للمطالبة من <span class="dte">${dmy(cs.avail)}</span></span>`:cs.due?` <span class="sub2">مرور السنة <span class="dte">${dmy(cs.due)}</span></span>`:""}</div>${(v.dateLog||[]).length?`<p class="hint">تعديلات التاريخ: ${v.dateLog.map(x=>`${dmy(x.from)} ← ${dmy(x.to)} (${esc(x.reason)} — ${esc(who(x.by))})`).join("، ")}</p>`:""}</section>`:""; })():""}
+      ${v&&(isFinalInv(v)||v.type===CO_WG||v.type===CO_FI)?(()=>{ const cs=coState(proj(v.projectId)||{id:""}); return cs?`<section class="sec" data-tab="place"><h3>${ico("money")}مستحقات ما بعد الختامي<span class="r"><button type="button" class="btn sm" data-co="${esc(v.projectId)}">${ico("up")}فتح المتابعة</button></span></h3><div class="coinv">${v.type===CO_WG?coToneChip(cs.wg.tone,"رد ضمان الأعمال: "+cs.wg.status):v.type===CO_FI?coToneChip(cs.fi.tone,"رد التأمين النهائي: "+cs.fi.status):`${coToneChip(cs.wg.tone,"ضمان الأعمال: "+cs.wg.status)} ${coToneChip(cs.fi.tone,"التأمين النهائي: "+cs.fi.status)}`}${cs.avail?` <span class="sub2">متاح للمطالبة من <span class="dte">${dmy(cs.avail)}</span></span>`:cs.due?` <span class="sub2">مرور السنة <span class="dte">${dmy(cs.due)}</span></span>`:""}</div>${(v.dateLog||[]).length?`<p class="hint">تعديلات التاريخ: ${v.dateLog.map(x=>`${dmy(x.from)} ← ${dmy(x.to)} (${esc(x.reason)} — ${esc(who(x.by))})`).join("، ")}</p>`:""}</section>`:""; })():""}
       <section class="sec" data-tab="mp"><h3>${ico("users")}القوة العاملة <span class="r faint small" style="font-weight:500">أي تعديل هنا بيظهر في صفحة القوة العاملة</span></h3>
         <div class="fields">
           <label class="chk wide"><input type="checkbox" id="vShowMp" ${d.showMp?"checked":""}> عرض في كشف القوة العاملة</label>
@@ -4284,7 +4315,7 @@ function invDialog(v, projectId){
     </fieldset>
     ${v?(()=>{ const h=state.activity.filter(a=>a.inv===v.id).slice(0,12); return `<section class="sec" data-tab="log"><h3>${ico("clock")}سجل التعديلات</h3>${h.length?`<div class="feed">${h.map(a=>{const n=who(a.by); return `<div class="feed-i"><span class="dot">${esc(initials(n))}</span><div><b>${esc(n)}</b><div class="txt">${esc(a.text)}</div></div><span class="when">${esc(ago(a.at))}</span></div>`;}).join("")}</div>`:`<p class="hint">لا توجد تعديلات مسجلة على هذا المستخلص.</p>`}</section>`; })():""}`,
     key: v ? "inv:"+v.id : "", remake: v ? ()=>{ const nv=state.invoices.find(x=>x.id===v.id); if(!nv) return false; invDialog(nv); } : null,
-    tabs: [["data","البيانات"],["mp","القوة العاملة"],["ins","التأمينات"],["mat","الخامات"],["steps","المراحل والمكان"],["log","المتابعة والسجل"]],
+    tabs: [["data","البيانات"],["mp","القوة العاملة"],["ins","التأمينات"],["pay","التسوية والصرف"],["place","المكان والحركة"],["log","المتابعة والسجل"]],
     foot: footBtns("حفظ المستخلص", v?"vDel":""),
     onSubmit: async () => {
       if(ro) return;
@@ -4354,8 +4385,16 @@ function invDialog(v, projectId){
       form.querySelector("#vStage").addEventListener("change", e => { if(e.target.value!==origStage) form.querySelector("#vStageDate").value = today(); refresh(); });
       form.querySelector("#vIns").addEventListener("change", e => { const on=e.target.value==="تعلية"; form.querySelectorAll(".raisef").forEach(x=>x.hidden=!on); if(on && !val("vRaiseDate")) form.querySelector("#vRaiseDate").value=today(); });
       form.querySelector("#vPaid").addEventListener("change", e => { if(e.target.value==="نعم" && !val("vPaidDate")) form.querySelector("#vPaidDate").value=today(); });
-      const stepsLive = () => { const t={...d, mpStatus:val("vMp"), insStatus:val("vIns"), insRaise:nval("vRaise"), insRaiseDate:val("vRaiseDate"), readyPay:val("vReady"), readyPayDate:val("vReadyDate"), paid:val("vPaid"), paidDate:val("vPaidDate"), type:val("vType")||d.type};
-        form.querySelector("#vSteps").innerHTML = stepperHtml(t, calc(t), true); };
+      { const sum=document.createElement("div"); sum.className="vsum"; sum.id="vSum"; sum.innerHTML=`<div class="vsum-t" id="vSumT"></div><div id="vSteps"></div>`;
+        const hd=form.querySelector(".dw-h"), tb=hd.querySelector(".dtabs"); hd.insertBefore(sum, tb||null);
+        const STEP_TAB=["mp","ins","ins","pay","pay"];
+        sum.addEventListener("click", e=>{ const sp=e.target.closest(".isp"); if(!sp) return; const i=[...sp.parentElement.children].indexOf(sp); if(STEP_TAB[i]) form._showTab?.(STEP_TAB[i]); }); }
+      const stepsLive = () => { const t={...d, mpStatus:val("vMp"), insStatus:val("vIns"), insRaise:nval("vRaise"), insRaiseDate:val("vRaiseDate"), readyPay:val("vReady"), readyPayDate:val("vReadyDate"), paid:val("vPaid"), paidDate:val("vPaidDate"), type:val("vType")||d.type, gross:val("vGross"), stage:val("vStage")};
+        const k=calc(t); form.querySelector("#vSteps").innerHTML = stepperHtml(t, k, true);
+        const ss=invSteps(t,k), st=x=>x.st==="y"?"y":x.st==="na"?"na":x.cur?"cur":"n";
+        const sumT=form.querySelector("#vSumT"); if(sumT) sumT.innerHTML=`${k.net!=null&&k.net!==""?`<span><small>الصافي</small><b class="num">${fmt(k.net)}</b></span>`:""}<span><small>المكان</small><b>${esc(val("vStage")||"غير محدد")}</b></span><span><small>الصرف</small><b class="${t.paid==="نعم"?"ok":""}">${t.paid==="نعم"?`تم${t.paidDate?` · ${dmy(t.paidDate)}`:""}`:"لم يُصرف"}</b></span>`;
+        const tabSt={mp:st(ss[0]), ins: ss[1].st==="y"?"y":ss[1].st==="na"?"na":(ss[1].cur||ss[2].cur)?"cur":"n", pay: ss[4].st==="y"?"y":(ss[3].cur||ss[4].cur)?"cur":"n"};
+        Object.entries(tabSt).forEach(([key,v2])=>{ const b=form.querySelector(`.dtabs [data-dtab="${key}"] .dt-n`); if(!b) return; b.className="dt-n st-"+v2; b.innerHTML=v2==="y"?ico("check"):v2==="na"?ico("minus"):""; b.title=v2==="y"?"تم":v2==="na"?"لا حاجة":v2==="cur"?"المرحلة الحالية":"لسه"; }); };
       form.querySelector("#vfAddNote")?.addEventListener("click", ()=>{ const t=val("vfNote").trim(); if(!t) return; insF.log.push({date:today(), by:myId||"", text:t}); form.querySelector("#vfNote").value=""; form.querySelector("#vfLogBox").innerHTML=vfLogHtml(); form.dispatchEvent(new Event("input",{bubbles:true})); toast("أُضيفت المتابعة على ملف التأمينات. اضغط «حفظ المستخلص» لتسجيلها"); });
       form.querySelector("#vfOpen")?.addEventListener("click", ()=>insDialog(insF0));
       form.querySelector("#vClaimMp")?.addEventListener("click", ()=>claimDialog("mp", [v]));
@@ -4364,6 +4403,12 @@ function invDialog(v, projectId){
       form.querySelector("#vReady").addEventListener("change", e => { const on=e.target.value==="نعم"; form.querySelectorAll(".readyf").forEach(x=>x.hidden=!on); if(on && !val("vReadyDate")) form.querySelector("#vReadyDate").value=today(); });
       ["vMp","vIns","vReady","vPaid","vType","vRaise","vRaiseDate","vReadyDate","vPaidDate"].forEach(id=>{ const el=form.querySelector("#"+id); el?.addEventListener("change",stepsLive); el?.addEventListener("input",stepsLive); });
       stepsLive();
+      { const naSec=(selId, msg, extra)=>{ const sel=form.querySelector("#"+selId); if(!sel) return; const sec=sel.closest(".sec");
+          const items=[...sec.querySelectorAll(".fields > *"), ...sec.querySelectorAll(":scope > :not(h3):not(.fields):not(.na-note)")].filter(x=>!x.contains(sel));
+          const note=document.createElement("p"); note.className="hint na-note"; note.textContent=msg; sec.querySelector(".fields")?.after(note);
+          const upd=()=>{ const na=sel.value==="لا حاجة"; items.forEach(x=>x.classList.toggle("na-h",na)); note.hidden=!na; extra?.(na); }; sel.addEventListener("change",upd); upd(); };
+        naSec("vMp","المستخلص ده ملوش قوة عاملة، فخاناتها مستخبية. لو احتجتها غيّر الحالة.");
+        naSec("vIns","المستخلص ده ملوش تأمينات، فخاناتها مستخبية. لو احتجتها غيّر الحالة.", na=>{ if(!insF){ const fs=[...form.querySelectorAll('.sec[data-tab="ins"]')][1]; fs?.classList.toggle("na-h",na); } }); }
       const box = form.querySelector("#matBox");
       box.addEventListener("input", e => { const r=e.target.closest("[data-mi]"); if(!r) return; const m=d.materials[+r.dataset.mi]; m[e.target.dataset.mf]=e.target.value; r.querySelector("[data-mv]").textContent=fmt(num(m.qty)*num(m.price)); refresh(); matTotal(); });
       box.addEventListener("click", e => { const b=e.target.closest("[data-rmmat]"); if(b){ d.materials.splice(+b.dataset.rmmat,1); box.innerHTML=matHtml(); refresh(); matTotal(); } });
