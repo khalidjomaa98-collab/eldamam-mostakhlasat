@@ -4452,10 +4452,7 @@ function invDialog(v, projectId){
           const upd=()=>{ const na=sel.value==="لا حاجة"; items.forEach(x=>x.classList.toggle("na-h",na)); note.hidden=!na; extra?.(na); }; sel.addEventListener("change",upd); upd(); };
         naSec("vMp","المستخلص ده ملوش قوة عاملة، فخاناتها مستخبية. لو احتجتها غيّر الحالة.");
         naSec("vIns","المستخلص ده ملوش تأمينات، فخاناتها مستخبية. لو احتجتها غيّر الحالة.", na=>{ if(!insF){ const fs=[...form.querySelectorAll('.sec[data-tab="ins"]')][1]; fs?.classList.toggle("na-h",na); } }); }
-      if(v && state.canWrite){ const secs=[...form.querySelectorAll(".dw-b .sec[data-tab]")].filter(x=>x.querySelector(".fields .f > :is(input,textarea,.dwrap)") && !x.querySelector("#matBox"));
-        secs.forEach(sec=>{ const h=sec.querySelector("h3"); if(!h) return; const r=document.createElement("span"); r.className="r ub"; h.append(r);
-          const ub=document.createElement("button"); ub.type="button"; ub.className="btn sm ghost"; ub.dataset.unlockall="1"; ub.innerHTML=`${ico("pen")}تعديل الكل`; r.append(ub); });
-        lockFields(secs); }
+      if(v) lockDialogSecs();
       const box = form.querySelector("#matBox");
       box.addEventListener("input", e => { const r=e.target.closest("[data-mi]"); if(!r) return; const m=d.materials[+r.dataset.mi]; m[e.target.dataset.mf]=e.target.value; r.querySelector("[data-mv]").textContent=fmt(num(m.qty)*num(m.price)); refresh(); matTotal(); });
       box.addEventListener("click", e => { const b=e.target.closest("[data-rmmat]"); if(b){ d.materials.splice(+b.dataset.rmmat,1); box.innerHTML=matHtml(); refresh(); matTotal(); } });
@@ -4475,12 +4472,21 @@ function invDialog(v, projectId){
 /* خانات مقفولة: متتعدلش غير بعد الضغط على القلم اللي جنبها */
 /* الخانات المقفولة: القوايم المنسدلة ومربعات الاختيار بتتعدّل على طول،
    وخانات الكتابة بالقلم ← وبعدها ✓ تأكيد أو ✕ إلغاء (يرجّع القيمة اللي كانت) */
+/* قاعدة موحدة لكل النوافذ: السجل المحفوظ خانات الكتابة فيه مقفولة (قلم ← ✓/✕)، وكل قسم فيه زرار «تعديل الكل» */
+function lockDialogSecs(exclude="#matBox"){
+  if(!state.canWrite) return;
+  const secs=[...form.querySelectorAll(".dw-b .sec")].filter(x=>!x.classList.contains("lk") && !x.dataset.lkDone && x.querySelector(".fields .f > :is(input,textarea,.dwrap)") && !x.querySelector(exclude));
+  secs.forEach(sec=>{ sec.dataset.lkDone="1"; const h=sec.querySelector("h3"); if(!h) return; const r=document.createElement("span"); r.className="r ub"; h.append(r);
+    const ub=document.createElement("button"); ub.type="button"; ub.className="btn sm ghost"; ub.dataset.unlockall="1"; ub.innerHTML=`${ico("pen")}تعديل الكل`; r.append(ub); });
+  lockFields(secs);
+}
 function lockFields(secs){
   const setL=(c,on)=>{ c.readOnly=on; c.classList.toggle("lockv",on); };
   const fire=c=>{ c.dispatchEvent(new Event("input",{bubbles:true})); c.dispatchEvent(new Event("change",{bubbles:true})); };
   secs.forEach(sec=>{
     sec.querySelectorAll(".f").forEach(f=>{
       const c = f.querySelector(":scope > input:not(.dtxt), :scope > textarea, :scope > .dwrap > input.dhid"); if(!c || c.disabled || f.classList.contains("lkf")) return;
+      if(/Rsn$|^c(Base|Tax|Wage)$/.test(c.id) || f.closest("[data-nolock]")) return; /* خانة سبب التعديل والحاسبة: دايماً مفتوحة */
       const txt = () => f.querySelector(".dtxt")||c;
       setL(c,true); if(f.querySelector(".dtxt")) setL(f.querySelector(".dtxt"),true); f.classList.add("lkf");
       const host = f.querySelector(":scope > label")||f;
@@ -4944,6 +4950,7 @@ function mpDialog(v0){
     </fieldset>`,
     foot: state.canWrite ? `<button class="btn primary" type="submit">${ico("check")}حفظ</button><button class="btn ghost" type="button" data-cancel>إلغاء</button>${v0?`<span style="flex:1"></span><button class="btn" type="button" id="mOpen">${ico("doc")}فتح المستخلص</button><button class="btn danger" type="button" id="mRemove">إزالة من القوة العاملة</button>`:""}` : "",
     onMount: () => {
+      if(v0) queueMicrotask(()=>lockDialogSecs());
       const refresh = () => {
         if(!v0){ const p=projByNo(val("mContract")); pid=p?.id||"";
           const list = p ? state.invoices.filter(v=>v.projectId===p.id).sort((a,b)=>num(b.order)-num(a.order)) : [];
@@ -5632,6 +5639,7 @@ function insDialog(r, preId){
       }
     },
     onMount: () => {
+      if(r) queueMicrotask(()=>lockDialogSecs());
       let raiseTouched = !!(r && r.raiseInvoiceId);
       const refresh = () => {
         const p = r ? proj(d.projectId) : projByNo(val("nContract"));
@@ -5977,6 +5985,7 @@ function coDialog(pid){
       }
     },
     onMount: () => {
+      if(true) queueMicrotask(()=>lockDialogSecs());
       const cur = () => { const fin = vs.find(v=>v.id===val("coFin")) || s0.fin, hand=val("coHand");
         return coCompute(p, {...d, finalInvoiceId:fin.id, handoverDate: hand && hand!==(fin.date||"") ? hand : "",
           wgInvoiceId:val("co_wgInv"), wgAmount:nval("co_wgAmt"), wgSubmitted:val("co_wgSub"), wgSettled:form.querySelector("#co_wgSet").checked,
