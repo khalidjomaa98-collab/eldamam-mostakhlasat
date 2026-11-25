@@ -2437,6 +2437,31 @@ html{-webkit-tap-highlight-color:transparent}
 .dw .fields>.f>:is(input:not([type=checkbox]),select){height:44px;box-sizing:border-box}
 .dw .fields>.f>.dwrap{height:44px;box-sizing:border-box}
 .dw .fields>.f>.dwrap>input.dtxt{height:100%}
+/* ===== نافذة المستخلص على الموبايل: رأس أصغر + كل التابات ظاهرة في شبكة ===== */
+.dw .sec h3>.r.ub{margin-inline-start:auto}
+.dw .sec h3>.r.ub~.r.ub{display:none}
+@media (max-width:700px){
+  dialog.drawer:has(.vsum) .dw-h{padding:10px 12px 0}
+  dialog.drawer:has(.vsum) .dw-h h2{font-size:1.1rem}
+  dialog.drawer:has(.vsum) .dw-h .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.74rem}
+  .vsum{margin-top:8px;padding:7px 10px;gap:4px;border-radius:12px}
+  .vsum-t{flex-wrap:nowrap;gap:12px;overflow:hidden}
+  .vsum-t span{white-space:nowrap;gap:4px}
+  .vsum-t small{font-size:.66rem}
+  .vsum-t b{font-size:.8rem}
+  .vsum .istp{padding:0}
+  .vsum .istp .isp i{width:20px;height:20px}
+  .vsum .istp .isp+.isp::before{top:9px}
+  .vsum .istp .isp small{display:block!important;position:static!important;font-size:.6rem!important;white-space:nowrap!important;padding-bottom:0}
+  .vsum .istp .isp{padding-bottom:0!important}
+  dialog.drawer:has(.vsum) .dtabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:8px 0 0;padding:0 0 8px;overflow:visible;mask-image:none;-webkit-mask-image:none}
+  dialog.drawer:has(.vsum) .dtabs button{padding:7px 4px;font-size:.76rem;text-align:center;border-radius:10px;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  dialog.drawer:has(.vsum) .dtabs button[aria-selected="true"]{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 45%,transparent);color:var(--accent-strong)}
+  dialog.drawer:has(.vsum) .dtabs .dt-ind{display:none}
+  dialog.drawer:has(.vsum) .dtabs .dt-n{margin:0}
+  .dw .sec h3>.r:not(.ub){display:none}
+}
+.dw .sec:has(.na-note:not([hidden])) h3>.r.ub{display:none}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -4015,7 +4040,7 @@ function invDialog(v, projectId){
         const STEP_TAB=["mp","ins","ins","pay","pay"];
         sum.addEventListener("click", e=>{ const sp=e.target.closest(".isp"); if(!sp) return; const i=[...sp.parentElement.children].indexOf(sp); if(STEP_TAB[i]) form._showTab?.(STEP_TAB[i]); }); }
       const stepsLive = () => { const t={...d, mpStatus:val("vMp"), insStatus:val("vIns"), insRaise:nval("vRaise"), insRaiseDate:val("vRaiseDate"), readyPay:val("vReady"), readyPayDate:val("vReadyDate"), paid:val("vPaid"), paidDate:val("vPaidDate"), type:val("vType")||d.type, gross:val("vGross"), stage:val("vStage")};
-        const k=calc(t); form.querySelector("#vSteps").innerHTML = stepperHtml(t, k, true);
+        const k=calc(t); form.querySelector("#vSteps").innerHTML = stepperHtml(t, k, innerWidth>700);
         const ss=invSteps(t,k), st=x=>x.st==="y"?"y":x.st==="na"?"na":x.cur?"cur":"n";
         const sumT=form.querySelector("#vSumT"); if(sumT) sumT.innerHTML=`${k.net!=null&&k.net!==""?`<span><small>الصافي</small><b class="num">${fmt(k.net)}</b></span>`:""}<span><small>المكان</small><b>${esc(val("vStage")||"غير محدد")}</b></span><span><small>الصرف</small><b class="${t.paid==="نعم"?"ok":""}">${t.paid==="نعم"?`تم${t.paidDate?` · ${dmy(t.paidDate)}`:""}`:"لم يُصرف"}</b></span>`;
         const tabSt={mp:st(ss[0]), ins: ss[1].st==="y"?"y":ss[1].st==="na"?"na":(ss[1].cur||ss[2].cur)?"cur":"n", pay: ss[4].st==="y"?"y":(ss[3].cur||ss[4].cur)?"cur":"n"};
@@ -4035,7 +4060,7 @@ function invDialog(v, projectId){
         naSec("vMp","المستخلص ده ملوش قوة عاملة، فخاناتها مستخبية. لو احتجتها غيّر الحالة.");
         naSec("vIns","المستخلص ده ملوش تأمينات، فخاناتها مستخبية. لو احتجتها غيّر الحالة.", na=>{ if(!insF){ const fs=[...form.querySelectorAll('.sec[data-tab="ins"]')][1]; fs?.classList.toggle("na-h",na); } }); }
       if(v && state.canWrite){ const secs=[...form.querySelectorAll(".dw-b .sec[data-tab]")].filter(x=>x.querySelector(".fields .f > :is(input,textarea,.dwrap)") && !x.querySelector("#matBox"));
-        secs.forEach(sec=>{ const h=sec.querySelector("h3"); if(!h) return; let r=h.querySelector(".r"); if(!r){ r=document.createElement("span"); r.className="r"; h.append(r); }
+        secs.forEach(sec=>{ const h=sec.querySelector("h3"); if(!h) return; const r=document.createElement("span"); r.className="r ub"; h.append(r);
           const ub=document.createElement("button"); ub.type="button"; ub.className="btn sm ghost"; ub.dataset.unlockall="1"; ub.innerHTML=`${ico("pen")}تعديل الكل`; r.append(ub); });
         lockFields(secs); }
       const box = form.querySelector("#matBox");
