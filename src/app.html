@@ -2420,6 +2420,12 @@ html{-webkit-tap-highlight-color:transparent}
   .vsum .istp.big .isp+.isp::before{top:11px}
   .vsum .istp.big .isp small{font-size:.62rem;white-space:nowrap}
 }
+/* نافذة المستخلص: الخانات جنب بعض بنفس المقاس، ومربعات الاختيار في سطر لوحدها */
+.dw .fields{align-items:end}
+.dw .fields>label.chk{grid-column:1/-1;min-height:0}
+.dw .fields>.f{min-width:0}
+.dw .fields>.f>:is(input,select,textarea,.dwrap){width:100%}
+.dw .fields>.f.wide{grid-column:1/-1}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -4017,6 +4023,10 @@ function invDialog(v, projectId){
           const upd=()=>{ const na=sel.value==="لا حاجة"; items.forEach(x=>x.classList.toggle("na-h",na)); note.hidden=!na; extra?.(na); }; sel.addEventListener("change",upd); upd(); };
         naSec("vMp","المستخلص ده ملوش قوة عاملة، فخاناتها مستخبية. لو احتجتها غيّر الحالة.");
         naSec("vIns","المستخلص ده ملوش تأمينات، فخاناتها مستخبية. لو احتجتها غيّر الحالة.", na=>{ if(!insF){ const fs=[...form.querySelectorAll('.sec[data-tab="ins"]')][1]; fs?.classList.toggle("na-h",na); } }); }
+      if(v && state.canWrite){ const secs=[...form.querySelectorAll(".dw-b .sec[data-tab]")].filter(x=>x.querySelector(".fields .f, .fields label.chk") && !x.querySelector("#matBox"));
+        secs.forEach(sec=>{ const h=sec.querySelector("h3"); if(!h) return; let r=h.querySelector(".r"); if(!r){ r=document.createElement("span"); r.className="r"; h.append(r); }
+          const ub=document.createElement("button"); ub.type="button"; ub.className="btn sm ghost"; ub.dataset.unlockall="1"; ub.innerHTML=`${ico("pen")}تعديل الكل`; r.append(ub); });
+        lockFields(secs); }
       const box = form.querySelector("#matBox");
       box.addEventListener("input", e => { const r=e.target.closest("[data-mi]"); if(!r) return; const m=d.materials[+r.dataset.mi]; m[e.target.dataset.mf]=e.target.value; r.querySelector("[data-mv]").textContent=fmt(num(m.qty)*num(m.price)); refresh(); matTotal(); });
       box.addEventListener("click", e => { const b=e.target.closest("[data-rmmat]"); if(b){ d.materials.splice(+b.dataset.rmmat,1); box.innerHTML=matHtml(); refresh(); matTotal(); } });
@@ -4038,7 +4048,7 @@ function lockFields(secs){
   const setL=(c,on)=>{ if(c.tagName==="SELECT"||c.type==="checkbox") c.disabled=on; else c.readOnly=on; c.classList.toggle("lockv",on); };
   secs.forEach(sec=>{
     sec.querySelectorAll(".f, label.chk").forEach(f=>{
-      const c = f.matches("label.chk") ? f.querySelector("input") : f.querySelector(":scope > input:not(.dtxt), :scope > select, :scope > textarea, :scope > .dwrap > input.dhid"); if(!c) return;
+      const c = f.matches("label.chk") ? f.querySelector("input") : f.querySelector(":scope > input:not(.dtxt), :scope > select, :scope > textarea, :scope > .dwrap > input.dhid"); if(!c || c.disabled || f.classList.contains("lkf")) return;
       setL(c,true); f.classList.add("lkf");
       const b=document.createElement("button"); b.type="button"; b.className="pen"; b.title="تعديل"; b.setAttribute("aria-label","تعديل "+(f.querySelector("label")?.textContent||f.textContent).trim()); b.innerHTML=ico("pen");
       b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); setL(c,false); f.classList.remove("lkf"); f.classList.add("unl"); b.remove(); const t=f.querySelector(".dtxt")||c; t.focus(); try{ t.select?.(); }catch{} };
