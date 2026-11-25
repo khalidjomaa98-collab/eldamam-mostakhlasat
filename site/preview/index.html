@@ -2349,7 +2349,6 @@ html:root[data-font="tajawal"]{--f-display:"Tajawal",Tahoma,sans-serif;--f-body:
 @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .nocon{color:#fec84b;background:rgba(247,144,9,.14);border-color:rgba(247,144,9,.35)} }
 /* الموبايل: كروت أقصر في الكشف والسجل والتأمينات (نفس البيانات، مسافات أقل) */
 @media (max-width:700px){
-  :is(#satList,#v-inv):not(#_):not(#_) tr.r td.pj .ids .idc:not(:first-child){display:none}
   #satList:not(#_):not(#_) tr.r td:not(.sel):not(.idx){padding-block:5px}
   :is(#satList,#v-inv):not(#_):not(#_) tr.r td.pj .pjm{margin-top:1px}
   #insT:not(#_):not(#_) tbody tr td:not(.sel){padding:4px 8px}
@@ -2382,8 +2381,8 @@ html{-webkit-tap-highlight-color:transparent}
   .rt tr.r:hover td,.rt tr.r:hover td.pj,table.dt tbody tr:hover td{background:transparent!important}
   .rt tr.r:active{background:color-mix(in srgb,var(--accent) 6%,var(--surface))}
 }
-/* الموبايل: كارت الكشف — كل البيانات ظاهرة ومترتبة في أقسام واضحة */
-@media (max-width:700px){
+/* الموبايل والتابلت الصغير: كارت الكشف — كل البيانات ظاهرة ومترتبة في أقسام واضحة */
+@media (max-width:820px){
   #satList:not(#_):not(#_) tr.r{grid-template-columns:24px minmax(0,1fr) auto;grid-template-areas:"sel pj dys" "amt amt amt" "st st st" "stc stc stc";row-gap:8px;column-gap:8px;padding:12px}
   #satList:not(#_):not(#_) tr.r td{padding:0!important}
   /* الرأس: اسم المشروع + الموقع والشركة + أرقام العقد في سطر واحد */
@@ -2407,6 +2406,18 @@ html{-webkit-tap-highlight-color:transparent}
   /* المكان الحالي + من إمتى */
   #satList:not(#_):not(#_) tr.r td.stc{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;border-top:1px dashed var(--line);padding-top:8px!important}
   #satList:not(#_):not(#_) tr.r td.stc .since{margin:0}
+}
+/* الكروت (شاشة صغيرة): الماوس فوق الكارت بيلوّن الكارت كله مرة واحدة، مش كل خانة لوحدها */
+@media (max-width:1060px){
+  table.satt:not(#_):not(#_):not(#_) tr.r:hover td{background:transparent!important}
+  table.satt:not(#_):not(#_):not(#_) tr.r:hover{background:color-mix(in srgb,var(--accent) 6%,var(--surface))}
+}
+@media (max-width:820px){
+  :is(#insT,#mpTable):not(#_):not(#_):not(#_) tbody tr:hover td{background:transparent!important}
+  :is(#insT,#mpTable):not(#_):not(#_):not(#_) tbody tr:hover{background:color-mix(in srgb,var(--accent) 6%,var(--surface))}
+}
+@media (max-width:820px){
+  #satList:not(#_):not(#_):not(#_):not(#_) tr.r td.amtc{background:var(--sunk)!important}
 }
 </style>
 <style>
