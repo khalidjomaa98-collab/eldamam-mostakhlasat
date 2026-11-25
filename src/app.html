@@ -2462,6 +2462,9 @@ html{-webkit-tap-highlight-color:transparent}
   .dw .sec h3>.r:not(.ub){display:none}
 }
 .dw .sec:has(.na-note:not([hidden])) h3>.r.ub{display:none}
+/* النافذة المتصغرة: حركة الظهور بتحافظ على التوسيط (من غير ما تبان على اليمين لحظة) */
+@keyframes dsIn{from{opacity:0;transform:translate(-50%,10px) scale(.97)}to{opacity:1;transform:translate(-50%,0)}}
+.dstash{animation:dsIn .2s ease!important}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
