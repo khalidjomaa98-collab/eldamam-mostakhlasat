@@ -2350,30 +2350,31 @@ html{-webkit-tap-highlight-color:transparent}
   .rt tr.r:hover td,.rt tr.r:hover td.pj,table.dt tbody tr:hover td{background:transparent!important}
   .rt tr.r:active{background:color-mix(in srgb,var(--accent) 6%,var(--surface))}
 }
-/* الموبايل: كارت الكشف المضغوط — اسم المشروع، المبلغ، المراحل والمكان في 3 سطور */
+/* الموبايل: كارت الكشف — كل البيانات ظاهرة ومترتبة في أقسام واضحة */
 @media (max-width:700px){
-  #satList:not(#_):not(#_) tr.r{grid-template-columns:24px minmax(0,1fr) auto;grid-template-areas:"sel pj dys" "sel amt amt" "sel st stc";row-gap:6px;column-gap:8px;padding:10px 12px 10px 10px}
+  #satList:not(#_):not(#_) tr.r{grid-template-columns:24px minmax(0,1fr) auto;grid-template-areas:"sel pj dys" "amt amt amt" "st st st" "stc stc stc";row-gap:8px;column-gap:8px;padding:12px}
   #satList:not(#_):not(#_) tr.r td{padding:0!important}
-  #satList:not(#_):not(#_) tr.r td.pj .pname{-webkit-line-clamp:1;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;max-height:1.4em;font-size:.9rem;line-height:1.4}
-  #satList:not(#_):not(#_) tr.r td.pj .pjm{font-size:.72rem;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  #satList:not(#_):not(#_) tr.r td.pj .ids{display:none}
-  #satList:not(#_):not(#_) tr.r .nt2{font-size:.72rem;margin-top:2px}
-  #satList:not(#_):not(#_) tr.r .nt2 span{-webkit-line-clamp:1}
-  #satList:not(#_):not(#_) tr.r td.amtc{border:0;padding:0!important;gap:2px 8px;flex-wrap:nowrap}
-  #satList:not(#_):not(#_) tr.r td.amtc .amtv{font-size:1rem}
-  #satList:not(#_):not(#_) tr.r td.amtc :is(.pg,.amx){display:none}
-  #satList:not(#_):not(#_) tr.r td.stt{align-self:center;min-width:0}
-  #satList:not(#_):not(#_) tr.r td.stt .istp{min-width:0;max-width:150px;padding:0}
+  /* الرأس: اسم المشروع + الموقع والشركة + أرقام العقد في سطر واحد */
+  #satList:not(#_):not(#_) tr.r td.pj .pname{-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;font-size:.95rem;line-height:1.4}
+  #satList:not(#_):not(#_) tr.r td.pj .pjm{font-size:.74rem;margin-top:2px}
+  #satList:not(#_):not(#_) tr.r td.pj .ids{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+  #satList:not(#_):not(#_) tr.r td.pj .idc{font-size:.68rem;line-height:1.6}
+  #satList:not(#_):not(#_) tr.r .nt2{font-size:.74rem;margin-top:4px}
+  #satList:not(#_):not(#_) tr.r .nt2 span{-webkit-line-clamp:2}
+  /* المبلغ في مربع لوحده */
+  #satList:not(#_):not(#_) tr.r td.amtc{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:4px 10px;background:var(--sunk);border:1px solid var(--line2);border-radius:12px;padding:9px 12px!important}
+  #satList:not(#_):not(#_) tr.r td.amtc .certp{margin:0}
+  #satList:not(#_):not(#_) tr.r td.amtc .amtv{font-size:1.12rem;grid-column:2}
+  #satList:not(#_):not(#_) tr.r td.amtc .pg{grid-column:1 / -1;margin:0}
+  #satList:not(#_):not(#_) tr.r td.amtc .pgb{max-width:none;height:5px}
+  #satList:not(#_):not(#_) tr.r td.amtc .amx{grid-column:1 / -1;margin:0;display:flex;justify-content:space-between;gap:8px}
+  /* المراحل بأسمائها */
+  #satList:not(#_):not(#_) tr.r td.stt .istp{min-width:0;max-width:none;width:100%}
+  #satList:not(#_):not(#_) tr.r td.stt .istp .isp small{display:block!important;position:static!important;font-size:.62rem!important;line-height:1.2;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   #satList:not(#_):not(#_) tr.r td.stt .istp .isp{padding-bottom:0!important}
-  #satList:not(#_):not(#_) tr.r td.stt .istp .isp small{display:none!important}
-  #satList:not(#_):not(#_) tr.r td.stt .istp .isp i{width:18px!important;height:18px!important}
-  #satList:not(#_):not(#_) tr.r td.stt .istp .isp i b{font-size:.6rem}
-  #satList:not(#_):not(#_) tr.r td.stt .istp .isp i svg.i{width:10px;height:10px}
-  #satList:not(#_):not(#_) tr.r td.stt .istp .isp+.isp::before{top:8px!important}
-  #satList:not(#_):not(#_) tr.r td.stc{justify-content:flex-end;flex-wrap:nowrap;gap:6px;min-width:0}
-  #satList:not(#_):not(#_) tr.r td.stc .since{display:none}
-  #satList:not(#_):not(#_) tr.r td.stc .stgl{font-size:.74rem;padding:2px 8px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #satList:not(#_):not(#_) tr.r td.dys .satm{display:none}
+  /* المكان الحالي + من إمتى */
+  #satList:not(#_):not(#_) tr.r td.stc{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;border-top:1px dashed var(--line);padding-top:8px!important}
+  #satList:not(#_):not(#_) tr.r td.stc .since{margin:0}
 }
 </style>
 
