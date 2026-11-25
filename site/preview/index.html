@@ -2376,6 +2376,37 @@ html:root[data-font="tajawal"]{--f-display:"Tajawal",Tahoma,sans-serif;--f-body:
   #mpTable:not(#_):not(#_) tbody tr td:not(.sel){padding:4px 8px}
   #mpTable:not(#_):not(#_) tbody tr td.sel{position:absolute;top:8px;left:8px;padding:6px;z-index:1}
 }
+/* الموبايل: من غير مربعات رمادي عند اللمس (تأثير الماوس مش بيشتغل على اللمس) */
+html{-webkit-tap-highlight-color:transparent}
+@media (hover:none){
+  .rt tr.r:hover td,.rt tr.r:hover td.pj,table.dt tbody tr:hover td{background:transparent!important}
+  .rt tr.r:active{background:color-mix(in srgb,var(--accent) 6%,var(--surface))}
+}
+/* الموبايل: كارت الكشف المضغوط — اسم المشروع، المبلغ، المراحل والمكان في 3 سطور */
+@media (max-width:700px){
+  #satList:not(#_):not(#_) tr.r{grid-template-columns:24px minmax(0,1fr) auto;grid-template-areas:"sel pj dys" "sel amt amt" "sel st stc";row-gap:6px;column-gap:8px;padding:10px 12px 10px 10px}
+  #satList:not(#_):not(#_) tr.r td{padding:0!important}
+  #satList:not(#_):not(#_) tr.r td.pj .pname{-webkit-line-clamp:1;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;max-height:1.4em;font-size:.9rem;line-height:1.4}
+  #satList:not(#_):not(#_) tr.r td.pj .pjm{font-size:.72rem;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #satList:not(#_):not(#_) tr.r td.pj .ids{display:none}
+  #satList:not(#_):not(#_) tr.r .nt2{font-size:.72rem;margin-top:2px}
+  #satList:not(#_):not(#_) tr.r .nt2 span{-webkit-line-clamp:1}
+  #satList:not(#_):not(#_) tr.r td.amtc{border:0;padding:0!important;gap:2px 8px;flex-wrap:nowrap}
+  #satList:not(#_):not(#_) tr.r td.amtc .amtv{font-size:1rem}
+  #satList:not(#_):not(#_) tr.r td.amtc :is(.pg,.amx){display:none}
+  #satList:not(#_):not(#_) tr.r td.stt{align-self:center;min-width:0}
+  #satList:not(#_):not(#_) tr.r td.stt .istp{min-width:0;max-width:150px;padding:0}
+  #satList:not(#_):not(#_) tr.r td.stt .istp .isp{padding-bottom:0!important}
+  #satList:not(#_):not(#_) tr.r td.stt .istp .isp small{display:none!important}
+  #satList:not(#_):not(#_) tr.r td.stt .istp .isp i{width:18px!important;height:18px!important}
+  #satList:not(#_):not(#_) tr.r td.stt .istp .isp i b{font-size:.6rem}
+  #satList:not(#_):not(#_) tr.r td.stt .istp .isp i svg.i{width:10px;height:10px}
+  #satList:not(#_):not(#_) tr.r td.stt .istp .isp+.isp::before{top:8px!important}
+  #satList:not(#_):not(#_) tr.r td.stc{justify-content:flex-end;flex-wrap:nowrap;gap:6px;min-width:0}
+  #satList:not(#_):not(#_) tr.r td.stc .since{display:none}
+  #satList:not(#_):not(#_) tr.r td.stc .stgl{font-size:.74rem;padding:2px 8px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #satList:not(#_):not(#_) tr.r td.dys .satm{display:none}
+}
 </style>
 <style>
 [hidden]{display:none!important}
