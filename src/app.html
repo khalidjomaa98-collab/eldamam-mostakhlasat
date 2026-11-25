@@ -2495,6 +2495,43 @@ html{-webkit-tap-highlight-color:transparent}
 /* خانة التحديد كلها بتتداس */
 td.sel{cursor:pointer}
 @media (pointer:coarse){ :is(tr.r,tr.cor,.pc2){-webkit-touch-callout:none} }
+/* ===== الرئيسية الجديدة ===== */
+.kpi .dl{font-weight:700;font-size:.74rem;margin-inline-start:4px}
+.kpi .dl.good{color:var(--ok)} .kpi .dl.bad{color:var(--bad)} .kpi .dl.eq{color:var(--muted)}
+.kpi .bad-t{color:var(--bad)}
+.need-l{display:flex;flex-direction:column;gap:6px}
+.need-i{all:unset;cursor:pointer;display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line2);border-radius:12px;background:var(--surface)}
+.need-i:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--line));background:color-mix(in srgb,var(--accent) 4%,var(--surface))}
+.need-i:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.need-d{width:10px;height:10px;border-radius:50%}
+.need-i.bad .need-d{background:var(--bad)} .need-i.warn .need-d{background:var(--warn)}
+.need-t{display:flex;flex-direction:column;min-width:0}
+.need-t b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.need-t small{color:var(--muted);font-size:.76rem}
+.need-v{font-size:1rem}
+.ag-bar{display:flex;height:16px;border-radius:8px;overflow:hidden;gap:2px;background:var(--line2)}
+.ag-bar i{display:block;min-width:4px}
+.ag-l{display:flex;flex-direction:column;gap:2px;margin-top:12px}
+.ag-r{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto 44px;gap:10px;align-items:center;padding:7px 2px;border-bottom:1px dashed var(--line2)}
+.ag-r:last-child{border-bottom:0}
+.ag-d{width:12px;height:12px;border-radius:4px}
+.ag-p{color:var(--muted);text-align:end;font-size:.8rem}
+.tr-ch{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;align-items:end;height:190px}
+.tr-c{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;min-width:0}
+.tr-c i{display:block;width:100%;max-width:34px;border-radius:6px 6px 2px 2px;background:color-mix(in srgb,var(--accent) 55%,transparent)}
+.tr-c.cur i{background:var(--accent)}
+.tr-c:hover i{background:var(--accent)}
+.tr-v{font-size:.6rem;color:var(--muted);white-space:nowrap;writing-mode:horizontal-tb;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.tr-m{font-size:.68rem;color:var(--muted)}
+.tr-c.cur .tr-m{color:var(--accent-strong);font-weight:700}
+@media (max-width:700px){
+  .need-i{grid-template-columns:10px minmax(0,1fr);row-gap:2px}
+  .need-v{grid-column:2}
+  .ag-r{grid-template-columns:12px minmax(0,1fr) auto;row-gap:0}
+  .ag-r .faint,.ag-p{display:none}
+  .tr-ch{height:150px;gap:3px}
+  .tr-v{display:none}
+}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2593,16 +2630,14 @@ td.sel{cursor:pointer}
     <div id="v-home" style="display:flex;flex-direction:column;gap:16px" hidden>
       <div class="ph"><div><h1>نظرة عامة</h1><div class="sub" id="homeSub"></div></div></div>
       <div class="kpis" id="homeKpis"></div>
-      <section class="panel hal" id="hAlP" hidden><div class="hd"><h2>تنبيهات محتاجة مراجعة</h2></div><div class="bd" id="hAl"></div></section>
-      <section class="panel" id="hCoP"><div class="hd"><h2>مستحقات الشركة بعد الختامي</h2><button type="button" class="btn sm ghost" data-gotab="co">الكشف والتنبيهات ←</button></div><div class="bd"><div class="kpis co-kpis" id="hCo"></div></div></section>
+      <section class="panel" id="hNeedP"><div class="hd"><h2>محتاج تدخل</h2><button type="button" class="btn sm ghost" data-go-late="1">كل المتأخر في الكشف ←</button></div><div class="bd" id="hNeed"></div></section>
       <div class="home-grid">
-        <section class="panel"><div class="hd"><h2>لم يُصرف حسب مكان المستخلص</h2><span class="muted">اضغط على أي صف لعرض مستخلصاته</span></div><div class="bd" id="hStage"></div></section>
-        <section class="panel"><div class="hd"><h2>لم يُصرف حسب الإدارة</h2><span class="muted">اضغط لعرض مستخلصات الإدارة</span></div><div class="bd" id="hDept"></div></section>
-        <section class="panel"><div class="hd"><h2>مدة بقاء المستخلص في مكانه</h2><span class="muted">المستخلصات غير المصروفة</span></div><div class="bd" id="hAge"></div></section>
+        <section class="panel"><div class="hd"><h2>أعمار الفلوس اللي لسه ما اتصرفتش</h2><span class="muted">من تاريخ المستخلص</span></div><div class="bd" id="hAging"></div></section>
+        <section class="panel"><div class="hd"><h2>التحصيل آخر 12 شهر</h2><button type="button" class="btn sm ghost" data-gotab="paylog">سجل الصرف ←</button></div><div class="bd" id="hTrend"></div></section>
+        <section class="panel"><div class="hd"><h2>الفلوس فين؟</h2><span class="muted">اللي لسه ما اتصرفش حسب مكان المستخلص</span></div><div class="bd" id="hStage"></div></section>
         <section class="panel"><div class="hd"><h2>أكبر المشاريع في المستحقات</h2><span class="muted">اضغط لفتح المشروع</span></div><div class="bd" id="hTop"></div></section>
-        <section class="panel"><div class="hd"><h2>حركة آخر 7 أيام</h2><button type="button" class="btn sm ghost" data-gotab="moves">كل الحركة ←</button></div><div class="bd" id="hWeek"></div></section>
-        <section class="panel"><div class="hd"><h2>آخر التعديلات</h2><span class="muted">المستخدم والتعديل</span></div><div class="bd" id="hAct"></div></section>
       </div>
+      <section class="panel hal" id="hAlP" hidden><div class="hd"><h2>بيانات محتاجة مراجعة</h2></div><div class="bd" id="hAl"></div></section>
     </div>
 
     <div id="v-sat" style="display:flex;flex-direction:column;gap:16px">
@@ -2979,45 +3014,58 @@ const hbars = rows => { const max=Math.max(1,...rows.map(r=>r.value)); return `<
 const emptyBox = t => `<div class="empty" style="padding:24px 8px">${t}</div>`;
 
 function renderHome(){
-  if(!state.loaded.i){ $("#homeSub").textContent="جارٍ تحميل البيانات…"; $("#homeKpis").innerHTML=skelKpis(4); ["#hStage","#hDept","#hAge","#hTop","#hWeek","#hAct"].forEach(id=>$(id).innerHTML=skelRows(5)); return; }
-  const cfg = state.cfg, all = state.invoices.map(v=>[v,calc(v)]);
-  const sum = (a,f) => a.reduce((s,x)=>s+num(f(x)),0);
-  const un = all.filter(([v])=>v.paid!=="نعم" && has(v.gross));
-  const ym = today().slice(0,7);
-  const paidM = all.filter(([v])=>v.paid==="نعم" && (v.paidDate||"").startsWith(ym));
-  const late = un.filter(([v,k])=>k.late), noIns = un.filter(([v,k])=>insBad(k));
-  const cur = `<small>${esc(cfg.currency||"")}</small>`;
-  $("#homeSub").textContent = `${state.projects.length} مشروع · ${state.invoices.length} مستخلص · تحديث ${dmy(today())}`;
-  { const cl=coAll(); $("#hCoP").hidden=!cl.length; $("#hCo").innerHTML=coKpisHtml(cl); }
+  if(!state.loaded.i){ $("#homeSub").textContent="جارٍ تحميل البيانات…"; $("#homeKpis").innerHTML=skelKpis(4); ["#hNeed","#hAging","#hTrend","#hStage","#hTop"].forEach(id=>$(id).innerHTML=skelRows(5)); return; }
+  const cfg=state.cfg, all=state.invoices.map(v=>[v,calc(v)]), t=today(), cur=`<small>${esc(cfg.currency||"")}</small>`;
+  const sum=(a,f)=>a.reduce((s,x)=>s+num(f(x)),0), isD=x=>/^\d{4}-\d{2}-\d{2}/.test(x||""), dd=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5);
+  const un=all.filter(([v])=>v.paid!=="نعم" && has(v.gross)), paid=all.filter(([v])=>v.paid==="نعم");
+  const late=un.filter(([v,k])=>k.late), noIns=un.filter(([v,k])=>insBad(k));
+  const m0=t.slice(0,7), dm=new Date(t+"T00:00:00"); dm.setDate(1); dm.setMonth(dm.getMonth()-1); const m1=dm.toISOString().slice(0,7);
+  const pM0=paid.filter(([v])=>(v.paidDate||"").startsWith(m0)), pM1=paid.filter(([v])=>(v.paidDate||"").startsWith(m1));
+  const vM0=sum(pM0,([v,k])=>k.net), vM1=sum(pM1,([v,k])=>k.net);
+  // متوسط مدة التحصيل: من تاريخ المستخلص لتاريخ الصرف — آخر 90 يوم مقارنة بالـ 90 اللي قبلها
+  const d90=new Date(Date.now()-90*864e5).toISOString().slice(0,10), d180=new Date(Date.now()-180*864e5).toISOString().slice(0,10);
+  const cyc=r=>{ const x=r.filter(([v])=>isD(v.date)&&isD(v.paidDate)&&v.paidDate>=v.date).map(([v])=>dd(v.date,v.paidDate)); return x.length?Math.round(x.reduce((a,b)=>a+b,0)/x.length):null; };
+  const c0=cyc(paid.filter(([v])=>(v.paidDate||"")>=d90)), c1=cyc(paid.filter(([v])=>(v.paidDate||"")>=d180&&(v.paidDate||"")<d90));
+  const coL=coAll(), coTot=coL.reduce((a,s)=>a+s.remaining,0);
+  const delta=(a,b,goodUp=true,unit="")=>{ if(b==null||a==null||(!a&&!b)) return ""; if(!b) return `<span class="dl eq">(الشهر اللي فات: 0)</span>`; const d=a-b; if(!d) return `<span class="dl eq">زي الفترة اللي فاتت</span>`;
+    const up=d>0, good=up===goodUp, txt=unit?`${Math.abs(d)} ${unit}`:(b?`${Math.round(Math.abs(d)/b*100)}%`:fmt(Math.abs(d)));
+    return `<span class="dl ${good?"good":"bad"}">${up?"▲":"▼"} ${txt}</span>`; };
+  $("#homeSub").textContent = `${state.projects.length} مشروع · ${state.invoices.length} مستخلص · تحديث ${dmy(t)}`;
+  $("#homeKpis").innerHTML = `
+    <button type="button" class="kpi lead" data-gotab="sat"><span class="lbl">${ico("money")}لسه ما اتصرفش</span><span class="val">${money(sum(un,([v,k])=>k.net))}${cur}</span><span class="sub">${un.length} مستخلص${late.length?` · <b class="bad-t">${late.length} متأخر</b>`:""}</span></button>
+    <button type="button" class="kpi" data-gotab="paylog"><span class="lbl">${ico("check")}اتصرف الشهر ده</span><span class="val">${money(vM0)}${cur}</span><span class="sub">${pM0.length} مستخلص ${vM1?`${delta(vM0,vM1,true)} <small class="faint">عن الشهر اللي فات</small>`:delta(vM0,vM1,true)}</span></button>
+    <button type="button" class="kpi" data-gotab="paylog"><span class="lbl">${ico("clock")}متوسط مدة التحصيل</span><span class="val">${c0==null?"—":`<span class="num">${c0}</span> <small>يوم</small>`}</span><span class="sub">من تاريخ المستخلص للصرف (آخر 3 شهور) ${delta(c0,c1,false,"يوم")}</span></button>
+    <button type="button" class="kpi ${coTot?"wn":""}" data-gotab="co"><span class="lbl">${ico("shield")}مستحقات ما بعد الختامي</span><span class="val">${money(coTot)}${cur}</span><span class="sub">على ${coL.filter(s=>s.remaining>0).length} مشروع — ضمان أعمال وتأمين نهائي</span></button>`;
+  shortKpis($("#homeKpis"));
+  // محتاج تدخل: المتأخر والواقف على الشهادة — الأكبر قيمة الأول
+  const need=[];
+  late.forEach(([v,k])=>need.push({v,k,why:`متأخر ${k.days} يوم في «${k.stage}»`,sev:"bad"}));
+  noIns.filter(([v,k])=>!k.late).forEach(([v,k])=>need.push({v,k,why:"واقف على شهادة التأمينات",sev:"warn"}));
+  need.sort((a,b)=>(a.sev==="bad"?0:1)-(b.sev==="bad"?0:1) || num(b.k.net)-num(a.k.net));
+  $("#hNeed").innerHTML = need.length ? `<div class="need-l">${need.slice(0,6).map(x=>`<button type="button" class="need-i ${x.sev}" data-inv="${esc(x.v.id)}"><span class="need-d"></span><span class="need-t"><b>${esc(pName(x.k.p,true))}</b><small>${esc(certLabel(x.v))} · ${esc(x.why)}</small></span><b class="num need-v">${fmt(x.k.net)}</b></button>`).join("")}</div>${need.length>6?`<p class="hint" style="margin:10px 0 0">و ${need.length-6} كمان — «كل المتأخر في الكشف» تعرضهم كلهم.</p>`:""}` : emptyBox("مفيش حاجة واقفة — كله ماشي في ميعاده 👌");
+  // أعمار الفلوس
+  const B=[["لسه جديد (أقل من 30 يوم)",0,30,"var(--ok)"],["31 – 60 يوم",31,60,"var(--accent)"],["61 – 90 يوم",61,90,"var(--warn)"],["أكتر من 90 يوم",91,1e9,"var(--bad)"]];
+  const ag=B.map(([l,a,b2,c])=>{ const r=un.filter(([v])=>isD(v.date)&&dd(v.date,t)>=a&&dd(v.date,t)<=b2); return {l,c,n:r.length,val:sum(r,([v,k])=>k.net)}; });
+  const nd=un.filter(([v])=>!isD(v.date)); if(nd.length) ag.push({l:"من غير تاريخ مستخلص",c:"var(--faint)",n:nd.length,val:sum(nd,([v,k])=>k.net)});
+  const agT=ag.reduce((a,x)=>a+x.val,0)||1;
+  $("#hAging").innerHTML = un.length ? `<div class="ag-bar">${ag.filter(x=>x.val>0).map(x=>`<i style="flex:${x.val};background:${x.c}" title="${esc(x.l)}: ${fmt(x.val)}"></i>`).join("")}</div>
+    <div class="ag-l">${ag.map(x=>`<div class="ag-r"><span class="ag-d" style="background:${x.c}"></span><span class="ag-n">${esc(x.l)}</span><span class="faint small">${x.n} مستخلص</span><b class="num">${fmt(x.val)}</b><span class="ag-p num">${Math.round(x.val/agT*100)}%</span></div>`).join("")}</div>` : emptyBox("تم صرف كل المستخلصات");
+  // التحصيل آخر 12 شهر
+  const months=[]; { const d=new Date(t+"T00:00:00"); d.setDate(1); for(let i=11;i>=0;i--){ const x=new Date(d); x.setMonth(d.getMonth()-i); months.push(x.toISOString().slice(0,7)); } }
+  const mv=months.map(m=>({m, val:sum(paid.filter(([v])=>(v.paidDate||"").startsWith(m)),([v,k])=>k.net), n:paid.filter(([v])=>(v.paidDate||"").startsWith(m)).length}));
+  const mx=Math.max(1,...mv.map(x=>x.val)), AR=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+  $("#hTrend").innerHTML = `<div class="tr-ch">${mv.map(x=>`<button type="button" class="tr-c ${x.m===m0?"cur":""}" data-gotab="paylog" title="${AR[+x.m.slice(5)-1]} ${x.m.slice(0,4)}: ${fmt(x.val)} (${x.n} مستخلص)"><span class="tr-v">${x.val?(shortAr(x.val)||fmt(x.val)):""}</span><i style="height:${Math.max(x.val?4:0,Math.round(x.val/mx*100))}%"></i><span class="tr-m">${AR[+x.m.slice(5)-1].slice(0,3)}</span></button>`).join("")}</div>
+    <p class="hint" style="margin:8px 0 0">${(()=>{ const noDate=paid.filter(([v])=>!isD(v.paidDate)).length; return noDate?`${noDate} مستخلص مصروف من غير تاريخ صرف مش محسوبين هنا.`:"محسوب بتاريخ الصرف."; })()}</p>`;
+  // الفلوس فين
+  const stages=[...(cfg.stages||[]),"غير محدد"];
+  const byStage=stages.map(st=>{ const r=un.filter(([v,k])=>k.stage===st); return {label:st,value:sum(r,([v,k])=>k.net),count:r.length,color:stageColor(st),dot:stageColor(st),act:`data-go-stage="${esc(st)}"`}; }).filter(r=>r.count).sort((a,b)=>b.value-a.value);
+  const ns=un.filter(([v,k])=>k.stage==="—"); if(ns.length) byStage.push({label:"جهات بدون مراحل",value:sum(ns,([v,k])=>k.net),count:ns.length,color:"var(--faint)",dot:"var(--faint)",act:'data-go-stage="—"'});
+  $("#hStage").innerHTML = byStage.length ? hbars(byStage) : emptyBox("تم صرف كل المستخلصات");
+  const byP=new Map(); un.forEach(([v,k])=>{ const e=byP.get(v.projectId)||{value:0,count:0}; e.value+=num(k.net); e.count++; byP.set(v.projectId,e); });
+  const top=[...byP.entries()].sort((a,b)=>b[1].value-a[1].value).slice(0,6).map(([pid,e])=>({label:pName(proj(pid),true),value:e.value,count:e.count,act:`data-proj="${esc(pid)}"`}));
+  $("#hTop").innerHTML = top.length ? hbars(top) : emptyBox("لا توجد مستحقات");
   { const bad=dqChecks().filter(x=>["over","hidden"].includes(x.k) && x.items.length); $("#hAlP").hidden=!bad.length;
     $("#hAl").innerHTML = `<div class="hal-l">${bad.map(x=>`<button type="button" class="hal-i ${x.sev}" data-dqgo="${x.k}"><span class="dq-dot"></span><span>${esc(x.t)}</span><b class="num">${x.items.length}</b></button>`).join("")}</div>`; }
-  $("#homeKpis").innerHTML = `
-    <div class="kpi lead"><span class="lbl">${ico("money")}إجمالي غير المصروف</span><span class="val">${money(sum(un,([v,k])=>k.net))}${cur}</span><span class="sub">${un.length} مستخلص على ${new Set(un.map(([v])=>v.projectId)).size} مشروع</span></div>
-    ${(()=>{ const pd=all.filter(([v])=>v.paid==="نعم"); return `<div class="kpi"><span class="lbl">${ico("check")}إجمالي المصروف</span><span class="val">${money(sum(pd,([v,k])=>k.net))}${cur}</span><span class="sub">${pd.length} مستخلص${paidM.length?` · منها ${paidM.length} هذا الشهر`:""}</span></div>`; })()}
-    <div class="kpi ${late.length?"hl":""}"><span class="lbl">${ico("clock")}متأخر أكثر من ${num(cfg.lateDays||30)} يوم</span><span class="val num">${late.length}</span><span class="sub">بقيمة ${fmt(sum(late,([v,k])=>k.net))}</span></div>
-    <div class="kpi ${noIns.length?"wn":""}"><span class="lbl">${ico("note")}بدون شهادة تأمينات</span><span class="val num">${noIns.length}</span><span class="sub">من المستخلصات غير المصروفة</span></div>`;
-  const stages=[...(cfg.stages||[]),"غير محدد"];
-  const byStage = stages.map(st=>{ const r=un.filter(([v,k])=>k.stage===st); return {label:st,value:sum(r,([v,k])=>k.net),count:r.length,color:stageColor(st),dot:stageColor(st),act:`data-go-stage="${esc(st)}"`}; }).filter(r=>r.count);
-  const ns = un.filter(([v,k])=>k.stage==="—"); if(ns.length) byStage.push({label:"جهات بدون مراحل",value:sum(ns,([v,k])=>k.net),count:ns.length,color:"var(--faint)",dot:"var(--faint)",act:'data-go-stage="—"'});
-  $("#hStage").innerHTML = byStage.length ? hbars(byStage) : emptyBox("تم صرف كل المستخلصات");
-  const ds = uniq([...deptOrder(), ...un.map(([v,k])=>k.dept)]);
-  const byDept = ds.map(d=>{ const r=un.filter(([v,k])=>k.dept===d); return {label:d,value:sum(r,([v,k])=>k.net),count:r.length,act:`data-go-dept="${esc(d)}"`}; }).filter(r=>r.count).sort((a,b)=>b.value-a.value);
-  $("#hDept").innerHTML = byDept.length ? hbars(byDept) : emptyBox("لا توجد مستحقات");
-  const L = num(cfg.lateDays||30);
-  const buckets = [["أقل من أسبوع",0,7],["من أسبوع لأسبوعين",8,14],[`من أسبوعين لـ ${L} يوم`,15,L],[`من ${L+1} لـ 60 يوم`,L+1,60],["أكثر من 60 يوم",61,1e9]];
-  const withDays = un.filter(([v,k])=>k.days!=null);
-  const age = buckets.map(([lab,a,b])=>{ const r=withDays.filter(([v,k])=>k.days>=a&&k.days<=b); return {label:lab,value:sum(r,([v,k])=>k.net),count:r.length,over:a>L,color:a>L?"var(--bad)":"var(--accent)",act:a>L&&r.length?'data-go-late="1"':""}; });
-  const noStage = un.filter(([v,k])=>k.hs && !v.stage).length;
-  $("#hAge").innerHTML = withDays.length ? hbars(age) + (noStage?`<p class="hint" style="margin-top:8px">${noStage} مستخلص بدون مكان مسجل، غير محسوبة هنا.</p>`:"") : emptyBox("لا توجد مستخلصات مسجل مكانها");
-  const byP = new Map(); un.forEach(([v,k])=>{ const e=byP.get(v.projectId)||{value:0,count:0}; e.value+=num(k.net); e.count++; byP.set(v.projectId,e); });
-  const top = [...byP.entries()].sort((a,b)=>b[1].value-a[1].value).slice(0,8).map(([pid,e])=>({label:pName(proj(pid),true),value:e.value,count:e.count,act:`data-proj="${esc(pid)}"`}));
-  $("#hTop").innerHTML = top.length ? hbars(top) : emptyBox("لا توجد مستحقات");
-  const s7 = since7(), ev=[];
-  all.forEach(([v,k])=>{ (v.stageLog||[]).forEach(x=>{ if(x.date && x.date>=s7) ev.push({date:x.date,v,k,t:`نُقل إلى «${x.stage}»`,kind:"stage"}); }); if(v.paid==="نعم" && v.paidDate && v.paidDate>=s7) ev.push({date:v.paidDate,v,k,t:"تم صرفه",kind:"paid"}); });
-  ev.sort((a,b)=>b.date.localeCompare(a.date));
-  $("#hWeek").innerHTML = ev.length ? `<div class="feed">${ev.slice(0,14).map(e=>`<div class="feed-i"><span class="dot ${e.kind==="paid"?"ok":""}">${ico(e.kind==="paid"?"check":"route")}</span><div><button type="button" class="lnkb" data-inv="${esc(e.v.id)}"><b>${esc(certLabel(e.v))} · ${esc(pName(e.k.p,true))}</b></button><div class="txt">${esc(e.t)}</div></div><span class="when dte">${dmy(e.date)}</span></div>`).join("")}</div>` : emptyBox("لا توجد حركة خلال آخر 7 أيام");
-  const acts = state.activity.slice(0,14);
-  $("#hAct").innerHTML = acts.length ? `<div class="feed">${acts.map(a=>{ const n=who(a.by); return `<div class="feed-i"><span class="dot" title="${esc(n)}">${esc(initials(n))}</span><div>${a.inv&&state.invoices.some(x=>x.id===a.inv)?`<button type="button" class="lnkb" data-inv="${esc(a.inv)}">`:"<div>"}<b>${esc(n)}</b>${a.inv&&state.invoices.some(x=>x.id===a.inv)?"</button>":"</div>"}<div class="txt">${esc(a.text)}</div></div><span class="when">${esc(ago(a.at))}</span></div>`; }).join("")}</div>` : emptyBox("لا توجد تعديلات مسجلة بعد. أي تعديل سيظهر هنا باسم من قام به.");
 }
 function goReg({stage="", dept="", paid="لا"}={}){
   ["#iSearch"].forEach(s=>$(s).value="");
