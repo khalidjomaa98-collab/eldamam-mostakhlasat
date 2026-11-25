@@ -2634,6 +2634,24 @@ td.sel{cursor:pointer}
 .ctx-i[data-armed]{background:var(--ok);color:#fff}
 .ctx-i[data-armed] svg.i{color:#fff}
 .ctx-sep{height:1px;background:var(--line2);margin:4px 6px}
+/* تابات الأماكن + «محتاج اهتمام» */
+.qtab .qdot{width:8px;height:8px;border-radius:50%;flex:none}
+.qtab[aria-selected="true"] .qdot{box-shadow:0 0 0 2px rgba(255,255,255,.8)}
+.qattn{flex:none;display:inline-flex;align-items:center;gap:6px;padding:0 4px 0 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);margin-inline-start:auto}
+.qattn svg.i{width:15px;height:15px;color:var(--warn)}
+.qattn select{border:0;background:transparent;font:inherit;font-size:.84rem;font-weight:600;padding:7px 4px;color:var(--fg);cursor:pointer}
+.qattn.on{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 8%,var(--surface))}
+.qattn.on svg.i{color:var(--bad)}
+/* فاصل واضح بين كل مستخلص والتاني في الكشف */
+@media (min-width:1061px){
+  #satList table.satt tbody tr.r>td{border-bottom:1px solid var(--line)!important}
+  #satList table.satt tbody tr.r:hover>td{background:color-mix(in srgb,var(--accent) 4%,var(--surface))}
+}
+@media (max-width:1060px){
+  #satList:not(#_):not(#_) table.satt tbody{display:flex;flex-direction:column;gap:10px;padding:10px 0}
+  #satList:not(#_):not(#_) table.satt tbody tr.r{border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 8px -4px rgba(10,20,40,.18),inset -4px 0 0 var(--sc)}
+}
+@media (max-width:700px){ .qattn{margin-inline-start:0} }
 </style>
 <style>
 [hidden]{display:none!important}
@@ -3826,8 +3844,13 @@ function renderSat(){
     $("#pipeMini").innerHTML = [...by].sort((a,b)=>b[1]-a[1]).slice(0,4).map(([st,n])=>`<span><i style="background:${stageColor(st)}"></i>${esc(st)} <b class="num">${n}</b></span>`).join(""); }
   $("#satAlerts").innerHTML = alHtml || `<span class="muted small">${ico("check")} لا توجد تنبيهات</span>`;
   { const nReady=base.filter(([v])=>v.readyPay==="نعم"&&v.paid!=="نعم").length;
-    const tb=(key,n,t,bad)=>`<button type="button" class="qtab ${bad&&n?"bad":""}" role="tab" data-alert="${key}" aria-selected="${(f.alert||"")===key}">${t}<b class="num">${n}</b></button>`;
-    $("#satTabs").innerHTML = tb("",base.length,"الكل") + tb("late",nLate,`متأخر +${num(cfg.lateDays||30)} يوم`,true) + tb("noIns",nIns,"واقف على شهادة التأمينات",true) + tb("noMp",nMp,"قوة عاملة لم تُستخرج") + tb("ready",nReady,"جاهز للصرف (تمت التسوية)") + tb("unpaid",unpaid.length,"لم يُصرف"); }
+    const fs=f.stage; f.stage=""; const allSt=satBase(true).map(v=>[v,calc(v)]); f.stage=fs;
+    const cnt=st=>allSt.filter(([v,k])=>k.stage===st||stageParent(k.stage)===st).length;
+    const stl=[...(cfg.stages||[]).filter(st=>!stageParent(st)),"غير محدد"].filter(st=>cnt(st)||msHas(f.stage,st));
+    const tb=(st,n,t)=>`<button type="button" class="qtab" role="tab" data-qst="${esc(st)}" aria-selected="${st===""?!f.stage:msHas(f.stage,st)}">${st?`<i class="qdot" style="background:${stageColor(st)}"></i>`:""}${esc(t)}<b class="num">${n}</b></button>`;
+    const at=(key,n,t)=>`<option value="${key}" ${(f.alert||"")===key?"selected":""}>${esc(t)}${key?` (${n})`:""}</option>`;
+    $("#satTabs").innerHTML = tb("",allSt.length,"كل الأماكن") + stl.map(st=>tb(st,cnt(st),st)).join("")
+      + `<label class="qattn ${f.alert?"on":""}"><svg class="i"><use href="#i-warn"/></svg><select id="satAttn" aria-label="محتاج اهتمام">${at("",0,"محتاج اهتمام: الكل")}${at("late",nLate,`متأخر +${num(cfg.lateDays||30)} يوم`)}${at("noIns",nIns,"واقف على شهادة التأمينات")}${at("noMp",nMp,"قوة عاملة لم تُستخرج")}${at("ready",nReady,"جاهز للصرف (تمت التسوية)")}${at("unpaid",unpaid.length,"لم يُصرف")}</select></label>`; }
 
   // pipeline
   { const fs=f.stage; f.stage=""; const all=satBase(true).map(v=>[v,calc(v)]); f.stage=fs;
@@ -6409,7 +6432,8 @@ $("#acXlsx").onclick=async()=>{ try{ const X=await loadXLSX();
   await offer(`سجل الحركات اليومي ${today()}.xlsx`, new Uint8Array(X.write(wb,{bookType:"xlsx",type:"array"}))); }catch{ toast("تعذر تجهيز ملف Excel. تحقق من الاتصال وحاول مرة أخرى."); } };
 { let qt; $("#sQ").addEventListener("input", e=>{ clearTimeout(qt); qt=setTimeout(()=>{ state.satQ=e.target.value; satChanged(); }, 140); });
   $("#sQ").addEventListener("keydown", e=>{ if(e.key==="Escape" && e.target.value){ e.preventDefault(); e.stopPropagation(); e.target.value=""; state.satQ=""; satChanged(); } }); }
-$("#satTabs").onclick=e=>{ const b=e.target.closest("[data-alert]"); if(b){ state.satFilter.alert = b.dataset.alert; satChanged(); } };
+$("#satTabs").onclick=e=>{ const b=e.target.closest("[data-qst]"); if(!b) return; const st=b.dataset.qst; state.satFilter.stage = (!st || state.satFilter.stage===st) ? "" : st; satChanged(); };
+$("#satTabs").addEventListener("change", e=>{ if(e.target.id==="satAttn"){ state.satFilter.alert=e.target.value; satChanged(); } });
 $("#satAlerts").onclick=e=>{ const b=e.target.closest("[data-alert]"); if(b){ state.satFilter.alert = state.satFilter.alert===b.dataset.alert ? "" : b.dataset.alert; satChanged(); } };
 ["#iSearch","#iCompany","#iDept","#iPaid","#iType","#iSatOnly","#iMpOnly","#iGroup","#iStage"].forEach(s=>$(s).addEventListener("input",()=>{clearSel();state.invLimit=60;memo.clear();renderInv();}));
 $("#invMoreBtn").onclick=()=>{ state.invLimit+=60; memo.clear(); renderInv(); };
