@@ -2589,6 +2589,19 @@ td.sel{cursor:pointer}
 .sumx.pipe-closed :is(#satPipe,#satPipeE,#mxWrap,#mxToggle,.pipe-hint){display:none!important}
 .msort{display:inline-flex}
 @media (max-width:700px){ .sat-stick{margin-inline:-16px;padding-inline:16px} .pipe-mini{font-size:.74rem;gap:8px} }
+/* قايمة كليك يمين */
+.ctx{position:fixed;z-index:200;min-width:230px;max-width:300px;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 44px rgba(10,20,40,.28);padding:6px;display:flex;flex-direction:column;animation:ctxIn .12s ease-out}
+.ctx[hidden]{display:none}
+@keyframes ctxIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.ctx-h{display:flex;flex-direction:column;padding:6px 10px 8px;border-bottom:1px solid var(--line2);margin-bottom:4px}
+.ctx-h b{font-size:.86rem}
+.ctx-h small{color:var(--muted);font-size:.74rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctx-i{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:.86rem}
+.ctx-i svg.i{width:16px;height:16px;color:var(--muted)}
+.ctx-i:hover,.ctx-i:focus-visible{background:color-mix(in srgb,var(--accent) 10%,var(--surface));outline:none}
+.ctx-i[data-armed]{background:var(--ok);color:#fff}
+.ctx-i[data-armed] svg.i{color:#fff}
+.ctx-sep{height:1px;background:var(--line2);margin:4px 6px}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -6149,6 +6162,85 @@ function openSkin(){
   const h=pop.offsetHeight; pop.style.top=Math.max(8, r.top-h-8)+"px";
 }
 $("#btnSkin").addEventListener("click", openSkin);
+/* ===== كليك يمين: قايمة إجراءات حسب العنصر (مستخلص / مشروع / ملف تأمينات) في كل البرنامج =====
+   خانات الكتابة والكلام المحدد والنوافذ بيفضل فيها كليك يمين بتاع المتصفح عادي */
+{
+  const menu=document.createElement("div"); menu.id="ctxMenu"; menu.className="ctx"; menu.setAttribute("role","menu"); menu.hidden=true; document.body.appendChild(menu);
+  let lastPtr="mouse"; document.addEventListener("pointerdown", e=>{ lastPtr=e.pointerType; }, {capture:true, passive:true});
+  let openedAt=0;
+  const close=()=>{ if(!menu.hidden){ menu.hidden=true; menu.innerHTML=""; } };
+  const copy=async(t,msg)=>{ try{ await navigator.clipboard.writeText(t); toast(msg||"اتنسخ"); }catch{ toast("تعذر النسخ"); } };
+  const boxFor=(attr,id)=>document.querySelector(`input[${attr}="${CSS.escape(id)}"]`);
+  const target=t=>{
+    const ins=t.closest("tr[data-ins]"); if(ins) return {kind:"ins", id:ins.dataset.ins};
+    const iv=t.closest("[data-inv],[data-plinv],tr[data-mp]"); if(iv) return {kind:"inv", id:iv.dataset.inv||iv.dataset.plinv||iv.dataset.mp};
+    const row=t.closest("tr, .pc2"); const sb=row?.querySelector("input[data-sel]"); if(sb) return {kind:"inv", id:sb.dataset.sel};
+    const pj=t.closest("[data-proj]"); if(pj) return {kind:"proj", id:pj.dataset.proj};
+    const pb=row?.querySelector("input[data-psel]"); if(pb) return {kind:"proj", id:pb.dataset.psel};
+    return null; };
+  const item=(act,icon,label,extra="")=>`<button type="button" role="menuitem" class="ctx-i" data-ctx="${act}" ${extra}>${ico(icon)}<span>${label}</span></button>`;
+  const sep=`<div class="ctx-sep" role="separator"></div>`;
+  let cur=null;
+  const build=tg=>{
+    if(tg.kind==="inv"){ const v=state.invoices.find(x=>x.id===tg.id); if(!v) return "";
+      const p=proj(v.projectId)||{}, k=calc(v), w=state.canWrite, box=boxFor("data-sel",v.id);
+      return `<div class="ctx-h"><b>${esc(certLabel(v))}</b><small>${esc(pName(p,true))}</small></div>`
+        + item("openInv","doc","فتح المستخلص") + (p.id?item("openProj","bld","فتح المشروع"):"")
+        + (w?sep + item("move","route","تسجيل حركة / نقل لمكان")
+          + (v.paid!=="نعم"?item("paid","check","تسجيل صرف",`data-paid="${esc(v.id)}"`):"")
+          + (v.paid!=="نعم"?(v.showSat?item("satOff","x","إزالة من كشف المتابعة"):item("satOn","plus","إضافة لكشف المتابعة")):""):"")
+        + sep + item("copyProj","doc","نسخ اسم المشروع") + (realId(p.contractNo)?item("copyNo","doc","نسخ رقم العقد"):"")
+        + item("copyLine","doc","نسخ سطر (المشروع · المستخلص · الصافي)")
+        + (box?sep+item("sel","list",box.checked?"إلغاء التحديد":"تحديد"):""); }
+    if(tg.kind==="proj"){ const p=state.projects.find(x=>x.id===tg.id); if(!p) return ""; const box=boxFor("data-psel",p.id);
+      return `<div class="ctx-h"><b>${esc(pName(p,true))}</b><small>${realId(p.contractNo)?`عقد ${esc(p.contractNo)}`:"لم يصدر عقد"}</small></div>`
+        + item("openProj","bld","فتح المشروع") + (state.canWrite&&realId(p.contractNo)?item("newInv","plus","مستخلص جديد للمشروع ده"):"")
+        + sep + item("copyProj","doc","نسخ اسم المشروع") + (realId(p.contractNo)?item("copyNo","doc","نسخ رقم العقد"):"")
+        + (box?sep+item("psel","list",box.checked?"إلغاء التحديد":"تحديد"):""); }
+    if(tg.kind==="ins"){ const r=state.ins.find(x=>x.id===tg.id); if(!r) return ""; const p=proj(r.projectId)||{}, iv=state.invoices.find(x=>x.id===r.invoiceId), box=boxFor("data-isel",r.id), fno=realId(p.insFileNo)||r.fileNo||"";
+      return `<div class="ctx-h"><b>ملف تأمينات</b><small>${esc(pName(p,true))}</small></div>`
+        + item("openIns","shield","فتح ملف التأمينات") + (iv?item("openInvOfIns","doc","فتح المستخلص"):"") + (p.id?item("openProj","bld","فتح المشروع"):"")
+        + sep + (fno?item("copyFile","doc","نسخ رقم الملف (CS)"):"") + item("copyProj","doc","نسخ اسم المشروع")
+        + (box?sep+item("isel","list",box.checked?"إلغاء التحديد":"تحديد"):""); }
+    return ""; };
+  document.addEventListener("contextmenu", e=>{
+    if(lastPtr==="touch" || e.shiftKey) return;                                  /* Shift + كليك يمين = قايمة المتصفح */
+    const t=e.target; if(t.closest("input,textarea,select,[contenteditable],dialog,.ctx")) return;
+    if(String(getSelection?.()||"").trim()) return;
+    const tg=target(t); if(!tg) return; const html=build(tg); if(!html) return;
+    e.preventDefault(); cur=tg; menu.innerHTML=html; menu.hidden=false; openedAt=Date.now();
+    const w=menu.offsetWidth, h=menu.offsetHeight; let x=e.clientX, y=e.clientY;
+    if(document.dir==="rtl"||document.documentElement.dir==="rtl") x=x-w; if(x<8) x=8; if(x+w>innerWidth-8) x=innerWidth-w-8; if(y+h>innerHeight-8) y=Math.max(8,innerHeight-h-8);
+    menu.style.left=x+"px"; menu.style.top=y+"px"; menu.querySelector(".ctx-i")?.focus({preventScroll:true});
+  });
+  menu.addEventListener("click", async e=>{ const b=e.target.closest("[data-ctx]"); if(!b||!cur) return; const a=b.dataset.ctx, tg=cur;
+    const v = tg.kind==="inv" ? state.invoices.find(x=>x.id===tg.id) : null;
+    const r = tg.kind==="ins" ? state.ins.find(x=>x.id===tg.id) : null;
+    const p = tg.kind==="proj" ? state.projects.find(x=>x.id===tg.id) : proj((v||r)?.projectId)||null;
+    if(a==="paid"){ const was=!!b.dataset.armed; quickPaid(b); if(was) close(); return; }        /* أول دوسة بتطلب تأكيد، والتانية بتسجل */
+    close();
+    if(a==="openInv") invDialog(v);
+    else if(a==="openProj" && p) projDialog(p);
+    else if(a==="newInv" && p) invDialog(null, p.id);
+    else if(a==="move") moveDialog(v.id);
+    else if(a==="openIns") insDialog(r);
+    else if(a==="openInvOfIns"){ const iv=state.invoices.find(x=>x.id===r.invoiceId); if(iv) invDialog(iv); }
+    else if(a==="satOn"||a==="satOff"){ const on=a==="satOn"; if(await save(db.collection("invoices").doc(v.id), {...stripId(v), showSat:on, updatedAt:new Date().toISOString(), updatedBy:myId||""})){ toast(on?`اتضاف ${certLabel(v)} لكشف المتابعة`:`اتشال ${certLabel(v)} من كشف المتابعة`); logAct(`${on?"أضاف":"شال"} ${certLabel(v)} ${on?"لـ":"من"} كشف المتابعة`, v.id, v.projectId); } }
+    else if(a==="copyProj") copy(p?(p.name||p.shortName||""):"", "اتنسخ اسم المشروع");
+    else if(a==="copyNo") copy(p?.contractNo||"", "اتنسخ رقم العقد");
+    else if(a==="copyFile") copy(realId((proj(r.projectId)||{}).insFileNo)||r.fileNo||"", "اتنسخ رقم الملف");
+    else if(a==="copyLine"){ const k=calc(v); copy(`${pName(p||{},true)} · ${certLabel(v)} · ${fmt(k.net)}`, "اتنسخ السطر"); }
+    else if(a==="sel") boxFor("data-sel",tg.id)?.click();
+    else if(a==="psel") boxFor("data-psel",tg.id)?.click();
+    else if(a==="isel") boxFor("data-isel",tg.id)?.click();
+  });
+  menu.addEventListener("keydown", e=>{ const it=[...menu.querySelectorAll(".ctx-i")], i=it.indexOf(document.activeElement);
+    if(e.key==="ArrowDown"){ e.preventDefault(); it[(i+1)%it.length]?.focus(); } else if(e.key==="ArrowUp"){ e.preventDefault(); it[(i-1+it.length)%it.length]?.focus(); } });
+  document.addEventListener("pointerdown", e=>{ if(!e.target.closest("#ctxMenu")) close(); }, true);
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape" && !menu.hidden){ e.preventDefault(); e.stopPropagation(); close(); } }, true);
+  addEventListener("resize", close); addEventListener("blur", close); document.addEventListener("scroll", ()=>{ if(Date.now()-openedAt>250) close(); }, {capture:true, passive:true});
+}
+
 /* كشف المتابعة: طي/فتح «التوزيع على الأماكن» (بيتفتكر على الجهاز) + ارتفاع الشريط العلوي للموبايل */
 { const sec=document.querySelector("#v-sat .sumx"), tg=$("#pipeTg"); let open=false; try{ open=localStorage.getItem("satPipeOpen")==="1"; }catch{}
   const ap=()=>{ sec.classList.toggle("pipe-closed",!open); tg.setAttribute("aria-expanded",String(open)); };
