@@ -2458,6 +2458,17 @@ html{-webkit-tap-highlight-color:transparent}
 .dw .fields>.f{min-width:0}
 .dw .fields>.f>:is(input,select,textarea,.dwrap){width:100%}
 .dw .fields>.f.wide{grid-column:1/-1}
+/* أزرار تأكيد/إلغاء تعديل الخانة */
+.pen-acts{display:inline-flex;gap:4px;margin-inline-start:6px;vertical-align:middle}
+.pen-acts[hidden]{display:none}
+.pen.ok{color:#fff;background:var(--ok);border-color:var(--ok)}
+.pen.no{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
+.f.edited>:is(input,textarea,.dwrap){box-shadow:0 0 0 2px color-mix(in srgb,var(--ok) 35%,transparent)}
+/* نفس الارتفاع لكل الخانات اللي جنب بعض (كتابة / قايمة / تاريخ) ونفس ارتفاع العنوان فوقها */
+.dw .fields>.f>label{min-height:26px;display:flex;align-items:center;gap:6px}
+.dw .fields>.f>:is(input:not([type=checkbox]),select){height:44px;box-sizing:border-box}
+.dw .fields>.f>.dwrap{height:44px;box-sizing:border-box}
+.dw .fields>.f>.dwrap>input.dtxt{height:100%}
 </style>
 <style>
 [hidden]{display:none!important}
@@ -4416,7 +4427,7 @@ function invDialog(v, projectId){
           const upd=()=>{ const na=sel.value==="لا حاجة"; items.forEach(x=>x.classList.toggle("na-h",na)); note.hidden=!na; extra?.(na); }; sel.addEventListener("change",upd); upd(); };
         naSec("vMp","المستخلص ده ملوش قوة عاملة، فخاناتها مستخبية. لو احتجتها غيّر الحالة.");
         naSec("vIns","المستخلص ده ملوش تأمينات، فخاناتها مستخبية. لو احتجتها غيّر الحالة.", na=>{ if(!insF){ const fs=[...form.querySelectorAll('.sec[data-tab="ins"]')][1]; fs?.classList.toggle("na-h",na); } }); }
-      if(v && state.canWrite){ const secs=[...form.querySelectorAll(".dw-b .sec[data-tab]")].filter(x=>x.querySelector(".fields .f, .fields label.chk") && !x.querySelector("#matBox"));
+      if(v && state.canWrite){ const secs=[...form.querySelectorAll(".dw-b .sec[data-tab]")].filter(x=>x.querySelector(".fields .f > :is(input,textarea,.dwrap)") && !x.querySelector("#matBox"));
         secs.forEach(sec=>{ const h=sec.querySelector("h3"); if(!h) return; let r=h.querySelector(".r"); if(!r){ r=document.createElement("span"); r.className="r"; h.append(r); }
           const ub=document.createElement("button"); ub.type="button"; ub.className="btn sm ghost"; ub.dataset.unlockall="1"; ub.innerHTML=`${ico("pen")}تعديل الكل`; r.append(ub); });
         lockFields(secs); }
@@ -4437,17 +4448,33 @@ function invDialog(v, projectId){
 
 /* ----- المشروع ----- */
 /* خانات مقفولة: متتعدلش غير بعد الضغط على القلم اللي جنبها */
+/* الخانات المقفولة: القوايم المنسدلة ومربعات الاختيار بتتعدّل على طول،
+   وخانات الكتابة بالقلم ← وبعدها ✓ تأكيد أو ✕ إلغاء (يرجّع القيمة اللي كانت) */
 function lockFields(secs){
-  const setL=(c,on)=>{ if(c.tagName==="SELECT"||c.type==="checkbox") c.disabled=on; else c.readOnly=on; c.classList.toggle("lockv",on); };
+  const setL=(c,on)=>{ c.readOnly=on; c.classList.toggle("lockv",on); };
+  const fire=c=>{ c.dispatchEvent(new Event("input",{bubbles:true})); c.dispatchEvent(new Event("change",{bubbles:true})); };
   secs.forEach(sec=>{
-    sec.querySelectorAll(".f, label.chk").forEach(f=>{
-      const c = f.matches("label.chk") ? f.querySelector("input") : f.querySelector(":scope > input:not(.dtxt), :scope > select, :scope > textarea, :scope > .dwrap > input.dhid"); if(!c || c.disabled || f.classList.contains("lkf")) return;
-      setL(c,true); f.classList.add("lkf");
-      const b=document.createElement("button"); b.type="button"; b.className="pen"; b.title="تعديل"; b.setAttribute("aria-label","تعديل "+(f.querySelector("label")?.textContent||f.textContent).trim()); b.innerHTML=ico("pen");
-      b.onclick=e=>{ e.preventDefault(); e.stopPropagation(); setL(c,false); f.classList.remove("lkf"); f.classList.add("unl"); b.remove(); const t=f.querySelector(".dtxt")||c; t.focus(); try{ t.select?.(); }catch{} };
-      (f.matches("label.chk") ? f : (f.querySelector(":scope > label")||f)).append(b);
+    sec.querySelectorAll(".f").forEach(f=>{
+      const c = f.querySelector(":scope > input:not(.dtxt), :scope > textarea, :scope > .dwrap > input.dhid"); if(!c || c.disabled || f.classList.contains("lkf")) return;
+      const txt = () => f.querySelector(".dtxt")||c;
+      setL(c,true); if(f.querySelector(".dtxt")) setL(f.querySelector(".dtxt"),true); f.classList.add("lkf");
+      const host = f.querySelector(":scope > label")||f;
+      const pen=document.createElement("button"); pen.type="button"; pen.className="pen"; pen.title="تعديل"; pen.setAttribute("aria-label","تعديل "+(f.querySelector("label")?.textContent||"").trim()); pen.innerHTML=ico("pen");
+      const acts=document.createElement("span"); acts.className="pen-acts"; acts.hidden=true;
+      acts.innerHTML=`<button type="button" class="pen ok" title="تأكيد" aria-label="تأكيد">${ico("check")}</button><button type="button" class="pen no" title="إلغاء" aria-label="إلغاء التعديل">${ico("x")}</button>`;
+      host.append(pen, acts);
+      let old="";
+      const lock=()=>{ setL(c,true); if(f.querySelector(".dtxt")) setL(f.querySelector(".dtxt"),true); f.classList.add("lkf"); f.classList.remove("unl"); acts.hidden=true; pen.hidden=false; };
+      const open=()=>{ old=c.value; setL(c,false); if(f.querySelector(".dtxt")) setL(f.querySelector(".dtxt"),false); f.classList.remove("lkf"); f.classList.add("unl"); pen.hidden=true; acts.hidden=false; f._lkOpen=true; };
+      const ok=()=>{ f.classList.toggle("edited", c.value!==old); lock(); f._lkOpen=false; };
+      const no=()=>{ if(c.value!==old){ c.value=old; fire(c); } lock(); f._lkOpen=false; };
+      f._lkUnlock=()=>{ if(!f._lkOpen) open(); };
+      pen.onclick=e=>{ e.preventDefault(); e.stopPropagation(); open(); const t=txt(); t.focus(); try{ t.select?.(); }catch{} };
+      acts.querySelector(".ok").onclick=e=>{ e.preventDefault(); e.stopPropagation(); ok(); };
+      acts.querySelector(".no").onclick=e=>{ e.preventDefault(); e.stopPropagation(); no(); };
+      txt().addEventListener("keydown",e=>{ if(!f._lkOpen) return; if(e.key==="Enter" && c.tagName!=="TEXTAREA"){ e.preventDefault(); e.stopPropagation(); ok(); } else if(e.key==="Escape"){ e.preventDefault(); e.stopPropagation(); no(); } });
     });
-    sec.querySelector("[data-unlockall]")?.addEventListener("click", e=>{ e.currentTarget.remove(); sec.querySelectorAll(".pen").forEach(b=>b.click()); });
+    sec.querySelector("[data-unlockall]")?.addEventListener("click", e=>{ e.currentTarget.remove(); sec.querySelectorAll(".f.lkf").forEach(f=>f._lkUnlock?.()); });
   });
 }
 function projDialog(p){
