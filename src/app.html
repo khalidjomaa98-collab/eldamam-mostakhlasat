@@ -2569,6 +2569,26 @@ td.sel{cursor:pointer}
   .mvr-m{grid-column:2;flex-direction:row;align-items:baseline;gap:10px;justify-content:flex-start}
   .stc-c{flex-basis:190px}
 }
+/* ===== كشف المتابعة: شريط ثابت + تابات + طي التوزيع ===== */
+.sat-stick{position:sticky;top:var(--mbarH,0px);z-index:20;display:flex;flex-direction:column;gap:8px;padding:6px 0 8px;margin:-6px 0 -8px;background:linear-gradient(var(--bg) 85%,transparent)}
+.qtabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.qtabs::-webkit-scrollbar{display:none}
+.qtab{all:unset;cursor:pointer;flex:none;display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:.84rem;font-weight:600;white-space:nowrap}
+.qtab b{min-width:22px;padding:1px 7px;border-radius:999px;background:var(--sunk);text-align:center;font-size:.78rem}
+.qtab.bad b{background:color-mix(in srgb,var(--bad) 14%,var(--surface));color:var(--bad)}
+.qtab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink,#fff)}
+.qtab[aria-selected="true"] b{background:rgba(255,255,255,.22);color:inherit}
+.qtab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pipe-tg{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.pipe-tg svg.i{width:16px;height:16px;transition:transform .15s;transform:rotate(180deg)}
+.pipe-tg[aria-expanded="false"] svg.i{transform:rotate(90deg)}
+.pipe-mini{display:none;gap:12px;flex-wrap:wrap}
+.pipe-mini span{display:inline-flex;align-items:center;gap:5px}
+.pipe-mini i{width:8px;height:8px;border-radius:50%}
+.sumx.pipe-closed .pipe-mini{display:inline-flex}
+.sumx.pipe-closed :is(#satPipe,#satPipeE,#mxWrap,#mxToggle,.pipe-hint){display:none!important}
+.msort{display:inline-flex}
+@media (max-width:700px){ .sat-stick{margin-inline:-16px;padding-inline:16px} .pipe-mini{font-size:.74rem;gap:8px} }
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2682,7 +2702,10 @@ td.sel{cursor:pointer}
         <div><h1 id="satTitle">كشف المتابعة</h1><div class="sub" id="satSub"></div></div>
         <div class="tools"><button class="btn" id="satXlsx" hidden><svg class="i"><use href="#i-dl"/></svg>Excel</button><button class="btn" id="satHtml" hidden><svg class="i"><use href="#i-print"/></svg>تقرير PDF</button></div>
       </div>
+      <div class="sat-stick">
       <div class="qbar"><svg class="i"><use href="#i-search"/></svg><input id="sQ" type="search" placeholder="ابحث في الكشف: اسم المشروع، رقم العقد، الكود الموحد، المقايسة، الموقع، رقم المستخلص، الملاحظات…" aria-label="بحث في كشف المتابعة" autocomplete="off"><span class="qcnt" id="sQn" hidden></span></div>
+        <div class="qtabs" id="satTabs" role="tablist" aria-label="عرض سريع"></div>
+      </div>
       <div class="pres" id="sPresets"></div>
       <button class="btn fbtn" id="fToggle" aria-expanded="false"><svg class="i"><use href="#i-list"/></svg><span id="fToggleTxt">الفلاتر</span></button>
       <div class="fbar fold" id="satFbar">
@@ -2700,12 +2723,12 @@ td.sel{cursor:pointer}
       <section class="panel sumx">
         <div class="sx-nums" id="satKpis"></div>
         <div class="sx-sec">
-          <div class="sx-h"><h2>توزيع المستخلصات على الأماكن</h2><span class="muted">اضغط على المكان لعرض مستخلصاته فقط</span><button type="button" class="btn sm ghost" id="mxToggle" aria-expanded="false" style="margin-inline-start:auto">جدول الإدارة × المكان</button></div>
+          <div class="sx-h"><button type="button" class="pipe-tg" id="pipeTg" aria-expanded="false"><svg class="i"><use href="#i-up"/></svg><h2>توزيع المستخلصات على الأماكن</h2></button><span class="muted pipe-mini" id="pipeMini"></span><span class="muted pipe-hint">اضغط على المكان لعرض مستخلصاته فقط</span><button type="button" class="btn sm ghost" id="mxToggle" aria-expanded="false" style="margin-inline-start:auto">جدول الإدارة × المكان</button></div>
           <div class="pipe" id="satPipe"></div>
           <div class="pipe-empty" id="satPipeE"></div>
         </div>
         <div class="tscroll" id="mxWrap" hidden><table class="mx" id="satMatrix"></table></div>
-        <div class="sx-alerts"><span class="sx-lbl">تحتاج متابعة</span><div id="satAlerts"></div></div>
+        <div class="sx-alerts" hidden><span class="sx-lbl">تحتاج متابعة</span><div id="satAlerts"></div></div>
       </section>
       <div id="satList" style="display:flex;flex-direction:column;gap:22px"></div>
     </div>
@@ -3393,7 +3416,12 @@ function renderSat(){
   const nLate = base.filter(([v,k])=>k.late).length, nIns = base.filter(([v,k])=>insBad(k)).length, nMp = base.filter(([v])=>v.mpStatus==="لم يتم الاستخراج").length;
   const al = (key, n, bad, t) => (n||f.alert===key) ? `<button type="button" class="fch ${bad?"bad":""}" data-alert="${key}" aria-pressed="${f.alert===key}"><b class="num">${n}</b>${t}<svg class="i xx" aria-hidden="true"><use href="#i-x"/></svg></button>` : "";
   const alHtml = al("late",nLate,true,`متأخر أكثر من ${num(cfg.lateDays||30)} يوم`) + al("noIns",nIns,true,"بدون شهادة تأمينات") + al("noMp",nMp,false,"قوة عاملة لم تُستخرج") + al("ready",base.filter(([v])=>v.readyPay==="نعم"&&v.paid!=="نعم").length,false,"تمت التسوية") + al("unpaid",unpaid.length,false,"لم يُصرف");
+  { const by=new Map(); unpaid.forEach(([v,k])=>{ if(k.stage&&k.stage!=="—") by.set(k.stage,(by.get(k.stage)||0)+1); });
+    $("#pipeMini").innerHTML = [...by].sort((a,b)=>b[1]-a[1]).slice(0,4).map(([st,n])=>`<span><i style="background:${stageColor(st)}"></i>${esc(st)} <b class="num">${n}</b></span>`).join(""); }
   $("#satAlerts").innerHTML = alHtml || `<span class="muted small">${ico("check")} لا توجد تنبيهات</span>`;
+  { const nReady=base.filter(([v])=>v.readyPay==="نعم"&&v.paid!=="نعم").length;
+    const tb=(key,n,t,bad)=>`<button type="button" class="qtab ${bad&&n?"bad":""}" role="tab" data-alert="${key}" aria-selected="${(f.alert||"")===key}">${t}<b class="num">${n}</b></button>`;
+    $("#satTabs").innerHTML = tb("",base.length,"الكل") + tb("late",nLate,`متأخر +${num(cfg.lateDays||30)} يوم`,true) + tb("noIns",nIns,"واقف على شهادة التأمينات",true) + tb("noMp",nMp,"قوة عاملة لم تُستخرج") + tb("ready",nReady,"جاهز للصرف (تمت التسوية)") + tb("unpaid",unpaid.length,"لم يُصرف"); }
 
   // pipeline
   { const fs=f.stage; f.stage=""; const all=satBase(true).map(v=>[v,calc(v)]); f.stage=fs;
@@ -3429,10 +3457,10 @@ function renderSat(){
   { const qn=$("#sQn"); qn.hidden=!state.satQ; if(state.satQ) qn.textContent = `${ks.length} نتيجة`; }
   const box = $("#satList");
   if(!ks.length){ box.innerHTML = `<div class="panel"><div class="empty">${ico("sat")}<div>${state.loaded.i?(base.length?"لا توجد مستخلصات لهذا التنبيه.":"لا توجد مستخلصات في الكشف بالفلاتر الحالية."):"جارٍ التحميل…"}</div></div></div>`; return; }
-  const LV = satLevels(f.group); let n=0;
+  const LV = state.satSort.k==="prio" ? [] : satLevels(f.group); let n=0; /* «الأهم أولًا» بيرتب الكشف كله مرة واحدة من غير تجميع */
   const cur2 = `<small style="opacity:.7">${esc(cfg.currency)}</small>`;
   const build = (arr, li, ptot) => {
-    if(li>=LV.length){ const SS=state.satSort, sv=SS.k==="net"?(x=>num(x[1].net)):SS.k==="days"?(x=>x[1].days??-1):SS.k==="step"?(x=>{ const st=invSteps(x[0],x[1]); let l=-1; st.forEach((y,i)=>{ if(y.st==="y") l=i; }); return l*10+st.filter(y=>y.st!=="n").length; }):null;
+    if(li>=LV.length){ const SS=state.satSort, sv=SS.k==="prio"?(x=>(x[1].late?2:0)*1e14+(insBad(x[1])?1:0)*1e13+Math.max(0,x[1].days??0)*1e9+Math.min(num(x[1].net),9e8)):SS.k==="net"?(x=>num(x[1].net)):SS.k==="days"?(x=>x[1].days??-1):SS.k==="step"?(x=>{ const st=invSteps(x[0],x[1]); let l=-1; st.forEach((y,i)=>{ if(y.st==="y") l=i; }); return l*10+st.filter(y=>y.st!=="n").length; }):null;
       const srt=arr.slice().sort((a,b)=> (sv ? (sv(a)-sv(b))*SS.d : 0) || (num(a[1].p?.order)-num(b[1].p?.order)) || (num(a[0].order)-num(b[0].order))); let lastP=null;
       return srt.map(([v,k],i)=>{ const newp = !sv && lastP!==null && lastP!==v.projectId; lastP=v.projectId; return satRow(v,k,++n,i,newp); }).join(""); }
     const L=LV[li], gs=uniq(arr.map(L.key)).sort(lvOrd(L));
@@ -3442,7 +3470,7 @@ function renderSat(){
       return li===0 ? `<tbody>${head}${inner}</tbody>` : head+inner; }).join("");
   };
   const body = build(ks, 0);
-  box.innerHTML = `<section class="panel"><div class="hd"><h2>الكشف التفصيلي</h2>${coLegend()}<label class="msort"><span>ترتيب</span><select data-msort>${[["","افتراضي"],["net:-1","القيمة: الأكبر"],["net:1","القيمة: الأصغر"],["days:-1","الأيام: الأكتر"],["step:-1","المرحلة: الأبعد"],["step:1","المرحلة: الأقرب"]].map(([v,l])=>`<option value="${v}" ${(state.satSort.k?state.satSort.k+":"+state.satSort.d:"")===v?"selected":""}>${l}</option>`).join("")}</select></label><span class="muted">اضغط على أي مستخلص لفتحه وتعديله</span></div><div class="tscroll"><table class="rt satt"><colgroup><col class="c-sel"><col class="c-idx"><col class="c-pj"><col class="c-amt"><col class="c-st"><col class="c-stg"><col class="c-dy"></colgroup>
+  box.innerHTML = `<section class="panel"><div class="hd"><h2>الكشف التفصيلي</h2>${coLegend()}<label class="msort"><span>ترتيب</span><select data-msort>${[["","افتراضي (حسب المشروع)"],["prio:-1","الأهم أولًا"],["net:-1","القيمة: الأكبر"],["net:1","القيمة: الأصغر"],["days:-1","الأيام: الأكتر"],["step:-1","المرحلة: الأبعد"],["step:1","المرحلة: الأقرب"]].map(([v,l])=>`<option value="${v}" ${(state.satSort.k?state.satSort.k+":"+state.satSort.d:"")===v?"selected":""}>${l}</option>`).join("")}</select></label><span class="muted">اضغط على أي مستخلص لفتحه وتعديله</span></div><div class="tscroll"><table class="rt satt"><colgroup><col class="c-sel"><col class="c-idx"><col class="c-pj"><col class="c-amt"><col class="c-st"><col class="c-stg"><col class="c-dy"></colgroup>
     <thead><tr>${state.canWrite?selHead:"<th></th>"}<th class="c idxh">م</th><th class="pjh">المشروع</th><th>${ssH("net","المستخلص والقيمة")}</th><th>${ssH("step","الموقف")}</th><th>مكان المستخلص</th><th class="c">${ssH("days","أيام")}</th></tr></thead>
     ${body}
     <tfoot><tr><td></td><td class="idx"></td><td>الإجمالي · ${ks.length} مستخلص</td><td><b>${money(sum(ks,([v,k])=>k.net))}</b> <small class="faint">${esc(cfg.currency)}</small></td><td colspan="3"></td></tr></tfoot></table></div></section>`;
@@ -5975,6 +6003,7 @@ $("#acXlsx").onclick=async()=>{ try{ const X=await loadXLSX();
   await offer(`سجل الحركات اليومي ${today()}.xlsx`, new Uint8Array(X.write(wb,{bookType:"xlsx",type:"array"}))); }catch{ toast("تعذر تجهيز ملف Excel. تحقق من الاتصال وحاول مرة أخرى."); } };
 { let qt; $("#sQ").addEventListener("input", e=>{ clearTimeout(qt); qt=setTimeout(()=>{ state.satQ=e.target.value; satChanged(); }, 140); });
   $("#sQ").addEventListener("keydown", e=>{ if(e.key==="Escape" && e.target.value){ e.preventDefault(); e.stopPropagation(); e.target.value=""; state.satQ=""; satChanged(); } }); }
+$("#satTabs").onclick=e=>{ const b=e.target.closest("[data-alert]"); if(b){ state.satFilter.alert = b.dataset.alert; satChanged(); } };
 $("#satAlerts").onclick=e=>{ const b=e.target.closest("[data-alert]"); if(b){ state.satFilter.alert = state.satFilter.alert===b.dataset.alert ? "" : b.dataset.alert; satChanged(); } };
 ["#iSearch","#iCompany","#iDept","#iPaid","#iType","#iSatOnly","#iMpOnly","#iGroup","#iStage"].forEach(s=>$(s).addEventListener("input",()=>{clearSel();state.invLimit=60;memo.clear();renderInv();}));
 $("#invMoreBtn").onclick=()=>{ state.invLimit+=60; memo.clear(); renderInv(); };
@@ -6120,6 +6149,13 @@ function openSkin(){
   const h=pop.offsetHeight; pop.style.top=Math.max(8, r.top-h-8)+"px";
 }
 $("#btnSkin").addEventListener("click", openSkin);
+/* كشف المتابعة: طي/فتح «التوزيع على الأماكن» (بيتفتكر على الجهاز) + ارتفاع الشريط العلوي للموبايل */
+{ const sec=document.querySelector("#v-sat .sumx"), tg=$("#pipeTg"); let open=false; try{ open=localStorage.getItem("satPipeOpen")==="1"; }catch{}
+  const ap=()=>{ sec.classList.toggle("pipe-closed",!open); tg.setAttribute("aria-expanded",String(open)); };
+  tg.onclick=()=>{ open=!open; try{ localStorage.setItem("satPipeOpen",open?"1":"0"); }catch{} ap(); }; ap();
+  const mh=()=>{ const m=document.querySelector(".mbar"); document.documentElement.style.setProperty("--mbarH", (m&&m.offsetHeight&&getComputedStyle(m).position==="sticky"?m.offsetHeight:0)+"px"); };
+  addEventListener("resize",mh); mh(); try{ new ResizeObserver(mh).observe(document.querySelector(".mbar")); }catch{} }
+
 /* ===== التحديد أسهل: الدوس في أي حتة في خانة المربع بيحدد، ولو في حاجة متحددة الدوس على السطر/الكارت كله بيحدده،
    وعلى الموبايل الضغطة الطويلة على أي سطر بتبدأ التحديد ===== */
 {
