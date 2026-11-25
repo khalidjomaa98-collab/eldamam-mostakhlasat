@@ -2486,6 +2486,12 @@ html{-webkit-tap-highlight-color:transparent}
   .ph .tools>[hidden]{display:none!important}
 }
 #plTable tr.pl-grp td span::before{content:"· ";color:var(--faint)}
+/* كروت الموبايل: أي شارة طويلة تنزل سطر جديد جوه خانتها بدل ما تركب على اللي جنبها */
+@media (max-width:820px){
+  table.dt tbody td{min-width:0}
+  table.dt tbody td :is(.cos,.chip,.ist-s,.stgl,.certp){white-space:normal;max-width:100%;overflow-wrap:anywhere}
+}
+@media (max-width:820px){ #coTable:not(#_):not(#_) tbody tr td{padding:4px 8px} #coTable:not(#_):not(#_) tbody tr td:first-child{padding-top:8px} }
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
