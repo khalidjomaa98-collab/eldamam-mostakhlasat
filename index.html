@@ -4188,7 +4188,7 @@ function renderMp(){
     rows.map((r,i)=>{ const v=mpList[i], k=r.k, rd=mpReady(v); return `<tr class="cor ${rd?"ready":""} ${state.sel.has(v.id)?"picked":""}" style="--cc:${coVar(k.company)};cursor:pointer" data-mp="${esc(v.id)}">${state.canWrite?selCell(v.id):"<td></td>"}<td class="pn">${rd?readyChip():""}${esc(pName(k.p,true))}<div class="sub2">${coTag(k.company)}${realId(k.p?.contractNo)?` · عقد <span class="code">${esc(k.p.contractNo)}</span>`:""}</div></td><td><span class="certp ${k.work?"":"ret"}">${esc(certLabel(v))}</span><div class="sub2 num">${fmt(k.net)}</div></td><td>${mpChip(v)}${v.mpPaidDate?`<div class="sub2">سُدد <span class="dte">${dmy(v.mpPaidDate)}</span></div>`:""}${v.mpNote?`<div class="nt2" title="${esc(v.mpNote)}">${ico("msg")}<span>${esc(v.mpNote)}</span></div>`:""}</td>
     <td class="small">${r.byContract?"إجمالي العقد":"كل مستخلص"}</td><td class="n">${money(r.base)}</td>
     <td class="n"><span class="num">${pctTxt(r.wage)}</span>${r.wageOwn?"":` <span class="chip c-warn">افتراضي</span>`}</td>
-    <td class="n">${r.prevPaid?money(r.prevPaid):"<span class='faint'>—</span>"}</td><td class="n">${money(r.expected)}</td><td class="n">${has(v.mpEstimate)?money(v.mpEstimate):"<span class='faint'>—</span>"}</td><td class="n"><b>${money(r.approved)}</b></td></tr>`; }).join("")
+    <td class="n">${r.prevPaid?money(r.prevPaid):"<span class='faint'>—</span>"}</td><td class="n">${money(r.expected)}</td><td class="n">${has(v.mpEstimate)?money(v.mpEstimate):"<span class='faint'>—</span>"}</td><td class="n"><b>${money(r.approved)}</b>${state.mpView==="arch"&&state.canWrite?`<div><button type="button" class="btn sm ghost unarch" data-unarch-mp="${esc(v.id)}">${ico("undo")}رجوع للجارية</button></div>`:""}</td></tr>`; }).join("")
   }</tbody><tfoot><tr><td colspan="10">الإجمالي</td><td class="n">${money(tot)}</td></tr></tfoot>`;
 }
 
@@ -4491,10 +4491,38 @@ function rebase(list, id, orig, data){
     if(Array.isArray(data[k]) && Array.isArray(L[k]) && S(data[k])!==S(o[k]) && S(L[k])!==S(o[k])){ const seen=new Set(); out[k]=[...L[k],...data[k]].filter(x=>{ const t=S(x); if(seen.has(t)) return false; seen.add(t); return true; }); } }
   return out;
 }
+/* لما شهادة القوة العاملة أو التأمينات تطلع: الحالة تتحدث لوحدها، والوضع الحالي «تم الانتهاء»، والقديم يتحفظ عشان «رجوع للجارية» */
+const appendLine = (t, line) => (t && String(t).trim()) ? `${String(t).trim()}\n${line}` : line;
+let syncHold = false;
+function autoClose(col, data, prev){
+  if(!data) return data;
+  if(col==="invoices" && data.mpStatus==="تم الاستخراج" && (prev?.mpStatus||"")!=="تم الاستخراج"){
+    data = {...data, mpStatusBefore: prev?.mpStatus||"", mpPaidBefore: prev?.mpPaidDate||"", mpPayReady:false,
+      mpPaidDate: data.mpPaidDate || today(), mpNote: appendLine(data.mpNote, `تم الانتهاء — اتطلعت شهادة القوة العاملة بتاريخ ${dmy(today())}`)};
+  }
+  if(col==="insurance" && /تم استخراج/.test(data.status||"") && !/تم استخراج/.test(prev?.status||"")){
+    data = {...data, statusBefore: prev?.status||"", statusTextBefore: prev?.statusText||"", payReady:false, closedAt: today(),
+      statusText: `تم الانتهاء — اتطلعت الشهادة بتاريخ ${dmy(today())}`, log: [...(data.log||[]), {date:today(), by:myId||"", text:"اتقفل الملف تلقائي: اتطلعت شهادة التأمينات — اتنقل للأرشيف"}]};
+  }
+  return data;
+}
+async function syncLinked(col, id, data, prev){
+  if(syncHold || !data) return;
+  // المستخلص: الشهادة بقت «تم استخراجها» ← ملف التأمينات المربوط يتقفل
+  if(col==="invoices" && data.insStatus==="نعم" && (prev?.insStatus||"")!=="نعم"){
+    const r=insForInv(id); if(r && !/تم استخراج/.test(r.status||"")) await save(db.collection("insurance").doc(r.id), {...stripId(r), status:"تم استخراج الشهادة", invInsBefore: prev?.insStatus||"", updatedAt:new Date().toISOString(), updatedBy:myId||""});
+  }
+  // ملف التأمينات اتقفل ← شهادة المستخلص المربوط «تم استخراجها»
+  if(col==="insurance" && /تم استخراج/.test(data.status||"") && !/تم استخراج/.test(prev?.status||"") && data.invoiceId){
+    const v=state.invoices.find(x=>x.id===data.invoiceId);
+    if(v && v.insStatus!=="نعم"){ await save(db.collection("insurance").doc(id), {...data, invInsBefore: v.insStatus||""}); await save(db.collection("invoices").doc(v.id), {...stripId(v), insStatus:"نعم", insDate: v.insDate||today(), updatedAt:new Date().toISOString(), updatedBy:myId||""}); }
+  }
+}
 async function save(ref, data){
   if(ref.collection==="invoices" && data && data.paid==="نعم" && data.showSat) data = {...data, showSat:false};
+  const prev0 = ref.peek ? ref.peek() : null; data = autoClose(ref.collection, data, prev0);
   const cap=undoCap; undoAdd(cap, ref);
-  try { await ref.set(data); return true; }
+  try { await ref.set(data); try{ await syncLinked(ref.collection, ref.id, data, prev0); }catch{} return true; }
   catch(e){ if(cap) cap.fail=true;
     if(e?.code==="invalid_argument"){ state.canWrite=false; render(); toast("لا تملك صلاحية التعديل على هذه البيانات."); }
     else if(e?.code==="quota_exceeded") toast("امتلأت مساحة التخزين.");
@@ -4656,7 +4684,10 @@ function invDialog(v, projectId){
       if(dup){ toast(`المستخلص «${certLabel(data)}» مسجل من قبل على نفس العقد`); return; }
       data.updatedBy = myId||"";
       const ref = v ? db.collection("invoices").doc(v.id) : db.collection("invoices").doc();
-      if(await save(ref, v ? rebase(state.invoices, v.id, v, data) : data)){
+      const certNew = insF0 && data.insStatus==="نعم" && (v?.insStatus||"")!=="نعم" && !/تم استخراج/.test(insF0.status||"");
+      if(certNew){ fData = {...(fData||{...stripId(insF0), updatedAt:new Date().toISOString(), updatedBy:myId||""}), status:"تم استخراج الشهادة", invInsBefore: v?.insStatus||""}; }
+      syncHold = !!fData; let okInv; try{ okInv = await save(ref, v ? rebase(state.invoices, v.id, v, data) : data); } finally { syncHold=false; }
+      if(okInv){
         if(fData && await save(db.collection("insurance").doc(insF0.id), rebase(state.ins, insF0.id, insF0, fData))){
           const fch=[...diffList(insF0,fData,INS_SPEC), ...newLogs(insF0.log,fData.log)];
           logAct(`عدّل ملف تأمينات ${pName(p,true)} · ${certLabel(data)} (من صفحة المستخلص)${fch.length?" — "+fch.join(" | "):""}`, ref.id, p.id); }
@@ -5828,7 +5859,7 @@ function renderIns(){
         <td><span class="num">${esc(realId(p.insFileNo)||r.fileNo||"—")}</span>${reqs.length?`<div class="sub2" title="${esc(reqs.map(x=>x.no+(x.subject?" — "+x.subject:"")).join("\n"))}">${reqs.length} طلب</div>`:""}</td>
         <td class="n">${num(r.amountDue)?`<b>${money(r.amountDue)}</b>`:"<span class='faint'>—</span>"}</td>
         <td class="nx">${r.nextDate?`<span class="dte ${late?"ins-late":""}">${dmy(r.nextDate)}</span>`:"<span class='faint'>—</span>"}${r.owner?`<div class="sub2">${esc(r.owner)}</div>`:""}</td>
-        <td class="ins-sm">${txt?`<div class="ins-1" title="${esc(txt)}">${esc(txt)}</div>`:""}${r.required?`<div class="sub2 ins-1" title="${esc(r.required)}">المطلوب: ${esc(r.required)}</div>`:""}${!txt&&!r.required?"<span class='faint'>—</span>":""}</td></tr>`; }).join("")
+        <td class="ins-sm">${txt?`<div class="ins-1" title="${esc(txt)}">${esc(txt)}</div>`:""}${r.required?`<div class="sub2 ins-1" title="${esc(r.required)}">المطلوب: ${esc(r.required)}</div>`:""}${!txt&&!r.required?"<span class='faint'>—</span>":""}${state.insFilter.status==="__done"&&state.canWrite?`<div><button type="button" class="btn sm ghost unarch" data-unarch-ins="${esc(r.id)}">${ico("undo")}رجوع للجارية</button></div>`:""}</td></tr>`; }).join("")
     }</tbody><tfoot><tr><td colspan="5">الإجمالي</td><td class="n">${money(totDue)}</td><td colspan="2"></td></tr></tfoot>`;
   }
   const sugg = state.invoices.filter(v=>calc(v).insLabel==="لم يتم استخراج الشهادة" && !insForInv(v.id)).sort((a,b)=>num(b.order)-num(a.order));
@@ -6643,6 +6674,26 @@ function openSkin(){
   const h=pop.offsetHeight; pop.style.top=Math.max(8, r.top-h-8)+"px";
 }
 $("#btnSkin").addEventListener("click", openSkin);
+/* رجوع من الأرشيف للجارية: الحالة والوضع الحالي بيرجعوا زي ما كانوا قبل القفل التلقائي */
+async function unarchiveIns(r){
+  const v=state.invoices.find(x=>x.id===r.invoiceId), cap={list:[]}; undoCap=cap;
+  try{
+    if(v && v.insStatus==="نعم") await save(db.collection("invoices").doc(v.id), {...stripId(v), insStatus: r.invInsBefore && r.invInsBefore!=="نعم" ? r.invInsBefore : "لا", updatedAt:new Date().toISOString(), updatedBy:myId||""});
+    const ok=await save(db.collection("insurance").doc(r.id), {...stripId(r), status: r.statusBefore && !/تم استخراج/.test(r.statusBefore) ? r.statusBefore : "مطلوب معرفة الموقف", statusText: r.statusTextBefore||"", closedAt:"",
+      log:[...(r.log||[]), {date:today(), by:myId||"", text:"اترجع من الأرشيف للجارية"}], updatedAt:new Date().toISOString(), updatedBy:myId||""});
+    if(ok){ if(!cap.bad&&cap.list.length) undoNext={list:cap.list,at:Date.now()}; toast("الملف رجع للجارية"); logAct(`رجّع ملف تأمينات ${pName(proj(r.projectId)||{},true)} من الأرشيف`, r.invoiceId||"", r.projectId); }
+  } finally { undoCap=null; }
+}
+async function unarchiveMp(v){
+  const ref=db.collection("invoices").doc(v.id), cap={list:[]}; undoAdd(cap, ref);
+  if(await save(ref, {...stripId(v), mpStatus: v.mpStatusBefore && v.mpStatusBefore!=="تم الاستخراج" ? v.mpStatusBefore : "لم يتم الاستخراج", mpPaidDate: v.mpPaidBefore||"", updatedAt:new Date().toISOString(), updatedBy:myId||""})){
+    if(!cap.bad&&cap.list.length) undoNext={list:cap.list,at:Date.now()}; toast(`${certLabel(v)} رجع لكشف القوة العاملة الجاري`); logAct(`رجّع ${certLabel(v)} من أرشيف القوة العاملة`, v.id, v.projectId); }
+}
+document.addEventListener("click", e=>{
+  const a=e.target.closest("[data-unarch-ins]"); if(a){ e.stopPropagation(); const r=state.ins.find(x=>x.id===a.dataset.unarchIns); if(r) confirmBtn(a,"اضغط تاني للتأكيد",()=>unarchiveIns(r)); return; }
+  const m=e.target.closest("[data-unarch-mp]"); if(m){ e.stopPropagation(); const v=state.invoices.find(x=>x.id===m.dataset.unarchMp); if(v) confirmBtn(m,"اضغط تاني للتأكيد",()=>unarchiveMp(v)); return; }
+}, true);
+
 /* ===== كليك يمين: قايمة إجراءات حسب العنصر (مستخلص / مشروع / ملف تأمينات) في كل البرنامج =====
    خانات الكتابة والكلام المحدد والنوافذ بيفضل فيها كليك يمين بتاع المتصفح عادي */
 {
@@ -6671,7 +6722,7 @@ $("#btnSkin").addEventListener("click", openSkin);
         + (w?sep + st("تم الاستخراج") + st("لم يتم الاستخراج") + st("لا حاجة")
           + item("mpReady",v.mpPayReady?"x":"money",v.mpPayReady?"شيل «جاهز للدفع»":"جاهز فعليًا للدفع")
           + (v.mpPaidDate?item("mpUnpaid","undo",`إلغاء تاريخ السداد (${dmy(v.mpPaidDate)})`):item("mpPaid","check","اتسدد المبلغ النهارده"))
-          + item("mpClaim","print","نموذج مطالبة قوة عاملة (PDF)") + item("mpOff","x","إزالة من كشف القوة العاملة"):"")
+          + item("mpClaim","print","نموذج مطالبة قوة عاملة (PDF)") + (v.mpPaidDate&&v.mpStatus==="تم الاستخراج"?item("unarchMp","undo","رجوع للجارية (من الأرشيف)"):"") + item("mpOff","x","إزالة من كشف القوة العاملة"):"")
         + sep + item("copyProj","doc","نسخ اسم المشروع") + (realId(p.contractNo)?item("copyNo","doc","نسخ رقم العقد"):"")
         + (box?sep+item("sel","list",box.checked?"إلغاء التحديد":"تحديد"):""); }
     if(tg.kind==="inv"){ const v=state.invoices.find(x=>x.id===tg.id); if(!v) return "";
@@ -6695,7 +6746,7 @@ $("#btnSkin").addEventListener("click", openSkin);
         + item("openIns","shield","فتح ملف التأمينات") + (iv?item("openInvOfIns","doc","فتح المستخلص"):"") + (p.id?item("openProj","bld","فتح المشروع"):"")
         + (w?sep + `<div class="ctx-sub">غيّر الحالة</div><div class="ctx-sts">${sts.map(x=>`<button type="button" role="menuitem" class="ctx-st ${x===r.status?"on":""}" data-ctx="insSt" data-v="${esc(x)}">${esc(x)}</button>`).join("")}</div>`
           + item("insReady",r.payReady?"x":"money",r.payReady?"شيل «جاهز للدفع»":"جاهز فعليًا للدفع")
-          + item("insClaim","print","نموذج مطالبة تأمينات (PDF)"):"")
+          + item("insClaim","print","نموذج مطالبة تأمينات (PDF)") + (insCertDone(r)?item("unarchIns","undo","رجوع للجارية (من الأرشيف)"):""):"")
         + sep + (fno?item("copyFile","doc","نسخ رقم الملف (CS)"):"") + item("copyProj","doc","نسخ اسم المشروع")
         + (box?sep+item("isel","list",box.checked?"إلغاء التحديد":"تحديد"):""); }
     return ""; };
@@ -6730,9 +6781,12 @@ $("#btnSkin").addEventListener("click", openSkin);
     else if(a==="insSt"||a==="insReady"){
       const ch = a==="insSt" ? {status:b.dataset.v} : {payReady:!r.payReady};
       const txt = a==="insSt" ? `حالة ملف التأمينات: ${b.dataset.v}` : (r.payReady?"اتشال «جاهز للدفع»":"اتعلّم «جاهز للدفع»");
-      const ref=db.collection("insurance").doc(r.id), cap={list:[]}; undoAdd(cap, ref);
-      if(await save(ref, {...stripId(r), ...ch, updatedAt:new Date().toISOString(), updatedBy:myId||""})){ if(!cap.bad&&cap.list.length) undoNext={list:cap.list,at:Date.now()}; toast(`${txt}${a==="insSt"&&/تم استخراج/.test(b.dataset.v)?" — اتنقل للأرشيف":""}`); logAct(`${txt} · ${pName(p||{},true)}`, r.invoiceId||"", r.projectId); } }
+      const ref=db.collection("insurance").doc(r.id), cap={list:[]}; undoCap=cap; let okS=false;
+      try{ okS = await save(ref, {...stripId(r), ...ch, updatedAt:new Date().toISOString(), updatedBy:myId||""}); } finally { undoCap=null; }
+      if(okS){ if(!cap.bad&&cap.list.length) undoNext={list:cap.list,at:Date.now()}; toast(`${txt}${a==="insSt"&&/تم استخراج/.test(b.dataset.v)?" — اتنقل للأرشيف":""}`); logAct(`${txt} · ${pName(p||{},true)}`, r.invoiceId||"", r.projectId); } }
     else if(a==="insClaim") claimDialog("ins",[r],true);
+    else if(a==="unarchIns") unarchiveIns(r);
+    else if(a==="unarchMp") unarchiveMp(v);
     else if(a==="satOn"||a==="satOff"){ const on=a==="satOn"; if(await save(db.collection("invoices").doc(v.id), {...stripId(v), showSat:on, updatedAt:new Date().toISOString(), updatedBy:myId||""})){ toast(on?`اتضاف ${certLabel(v)} لكشف المتابعة`:`اتشال ${certLabel(v)} من كشف المتابعة`); logAct(`${on?"أضاف":"شال"} ${certLabel(v)} ${on?"لـ":"من"} كشف المتابعة`, v.id, v.projectId); } }
     else if(a==="copyProj") copy(p?(p.name||p.shortName||""):"", "اتنسخ اسم المشروع");
     else if(a==="copyNo") copy(p?.contractNo||"", "اتنسخ رقم العقد");
