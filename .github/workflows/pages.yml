@@ -10,21 +10,29 @@ permissions:
   pages: write
   id-token: write
 
+# نشر واحد في المرة، ومنستناش نلغي نشر شغال عشان ما يتقطعش في النص
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  # المرحلة 1: تجهيز ملفات الموقع ورفعها
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site
+
+  # المرحلة 2: النشر — مبتبدأش غير بعد ما المرحلة 1 تخلص خالص والملف يتسجل
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v5
