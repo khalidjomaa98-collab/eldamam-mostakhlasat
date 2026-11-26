@@ -2334,7 +2334,8 @@ html:root[data-font="tajawal"]{--f-display:"Tajawal",Tahoma,sans-serif;--f-body:
   .fbar.mf .mfbtn .mf-n[hidden]{display:none}
   .fbar.mf .mfbtn[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
   .fbar.mf:not(.open){display:flex!important;flex-wrap:nowrap;gap:8px;align-items:end}
-  .fbar.mf:not(.open)>*:not(.mfbtn):not(input[type="search"]):not(:has(input[type="search"])){display:none!important}
+  .fbar.mf:not(.open)>*:not(.mfbtn):not(input[type="search"]):not(:has(input[type="search"])):not(.arch-seg){display:none!important}
+  .fbar.mf:not(.open):has(.arch-seg){flex-wrap:wrap}
   .fbar.mf:not(.open)>:is(input[type="search"],:has(input[type="search"])){flex:1 1 auto;min-width:0}
   .fbar.mf:not(.open):not(:has(input[type="search"])){justify-content:flex-start}
   .ph .sub:not([id]){display:none}
@@ -2647,6 +2648,32 @@ td.sel{cursor:pointer}
   #v-dq:not(#_):not(#_) table.dqt tbody tr.r>td:nth-child(4),#v-dq:not(#_):not(#_) table.dqt tbody tr.r>td:nth-child(6){text-align:end}
 }
 .kpi .dl.eq{display:block;margin:2px 0 0}
+/* ===== التأمينات والقوة العاملة: شريط ثابت + أرشيف + جدول متوازن + نافذة الملف ===== */
+#v-ins>.fbar,#v-mp>.fbar{position:sticky;top:var(--mbarH,0px);z-index:15}
+.fbar>input[type="search"]{height:44px;box-sizing:border-box;align-self:flex-end}
+.fbar .fi>select,.fbar .fi>input{height:44px;box-sizing:border-box}
+.arch-seg{align-self:flex-end;height:44px;flex:none}
+.arch-seg button{display:inline-flex;align-items:center;gap:6px}
+.arch-seg button b{font-size:.74rem;padding:0 6px;border-radius:999px;background:var(--sunk)}
+.arch-seg button svg.i{width:14px;height:14px}
+@media (min-width:1061px){
+  #insT{table-layout:fixed}
+  #insT th:nth-child(1){width:40px} #insT th:nth-child(2){width:19%} #insT th:nth-child(3){width:15%} #insT th:nth-child(4){width:13%}
+  #insT th:nth-child(5){width:11%} #insT th:nth-child(6){width:9%} #insT th:nth-child(7){width:10%}
+  #insT td.ins-sm .ins-1{white-space:normal;-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
+}
+/* الخانات في النوافذ: كل سطر يبدأ من فوق، والعنوان سطر واحد، والملاحظات الطويلة تحت الخانة */
+.dw .fields{align-items:start}
+.dw .fields>.f>label{white-space:nowrap;overflow:hidden}
+.dw .fields>.f>label>small{display:none}
+/* كليك يمين: الحالات */
+.ctx-sub{font-size:.72rem;color:var(--muted);padding:4px 10px 2px}
+.ctx-sts{display:flex;flex-wrap:wrap;gap:4px;padding:4px 6px 6px}
+.ctx-st{all:unset;cursor:pointer;font-size:.76rem;padding:4px 9px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.ctx-st:hover,.ctx-st:focus-visible{border-color:var(--accent);outline:none}
+.ctx-st.on{background:var(--accent);color:var(--accent-ink,#fff);border-color:var(--accent)}
+.ctx{max-width:330px}
+@media (max-width:700px){ .arch-seg{width:100%} .arch-seg button{flex:1;justify-content:center} }
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2882,6 +2909,7 @@ td.sel{cursor:pointer}
       <div class="kpis" id="insKpis"></div>
       <div class="rdy-bar" id="insReadyBar"></div>
       <div class="fbar">
+        <div class="seg arch-seg" id="insView" role="tablist" aria-label="الجارية أو الأرشيف"></div>
         <input id="nSearch" type="search" placeholder="ابحث برقم العقد أو الملف أو رقم الطلب أو الوضع…" aria-label="بحث">
         <label class="fi"><span>الحالة</span><select id="nStatusF"></select></label>
         <label class="fi"><span>المسؤول</span><select id="nOwner"></select></label>
@@ -2927,6 +2955,7 @@ td.sel{cursor:pointer}
       <div class="kpis" id="mpKpis"></div>
       <div class="rdy-bar" id="mpReadyBar"></div>
       <div class="fbar">
+        <div class="seg arch-seg" id="mpView" role="tablist" aria-label="الجارية أو الأرشيف"></div>
         <input id="mpSearch" type="search" placeholder="ابحث باسم المشروع أو رقم العقد أو المستخلص…" aria-label="بحث">
         <label class="fi"><span>الموقف</span><select id="mpStatusF"><option value="">الكل</option><option value="لم يتم الاستخراج">لم يتم الاستخراج</option><option value="تم الاستخراج">تم الاستخراج</option><option value="لا حاجة">لا حاجة</option><option value="-">لم يُحدَّث</option></select></label>
       </div>
@@ -3739,7 +3768,11 @@ function renderProj(){
 }
 
 function renderMp(){
-  const mpAll = state.invoices.filter(v=>v.showMp).sort((a,b)=>num(a.order)-num(b.order));
+  const mpArch = v => !!v.mpPaidDate && v.mpStatus==="تم الاستخراج";
+  const mpAll0 = state.invoices.filter(v=>v.showMp).sort((a,b)=>num(a.order)-num(b.order)), nArch=mpAll0.filter(mpArch).length;
+  const mpAll = mpAll0.filter(v=> state.mpView==="arch" ? mpArch(v) : !mpArch(v));
+  $("#mpView").innerHTML=`<button type="button" data-v="" aria-pressed="${state.mpView!=="arch"}">الجارية <b class="num">${mpAll0.length-nArch}</b></button><button type="button" data-v="arch" aria-pressed="${state.mpView==="arch"}">${ico("box")}الأرشيف <b class="num">${nArch}</b></button>`;
+  { const h=document.querySelector("#v-mp .panel .hd h2"); if(h) h.textContent = state.mpView==="arch" ? "أرشيف القوة العاملة (اتسدد وطلعت الشهادة)" : "كشف القوة العاملة"; }
   const nReady = mpAll.filter(mpReady).length, readyAmt = mpAll.filter(mpReady).reduce((a,v)=>a+mpRow(v).approved,0);
   const mq = qNorm($("#mpSearch")?.value||""), mst = $("#mpStatusF")?.value||"";
   const mpList = (state.mpReadyOnly ? mpAll.filter(mpReady) : mpAll).filter(v=>{
@@ -5383,6 +5416,8 @@ function renderIns(){
   { const rd=state.ins.filter(insReadyPay), amt=rd.reduce((a,r)=>a+num(r.amountDue),0); [...state.isel].forEach(id=>{ if(!state.ins.some(r=>r.id===id)) state.isel.delete(id); });
     $("#insReadyBar").innerHTML = `<button type="button" class="rdy-f ${state.insReadyOnly?"on":""}" data-insready aria-pressed="${state.insReadyOnly}">${ico("money")}جاهز فعليًا للدفع <b class="num">${rd.length}</b>${rd.length?`<span class="num">${fmt(amt)} ${esc(state.cfg.currency||"ج.م")}</span>`:""}</button>${rd.length?`<button type="button" class="btn sm" data-inselready>${ico("check")}تحديد الجاهز</button>`:""}${state.isel.size?`<button type="button" class="btn sm wa-send" data-inswa>${ico("wa")}واتساب (${state.isel.size})</button><button type="button" class="btn sm" data-insclaim>${ico("print")}نموذج مطالبة (${state.isel.size})</button><button type="button" class="btn sm ghost" data-inselclr>${ico("x")}إلغاء التحديد</button>`:`<span class="faint small">${rd.length?"حدّد الملفات من المربع اللي جنب اسم المشروع":"علّم «جاهز فعليًا للدفع» من جوه ملف التأمينات لما المبلغ يبقى نهائي"}</span>`}`; }
   $("#insCount").textContent = `${rows.length} ملف`;
+  { const arch=f.status==="__done"; $("#insView").innerHTML=`<button type="button" data-v="" aria-pressed="${!arch}">الجارية <b class="num">${all.length}</b></button><button type="button" data-v="__done" aria-pressed="${arch}">${ico("box")}الأرشيف <b class="num">${doneC}</b></button>`;
+    document.querySelector("#v-ins .panel .hd h2").textContent = arch ? "أرشيف التأمينات (اتطلعت شهادتها)" : "ملفات التأمينات"; }
   if(!rows.length){
     $("#insT").innerHTML = `<tbody><tr><td><div class="empty">${ico("shield")}<div>${state.ins.length?"لا توجد ملفات بالفلاتر الحالية.":"لا توجد ملفات تأمينات بعد. اضغط «ملف تأمينات» أو اختر مشروعًا من القائمة أدناه."}</div></div></td></tr></tbody>`;
   } else {
@@ -6012,7 +6047,9 @@ $("#coCatF").addEventListener("change",e=>{ state.coFilter.cat=e.target.value; m
 $("#insXlsx").onclick=exportInsXlsx; $("#insHtml").onclick=exportInsHtml; $("#insNew").onclick=()=>insDialog();
 $("#insSuggest").addEventListener("click", e=>{ if(e.target.closest("#insSugToggle")){ state.insSugAll=!state.insSugAll; memo.clear(); renderIns(); } });
 ["#nSearch","#nOwner","#nSort"].forEach(x=>$(x).addEventListener("input",()=>{ memo.clear(); renderIns(); }));
+$("#mpView").onclick=e=>{ const b=e.target.closest("[data-v]"); if(!b) return; state.mpView=b.dataset.v; memo.clear(); renderMp(); };
 ["#mpSearch","#mpStatusF"].forEach(x=>$(x).addEventListener("input",()=>{ memo.clear(); renderMp(); }));
+$("#insView").onclick=e=>{ const b=e.target.closest("[data-v]"); if(!b) return; state.insFilter.status=b.dataset.v; memo.clear(); renderIns(); };
 $("#nStatusF").onchange=e=>{ state.insFilter.status = e.target.value; memo.clear(); renderIns(); };
 $("#satXlsx").onclick=exportSatXlsx; $("#satHtml").onclick=exportSatHtml; $("#mpXlsx").onclick=exportMpXlsx; $("#mpNew").onclick=()=>mpDialog(null);
 $("#mpParams").onclick=()=>settingsDialog();
@@ -6224,7 +6261,8 @@ $("#btnSkin").addEventListener("click", openSkin);
   const boxFor=(attr,id)=>document.querySelector(`input[${attr}="${CSS.escape(id)}"]`);
   const target=t=>{
     const ins=t.closest("tr[data-ins]"); if(ins) return {kind:"ins", id:ins.dataset.ins};
-    const iv=t.closest("[data-inv],[data-plinv],tr[data-mp]"); if(iv) return {kind:"inv", id:iv.dataset.inv||iv.dataset.plinv||iv.dataset.mp};
+    const mpr=t.closest("tr[data-mp]"); if(mpr) return {kind:"mp", id:mpr.dataset.mp};
+    const iv=t.closest("[data-inv],[data-plinv]"); if(iv) return {kind:"inv", id:iv.dataset.inv||iv.dataset.plinv};
     const row=t.closest("tr, .pc2"); const sb=row?.querySelector("input[data-sel]"); if(sb) return {kind:"inv", id:sb.dataset.sel};
     const pj=t.closest("[data-proj]"); if(pj) return {kind:"proj", id:pj.dataset.proj};
     const pb=row?.querySelector("input[data-psel]"); if(pb) return {kind:"proj", id:pb.dataset.psel};
@@ -6233,6 +6271,16 @@ $("#btnSkin").addEventListener("click", openSkin);
   const sep=`<div class="ctx-sep" role="separator"></div>`;
   let cur=null;
   const build=tg=>{
+    if(tg.kind==="mp"){ const v=state.invoices.find(x=>x.id===tg.id); if(!v) return ""; const p=proj(v.projectId)||{}, w=state.canWrite, box=boxFor("data-sel",v.id);
+      const st=x=>item("mpSt","check",`الشهادة: ${x}${(v.mpStatus||"")===x?" ✓":""}`,`data-v="${esc(x)}"`);
+      return `<div class="ctx-h"><b>القوة العاملة — ${esc(certLabel(v))}</b><small>${esc(pName(p,true))}</small></div>`
+        + item("openInv","doc","فتح المستخلص (تاب القوة العاملة)") + (p.id?item("openProj","bld","فتح المشروع"):"")
+        + (w?sep + st("تم الاستخراج") + st("لم يتم الاستخراج") + st("لا حاجة")
+          + item("mpReady",v.mpPayReady?"x":"money",v.mpPayReady?"شيل «جاهز للدفع»":"جاهز فعليًا للدفع")
+          + (v.mpPaidDate?item("mpUnpaid","undo",`إلغاء تاريخ السداد (${dmy(v.mpPaidDate)})`):item("mpPaid","check","اتسدد المبلغ النهارده"))
+          + item("mpClaim","print","نموذج مطالبة قوة عاملة (PDF)") + item("mpOff","x","إزالة من كشف القوة العاملة"):"")
+        + sep + item("copyProj","doc","نسخ اسم المشروع") + (realId(p.contractNo)?item("copyNo","doc","نسخ رقم العقد"):"")
+        + (box?sep+item("sel","list",box.checked?"إلغاء التحديد":"تحديد"):""); }
     if(tg.kind==="inv"){ const v=state.invoices.find(x=>x.id===tg.id); if(!v) return "";
       const p=proj(v.projectId)||{}, k=calc(v), w=state.canWrite, box=boxFor("data-sel",v.id);
       return `<div class="ctx-h"><b>${esc(certLabel(v))}</b><small>${esc(pName(p,true))}</small></div>`
@@ -6249,8 +6297,12 @@ $("#btnSkin").addEventListener("click", openSkin);
         + sep + item("copyProj","doc","نسخ اسم المشروع") + (realId(p.contractNo)?item("copyNo","doc","نسخ رقم العقد"):"")
         + (box?sep+item("psel","list",box.checked?"إلغاء التحديد":"تحديد"):""); }
     if(tg.kind==="ins"){ const r=state.ins.find(x=>x.id===tg.id); if(!r) return ""; const p=proj(r.projectId)||{}, iv=state.invoices.find(x=>x.id===r.invoiceId), box=boxFor("data-isel",r.id), fno=realId(p.insFileNo)||r.fileNo||"";
-      return `<div class="ctx-h"><b>ملف تأمينات</b><small>${esc(pName(p,true))}</small></div>`
+      const w=state.canWrite, sts=uniq([...(state.cfg.insStatuses||[]), r.status].filter(Boolean));
+      return `<div class="ctx-h"><b>ملف تأمينات — ${esc(r.status||"بدون حالة")}</b><small>${esc(pName(p,true))}</small></div>`
         + item("openIns","shield","فتح ملف التأمينات") + (iv?item("openInvOfIns","doc","فتح المستخلص"):"") + (p.id?item("openProj","bld","فتح المشروع"):"")
+        + (w?sep + `<div class="ctx-sub">غيّر الحالة</div><div class="ctx-sts">${sts.map(x=>`<button type="button" role="menuitem" class="ctx-st ${x===r.status?"on":""}" data-ctx="insSt" data-v="${esc(x)}">${esc(x)}</button>`).join("")}</div>`
+          + item("insReady",r.payReady?"x":"money",r.payReady?"شيل «جاهز للدفع»":"جاهز فعليًا للدفع")
+          + item("insClaim","print","نموذج مطالبة تأمينات (PDF)"):"")
         + sep + (fno?item("copyFile","doc","نسخ رقم الملف (CS)"):"") + item("copyProj","doc","نسخ اسم المشروع")
         + (box?sep+item("isel","list",box.checked?"إلغاء التحديد":"تحديد"):""); }
     return ""; };
@@ -6265,17 +6317,29 @@ $("#btnSkin").addEventListener("click", openSkin);
     menu.style.left=x+"px"; menu.style.top=y+"px"; menu.querySelector(".ctx-i")?.focus({preventScroll:true});
   });
   menu.addEventListener("click", async e=>{ const b=e.target.closest("[data-ctx]"); if(!b||!cur) return; const a=b.dataset.ctx, tg=cur;
-    const v = tg.kind==="inv" ? state.invoices.find(x=>x.id===tg.id) : null;
+    const v = (tg.kind==="inv"||tg.kind==="mp") ? state.invoices.find(x=>x.id===tg.id) : null;
     const r = tg.kind==="ins" ? state.ins.find(x=>x.id===tg.id) : null;
     const p = tg.kind==="proj" ? state.projects.find(x=>x.id===tg.id) : proj((v||r)?.projectId)||null;
     if(a==="paid"){ const was=!!b.dataset.armed; quickPaid(b); if(was) close(); return; }        /* أول دوسة بتطلب تأكيد، والتانية بتسجل */
     close();
-    if(a==="openInv") invDialog(v);
+    if(a==="openInv"){ if(tg.kind==="mp") dlgInitTab="mp"; invDialog(v); }
     else if(a==="openProj" && p) projDialog(p);
     else if(a==="newInv" && p) invDialog(null, p.id);
     else if(a==="move") moveDialog(v.id);
     else if(a==="openIns") insDialog(r);
     else if(a==="openInvOfIns"){ const iv=state.invoices.find(x=>x.id===r.invoiceId); if(iv) invDialog(iv); }
+    else if(["mpSt","mpReady","mpPaid","mpUnpaid","mpOff"].includes(a)){
+      const ch = a==="mpSt" ? {mpStatus:b.dataset.v} : a==="mpReady" ? {mpPayReady:!v.mpPayReady} : a==="mpPaid" ? {mpPaidDate:today()} : a==="mpUnpaid" ? {mpPaidDate:""} : {showMp:false};
+      const txt = a==="mpSt" ? `شهادة القوة العاملة: ${b.dataset.v}` : a==="mpReady" ? (v.mpPayReady?"اتشال «جاهز للدفع»":"اتعلّم «جاهز للدفع»") : a==="mpPaid" ? "اتسجل سداد مبلغ القوة العاملة النهارده" : a==="mpUnpaid" ? "اتلغى تاريخ سداد القوة العاملة" : "اتشال من كشف القوة العاملة";
+      const ref=db.collection("invoices").doc(v.id), cap={list:[]}; undoAdd(cap, ref);
+      if(await save(ref, {...stripId(v), ...ch, updatedAt:new Date().toISOString(), updatedBy:myId||""})){ if(!cap.bad&&cap.list.length) undoNext={list:cap.list,at:Date.now()}; toast(`${txt} — ${certLabel(v)}`); logAct(`${txt} · ${certLabel(v)} · ${pName(p||{},true)}`, v.id, v.projectId); } }
+    else if(a==="mpClaim") claimDialog("mp",[v]);
+    else if(a==="insSt"||a==="insReady"){
+      const ch = a==="insSt" ? {status:b.dataset.v} : {payReady:!r.payReady};
+      const txt = a==="insSt" ? `حالة ملف التأمينات: ${b.dataset.v}` : (r.payReady?"اتشال «جاهز للدفع»":"اتعلّم «جاهز للدفع»");
+      const ref=db.collection("insurance").doc(r.id), cap={list:[]}; undoAdd(cap, ref);
+      if(await save(ref, {...stripId(r), ...ch, updatedAt:new Date().toISOString(), updatedBy:myId||""})){ if(!cap.bad&&cap.list.length) undoNext={list:cap.list,at:Date.now()}; toast(`${txt}${a==="insSt"&&/تم استخراج/.test(b.dataset.v)?" — اتنقل للأرشيف":""}`); logAct(`${txt} · ${pName(p||{},true)}`, r.invoiceId||"", r.projectId); } }
+    else if(a==="insClaim") claimDialog("ins",[r],true);
     else if(a==="satOn"||a==="satOff"){ const on=a==="satOn"; if(await save(db.collection("invoices").doc(v.id), {...stripId(v), showSat:on, updatedAt:new Date().toISOString(), updatedBy:myId||""})){ toast(on?`اتضاف ${certLabel(v)} لكشف المتابعة`:`اتشال ${certLabel(v)} من كشف المتابعة`); logAct(`${on?"أضاف":"شال"} ${certLabel(v)} ${on?"لـ":"من"} كشف المتابعة`, v.id, v.projectId); } }
     else if(a==="copyProj") copy(p?(p.name||p.shortName||""):"", "اتنسخ اسم المشروع");
     else if(a==="copyNo") copy(p?.contractNo||"", "اتنسخ رقم العقد");
