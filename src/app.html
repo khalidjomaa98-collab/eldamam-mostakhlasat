@@ -2674,6 +2674,41 @@ td.sel{cursor:pointer}
 .ctx-st.on{background:var(--accent);color:var(--accent-ink,#fff);border-color:var(--accent)}
 .ctx{max-width:330px}
 @media (max-width:700px){ .arch-seg{width:100%} .arch-seg button{flex:1;justify-content:center} }
+/* القلم و✓/✕ دايماً ظاهرين في آخر سطر عنوان الخانة، حتى لو العنوان طويل (العنوان بيتقص بـ «…» بدل القلم) */
+.dw .fields>.f.lkf>label,.dw .fields>.f.unl>label{position:relative;padding-inline-end:38px;text-overflow:ellipsis}
+.dw .fields>.f.unl>label:has(.pen-acts:not([hidden])){padding-inline-end:80px}
+.dw .fields>.f>label>.pen,.dw .fields>.f>label>.pen-acts{position:absolute;inset-inline-end:0;top:50%;transform:translateY(-50%);margin:0}
+@media (pointer:coarse){ .dw .fields>.f.lkf>label,.dw .fields>.f.unl>label{padding-inline-end:42px;min-height:34px} .dw .fields>.f.unl>label:has(.pen-acts:not([hidden])){padding-inline-end:84px} }
+/* ===== تحليل الخامات ===== */
+#matTable tr.mat-grp td{background:var(--sunk);padding:9px 14px;border-bottom:1px solid var(--line)}
+#matTable tr.mat-grp td b{margin-inline-end:10px}
+#matTable tr.mat-grp td span{color:var(--muted);font-size:.8rem}
+#v-mat>.fbar{position:sticky;top:var(--mbarH,0px);z-index:15}
+.mi-l{display:flex;flex-direction:column;gap:8px}
+.mi{border:1px solid var(--line2);border-radius:12px;padding:8px;background:var(--surface)}
+.mi.bad{border-color:color-mix(in srgb,var(--bad) 45%,var(--line))}
+.mi-g{display:grid;grid-template-columns:70px minmax(0,2.2fr) 110px 80px minmax(0,1.6fr) auto 32px;gap:6px;align-items:center}
+.mi-g .cell{height:38px;box-sizing:border-box;width:100%}
+.mi-rm{white-space:nowrap;font-size:.8rem}
+.mi-out{font-size:.78rem;color:var(--muted);padding:6px 4px 0;line-height:1.7}
+.mi-out b{color:var(--fg)}
+.mi-out svg.i{width:14px;height:14px;vertical-align:-2px}
+.mi-add{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.mi-paste{border:1px dashed var(--accent);border-radius:12px;padding:10px;margin-bottom:8px;display:flex;flex-direction:column;gap:6px}
+.mi-paste textarea{width:100%;min-height:110px}
+.mat-tot td,.mat-tot th{white-space:nowrap}
+.mr-t input.cell{height:34px;min-width:64px;width:100%;box-sizing:border-box}
+.mr-t td:first-child input{min-width:190px}
+.mr-t input.mr-n{min-width:62px;text-align:center}
+.mr-t th{font-size:.72rem;white-space:nowrap}
+@media (max-width:820px){
+  .mi-g{grid-template-columns:70px minmax(0,1fr) 38px;grid-template-areas:"code desc x" "qty unit unit" "type type type" "rm rm rm"}
+  .mi-rm{justify-self:start}
+  .mi-code{grid-area:code} .mi-desc{grid-area:desc} .mi-x{grid-area:x} .mi-qty{grid-area:qty} .mi-unit{grid-area:unit} .mi-type{grid-area:type} .mi-rm{grid-area:rm}
+  #matTable:not(#_):not(#_) tr.mat-grp{display:block;border-radius:10px;margin-top:6px}
+  #matTable:not(#_):not(#_) tr.mat-grp td{display:block}
+  #matTable:not(#_):not(#_) tr.mat-grp td::before{display:none}
+}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2737,6 +2772,7 @@ td.sel{cursor:pointer}
       <div class="sect">البيانات</div>
       <button data-tab="dq" title="جودة البيانات" hidden><svg class="i"><use href="#i-dq"/></svg><span class="lbl">جودة البيانات</span><span class="cnt" id="cDq">0</span><span class="alrt" id="aDq" hidden title="تنبيهات مهمة">0</span></button>
       <button data-tab="inv" title="سجل المستخلصات"><svg class="i"><use href="#i-list"/></svg><span class="lbl">سجل المستخلصات</span><span class="cnt" id="cInv">0</span></button>
+      <button data-tab="mat" title="تحليل الخامات"><svg class="i"><use href="#i-box"/></svg><span class="lbl">تحليل الخامات</span><span class="cnt" id="cMat">0</span></button>
       <button data-tab="proj" title="المشاريع"><svg class="i"><use href="#i-bld"/></svg><span class="lbl">المشاريع</span><span class="cnt" id="cProj">0</span></button>
       <div class="sect">الشهادات والمستحقات</div>
       <button data-tab="ins" title="التأمينات الاجتماعية"><svg class="i"><use href="#i-shield"/></svg><span class="lbl">التأمينات الاجتماعية</span><span class="cnt" id="cIns">0</span><span class="alrt" id="aIns" hidden title="متابعات تجاوزت موعدها">0</span></button>
@@ -2948,6 +2984,18 @@ td.sel{cursor:pointer}
       </div>
       <section class="panel"><div class="hd"><h2>المستخلصات المصروفة</h2><span class="muted" id="plCount"></span></div><div class="tscroll"><table class="dt" id="plTable"></table></div></section>
       <p class="hint">«إلغاء الصرف» بيرجّع المستخلص «لم يُصرف» ويرجّعه لكشف المتابعة، وبيتسجل في سجل النشاط. اضغط مرتين للتأكيد، وتقدر تتراجع بعدها من الرسالة اللي تحت.</p>
+    </div>
+    <div id="v-mat" style="display:flex;flex-direction:column;gap:16px" hidden>
+      <div class="ph"><div><h1>تحليل الخامات</h1><div class="sub">تحليل بنود كل مستخلص لخامات (أسمنت، رمل، سن، حديد، طوب…) بجدول معدلات موحد — زي شيت الإكسيل بالظبط</div></div>
+        <div class="tools"><button class="btn" id="matXlsx"><svg class="i"><use href="#i-dl"/></svg>Excel</button><button class="btn" id="matRates"><svg class="i"><use href="#i-gear"/></svg>جدول المعدلات والأسعار</button><button class="btn primary" id="matNew"><svg class="i"><use href="#i-plus"/></svg>تحليل مستخلص</button></div></div>
+      <div class="kpis" id="matKpis"></div>
+      <div class="fbar" id="matFbar">
+        <input id="matQ" type="search" placeholder="ابحث باسم المشروع أو رقم العقد أو المستخلص أو البند…" aria-label="بحث">
+        <label class="fi"><span>المشروع</span><select id="matProj"></select></label>
+        <label class="fi"><span>الشركة</span><select id="matCo"></select></label>
+      </div>
+      <section class="panel"><div class="hd"><h2>المستخلصات المحللة</h2><span class="muted" id="matCount"></span></div><div class="tscroll"><table class="dt" id="matTable"></table></div></section>
+      <p class="hint">الخامة = الكمية × معدل نوع البند من «جدول المعدلات». لو البند خرسانة جاهزة، الأسمنت والرمل والسن ما بيتحسبوش ويتحسب بدلهم م³ خرسانة جاهزة. أي تعديل في المعدلات بيتطبق على كل التحليلات.</p>
     </div>
     <div id="v-mp" style="display:flex;flex-direction:column;gap:16px" hidden>
       <div class="ph"><div><h1>القوة العاملة</h1><div class="sub">كل سطر مربوط بمستخلص مسجل — تقدير مبالغ صندوق العمالة غير المنتظمة وشهادة القوة العاملة</div></div>
@@ -3370,7 +3418,7 @@ function render(){
   memo.clear();
   $("#brandSub").textContent = (state.cfg.title||"").replace(/^كشف متابعة المستخلصات الجارية\s*[–-]?\s*/,"") || "كشف المتابعة";
   $("#footDate").textContent = `آخر تحديث ${dmy(today())}`;
-  ["home","sat","act","dq","moves","paylog","inv","proj","ins","co","mp"].forEach(t => { $("#v-"+t).hidden = state.tab!==t; });
+  ["home","sat","act","dq","moves","paylog","inv","proj","ins","co","mp","mat"].forEach(t => { $("#v-"+t).hidden = state.tab!==t; });
   document.querySelectorAll(".nav button").forEach(b => { if(b.dataset.tab===state.tab) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   { const nb=document.querySelector(`.nav button[data-tab="${state.tab}"] .lbl`); $("#mbPage").textContent = nb ? nb.textContent : ""; }
   navInd();
@@ -3385,7 +3433,7 @@ function render(){
   $("#cIns").textContent = state.ins.length;
   $("#dlContracts").innerHTML = state.projects.filter(p=>realId(p.contractNo)).map(p=>`<option value="${esc(p.contractNo)}">${esc(pName(p,true))}</option>`).join("");
   // السرعة: بنرسم الصفحة المفتوحة بس، والباقي بيترسم لما تفتحه (render بتتنده مع كل تغيير صفحة)
-  const R={home:renderHome, sat:renderSat, act:renderAct, dq:renderDq, moves:renderMoves, paylog:renderPaylog, inv:renderInv, proj:renderProj, ins:renderIns, co:renderCo, mp:renderMp};
+  const R={home:renderHome, sat:renderSat, act:renderAct, dq:renderDq, moves:renderMoves, paylog:renderPaylog, mat:renderMat, inv:renderInv, proj:renderProj, ins:renderIns, co:renderCo, mp:renderMp};
   (R[state.tab]||renderHome)();
   if(state.tab!=="act") renderAct();   // بيحدّث عداد «حركات النهارده» بس
   if(state.tab!=="co") coCounts();
@@ -4433,7 +4481,7 @@ function projDialog(p){
         <div id="plBox"></div></section>`:""}
       <section class="sec lk"><h3>${ico("bld")}بيانات المشروع${p&&state.canWrite?`<span class="r"><button type="button" class="btn sm ghost" data-unlockall>${ico("pen")}تعديل الكل</button></span>`:""}</h3>
       <div class="fields">
-        ${fld("jNo","رقم العقد (اختياري لو لسه ما طلعش)",d.contractNo)}
+        ${fld("jNo","رقم العقد (اختياري)",d.contractNo)}
         ${fld("jShort","اسم مختصر للعرض",d.shortName)}
         <div class="f wide"><label for="jName">اسم المشروع</label><textarea id="jName" style="min-height:52px">${esc(d.name||"")}</textarea></div>
         <div class="f"><label for="jLoc">موقع المشروع</label><input id="jLoc" list="dlLoc" value="${esc(d.location||"")}"><datalist id="dlLoc">${uniq(state.projects.map(x=>x.location)).map(x=>`<option value="${esc(x)}">`).join("")}</datalist></div>
@@ -6281,6 +6329,140 @@ function openSkin(){
   const h=pop.offsetHeight; pop.style.top=Math.max(8, r.top-h-8)+"px";
 }
 $("#btnSkin").addEventListener("click", openSkin);
+/* ===================== تحليل الخامات ===================== */
+const MAT_KEYS=[["cem","الأسمنت","طن",4200],["sand","الرمل","م³",120],["agg","السن/الزلط","م³",300],["steel","حديد التسليح","طن",45000],["brick","الطوب","ألف طوبة",3000],["ins","الطبقة العازلة","م²",65],["curb","البردورات","عدد",200],["wsteel","حديد مشغولات/كريتال","طن",39000],["diesel","السولار","لتر",24.5],["rmx","خرسانة جاهزة","م³",0],["inter","الإنترلوك","م²",350],["curtain","حوائط ستائرية","م²",8500],["clad","كلادينج","م²",3000]];
+const MAT_SEED=[["رمل","م³",[0,1.2,0,0,0,0,0,0,0,0,0,0,0],""],["ردم رمال","م³",[0,1.2,0,0,0,0,0,0,0,0,0,0,0],""],["ردم رمال متدرجة","م³",[0,1.2,0,0,0,0,0,0,0,0,0,0,0],""],["ردم رمال متدرجة 95%","م³",[0,1.25,0,0,0,0,0,0,0,0,0,0,0],""],["خرسانة عادية","م³",[0.25,0.4,0.8,0,0,0,0,0,0,1,0,0,0],""],["خرسانة عادية 300","م³",[0.3,0.4,0.8,0,0,0,0,0,0,1,0,0,0],""],["خرسانة عادية دكة بردورة","م.ط",[0.0075,0.012,0.02,0,0,0,0,0,0,0.025,0,0,0],""],["دكة خرسانة عادية 10سم","م²",[0.025,0.04,0.08,0,0,0,0,0,0,0.1,0,0,0],""],["دكة خرسانة فايبر 10سم","م²",[0.025,0.04,0.08,0,0,0,0,0,0,0.1,0,0,0],""],["خرسانة فايبر هليكوبتر","م³",[0.3,0.4,0.8,0,0,0,0,0,0,1,0,0,0],""],["خرسانة فايبر 15سم 300","م²",[0.045,0.06,0.12,0,0,0,0,0,0,0.15,0,0,0],""],["خرسانة مسلحة أساسات وقواعد","م³",[0.4,0.4,0.8,0.17,0,0,0,0,0,1,0,0,0],""],["خرسانة مسلحة أساسات 350/90","م³",[0.35,0.4,0.8,0.09,0,0,0,0,0,1,0,0,0],"كانت باسم \"خرسانة مسلحة أساسات وقواعد\" في شيت 26 بيت بدوي بمعدلات مختلفة"],["خرسانة مسلحة أسقف","م³",[0.4,0.4,0.8,0.29,0,0,0,0,0,1,0,0,0],""],["خرسانة مسلحة سقف 160","م³",[0.4,0.4,0.8,0.16,0,0,0,0,0,1,0,0,0],""],["خرسانة مسلحة حوائط 150","م³",[0.4,0.4,0.8,0.15,0,0,0,0,0,1,0,0,0],""],["مسلحة أساسات 450/143","م³",[0.45,0.4,0.8,0.143,0,0,0,0,0,1,0,0,0],""],["مسلحة حوائط فيرفيس 475/150","م³",[0.475,0.4,0.8,0.15,0,0,0,0,0,1,0,0,0],""],["مسلحة أعمدة فيرفيس 475/185","م³",[0.475,0.4,0.8,0.185,0,0,0,0,0,1,0,0,0],""],["مسلحة سقف بنلد بيم 450/165","م³",[0.45,0.4,0.8,0.165,0,0,0,0,0,1,0,0,0],""],["مسلحة سلالم فيرفيس 450/215","م³",[0.45,0.4,0.8,0.215,0,0,0,0,0,1,0,0,0],""],["مسلحة ساندة 40سم 475/120","م³",[0.475,0.4,0.8,0.12,0,0,0,0,0,1,0,0,0],""],["مسلحة ساندة 55سم 475/180","م³",[0.475,0.4,0.8,0.18,0,0,0,0,0,1,0,0,0],""],["مسلحة ساندة 60سم 475/122","م³",[0.475,0.4,0.8,0.122,0,0,0,0,0,1,0,0,0],""],["مسلحة SOG سمك 30سم","م²",[0.135,0.12,0.24,0.0255,0,0,0,0,0,0.3,0,0,0],""],["خوازيق قطر 100","م.ط",[0.314,0.314,0.628,0.066,0,0,0,0,0,0.785,0,0,0],""],["حديد تسليح بالطن","طن",[0,0,0,1,0,0,0,0,0,0,0,0,0],""],["مباني طوب","م³",[0.075,0.22,0,0,0.45,0,0,0,0,0,0,0,0],""],["مباني طوب أسمنتي م3","م³",[0.06,0,0,0,0.45,0,0,0,0,0,0,0,0],""],["مباني طوب أسمنتي م³","م³",[0.06,0.2,0,0,0.45,0,0,0,0,0,0,0,0],""],["بياض تخشين خارجي","م²",[0.008,0.025,0,0,0,0,0,0,0,0,0,0,0],""],["عزل بولي إيثيلين","م²",[0,0,0,0,0,1.15,0,0,0,0,0,0,0],"الكمية × 1.15 (هالك وركوب)"],["بردورات أحواض","م.ط",[0.005,0.008,0.016,0,0,0,1.92,0,0,0.02,0,0,0],""],["بردورات طريق","م.ط",[0.00875,0.014,0.028,0,0,0,1.92,0,0,0.035,0,0,0],""],["بردورات عدد فقط 2/م.ط","م.ط",[0,0,0,0,0,0,2,0,0,0,0,0,0],"من شيت رفح: بردورات بدون خامات (الفرشة محسوبة في بند منفصل) × 2 بردورة/م.ط"],["بردورة عجالي بفرشة عادية","م.ط",[0.0133,0.023,0.04,0,0,0,0,0,0,0.05,0,0,0],""],["بردورة متوسطة بفرشة عادية","م.ط",[0.0082,0.014,0.026,0,0,0,0,0,0,0.0325,0,0,0],""],["شبابيك حديد 130كجم","م²",[0,0,0,0,0,0,0,0.13,0,0,0,0,0],""],["شبك سلك سجون","م²",[0,0,0,0,0,0,0,0.0208,0,0,0,0,0],"20.8 كجم/م²"],["حلقان حديد كجم","كجم",[0,0,0,0,0,0,0,0.001,0,0,0,0,0],""],["سلم بحاري كجم","كجم",[0,0,0,0,0,0,0,0.001,0,0,0,0,0],""],["أبواب حديد كجم","كجم",[0,0,0,0,0,0,0,0.001,0,0,0,0,0],""],["أبواب دكتات صاج 3مم","كجم",[0,0,0,0,0,0,0,0.001,0,0,0,0,0],""],["بوابات حديد كجم","كجم",[0,0,0,0,0,0,0,0.001,0,0,0,0,0],""],["مشغولات حديد صفرية","كجم",[0,0,0,0,0,0,0,0.001,0,0,0,0,0],"اتحسبت في الشيت الأصلي ÷1000 كريتال رغم الاسم"],["سولار","لتر",[0,0,0,0,0,0,0,0,1,0,0,0,0],""],["شدات وتوريدات صفرية","—",[0,0,0,0,0,0,0,0,0,0,0,0,0],"بدون خامات محسوبة"],["تشطيبات وفواصل صفرية","—",[0,0,0,0,0,0,0,0,0,0,0,0,0],"بدون خامات محسوبة"],["مسلحة أساسات 425/120","م³",[0.425,0.4,0.8,0.12,0,0,0,0,0,1,0,0,0],"جاري 1 عقد 18331-8 بند 7: أسمنت 425كجم/م³ وحديد 120كجم/م³ حسب وصف البند"],["مسلحة هيكل 350/140","م³",[0.35,0.4,0.8,0.14,0,0,0,0,0,1,0,0,0],"عقد 18331-8 بند 8: أسمنت 350 وحديد 140كجم/م³"],["مسلحة أعمدة 350/240","م³",[0.35,0.4,0.8,0.24,0,0,0,0,0,1,0,0,0],"عقد 18331-8 بند 10: أسمنت 350 وحديد 240كجم/م³"],["مباني طوب 12سم م²","م²",[0.009,0.0264,0,0,0.054,0,0,0,0,0,0,0,0],"= معدل \"مباني طوب\" (م³) × سمك 0.12م"],["مباني طوب أسمنتي 12سم م²","م²",[0.0072,0.024,0,0,0.054,0,0,0,0,0,0,0,0],"= معدل \"مباني طوب أسمنتي م³\" × سمك 0.12م"],["بياض تخشين داخلي","م²",[0.008,0.025,0,0,0,0,0,0,0,0,0,0,0],"نفس معدل بياض تخشين خارجي"],["خرسانة ميول أسطح 7سم م²","م²",[0.0175,0.021,0,0,0,0,0,0,0,0.07,0,0,0],"سمك متوسط 7سم × (أسمنت 250كجم + 0.3م³ رمل للمتر المكعب). الركام كسر طوب/حجر خفيف مش زلط فمش محسوب"],["عزل ممبرين 4مم","م²",[0,0,0,0,0,1.15,0,0,0,0,0,0,0],"هالك وركوب لفات 15%"],["عزل حراري استيروبور 5سم","م²",[0,0,0,0,0,1.05,0,0,0,0,0,0,0],"هالك قص 5%"],["عزل بيتومين وجهين","م²",[0,0,0,0,0,1,0,0,0,0,0,0,0],"مساحة العزل = مساحة البند"],["بياض خلطة جاهزة ملونة","م²",[0.005,0.025,0,0,0,0,0,0,0,0,0,0,0],"طرطشة 5مم (400كجم أسمنت) + بطانة 2سم (150كجم أسمنت/م³ رمل). الخلطة الجاهزة نفسها مش محسوبة"],["تكسيات سيراميك حوائط","م²",[0.0045,0.015,0,0,0,0,0,0,0,0,0,0,0],"مونة لصق 1.5سم بمحتوى 300كجم أسمنت/م³"],["تكسيات حجر هاشمي","م²",[0.0075,0.025,0,0,0,0,0,0,0,0,0,0,0],"مونة لصق 2.5سم بمحتوى 300كجم أسمنت/م³"],["وزرة سيراميك 10سم","م.ط",[0.00045,0.0015,0,0,0,0,0,0,0,0,0,0,0],"ارتفاع 0.10م × مونة 1.5سم (300كجم)"],["وزرة موزايكو 15سم","م.ط",[0.0009,0.003,0,0,0,0,0,0,0,0,0,0,0],"ارتفاع 0.15م × مونة 2سم (300كجم)"],["أرضيات موزايكو","م²",[0.0075,0.025,0,0,0,0,0,0,0,0,0,0,0],"مونة لصق 2.5سم (300كجم أسمنت/م³)"],["أرضيات سيراميك","م²",[0.0075,0.025,0,0,0,0,0,0,0,0,0,0,0],"مونة لصق 2.5سم (300كجم أسمنت/م³)"],["أبواب حديد وصاج م²","م²",[0,0,0,0,0,0,0,0.03,0,0,0,0,0],""],["حفر ونقل (بدون خامات)","م³",[0,0,0,0,0,0,0,0,0,0,0,0,0],"حفر/نقل ناتج حفر — مافيش خامات. السولار مش محسوب (مافيش معدل)"],["إحلال زلط متدرج","م³",[0,0,1.25,0,0,0,0,0,0,0,0,0,0],"معامل دمك 1.25 (زي ردم رمال 95%). مش خرسانة فمعدل الجاهزة صفر"],["طبقة أساس سن 15سم م²","م²",[0,0,0.1875,0,0,0,0,0,0,0,0,0,0],"سمك 0.15م × معامل دمك 1.25"],["طبقة أساس سن 10سم م²","م²",[0,0,0.125,0,0,0,0,0,0,0,0,0,0],"سمك 0.10م × معامل دمك 1.25"],["خرسانة مطبوعة فايبر 15سم 350","م²",[0.0525,0.06,0.12,0,0,0,0,0,0,0.15,0,0,0],"سمك 0.15م × (أسمنت 350كجم + 0.4 رمل + 0.8 زلط)"],["بلاط أسمنتي مفرغ عش النحل","م²",[0.0075,0.025,0,0,0,0,0,0,0,0,0,0,0],"مونة لصق 2.5سم (300كجم أسمنت/م³)"],["إنترلوك على رمل 10سم","م²",[0,0.12,0,0,0,0,0,0,0,0,1.05,0,0],"فرشة رمل 10سم × 1.2 + بلاط إنترلوك 1.05م² (هالك 5%)"],["بردورة طريق مصنعة بالموقع","م.ط",[0.0245,0.032,0.064,0,0,0,0,0,0,0.08,0,0,0],"بردورة 15×30سم خرسانة 350كجم (0.045م³/م.ط) + فرشة 0.035م³ (250كجم). من غير عدد بردورات"],["بردورة أحواض مصنعة بالموقع","م.ط",[0.01375,0.018,0.036,0,0,0,0,0,0,0.045,0,0,0],"بردورة 10×25سم خرسانة 350كجم (0.025م³/م.ط) + فرشة 0.02م³ (250كجم). من غير عدد بردورات"],["مباني طوب 10سم م²","م²",[0.0075,0.022,0,0,0.045,0,0,0,0,0,0,0,0],"معدل \"مباني طوب\" (م³) × سمك 0.10م"],["مباني طوب أسمنتي 10سم م²","م²",[0.006,0.02,0,0,0.045,0,0,0,0,0,0,0,0],"معدل \"مباني طوب أسمنتي م³\" × سمك 0.10م"],["عزل SBS طبقتين","م²",[0,0,0,0,0,2.3,0,0,0,0,0,0,0],"طبقتين × 1.15 (هالك وركوب 15%)"],["حوائط ستائرية م²","م²",[0,0,0,0,0,0,0,0,0,0,0,1,0],"متر مسطح حوائط ستائرية (زجاج + قطاعات) = مساحة البند"],["كلادينج ألومنيوم م²","م²",[0,0,0,0,0,0,0,0,0,0,0,0,1],"متر مسطح ألواح كلادينج = مساحة البند"]];
+const MAT_LOOSE=["cem","sand","agg"]; /* بتتلغي لو البند خرسانة جاهزة */
+function matLib(){ const L=state.matlib; if(L && Array.isArray(L.types)) return L;
+  return {prices:Object.fromEntries(MAT_KEYS.map(m=>[m[0],m[3]])), types:MAT_SEED.map(([name,unit,r,note])=>({name,unit,r:Object.fromEntries(MAT_KEYS.map((m,i)=>[m[0],r[i]||0])),note}))}; }
+const matNorm = t => String(t||"").replace(/\s+/g," ").trim();
+function matItemCalc(it, lib){ const t=lib.types.find(x=>matNorm(x.name)===matNorm(it.type)), q=num(it.qty), out={}; let warn="";
+  if(!matNorm(it.type)) warn = it.desc||it.qty ? "اختار نوع البند" : ""; else if(!t) warn="نوع البند مش موجود في جدول المعدلات"; else if(!(q>0)) warn="الكمية ناقصة";
+  MAT_KEYS.forEach(([k])=>{ let v = t ? q*num(t.r[k]) : 0; if(it.rm && MAT_LOOSE.includes(k)) v=0; if(k==="rmx" && !it.rm) v=0; out[k]=v; });
+  return {out, warn, t}; }
+function matTotals(a, lib){ const tot=Object.fromEntries(MAT_KEYS.map(([k])=>[k,0])); let warns=0;
+  (a.items||[]).forEach(it=>{ const c=matItemCalc(it,lib); if(c.warn) warns++; MAT_KEYS.forEach(([k])=>tot[k]+=c.out[k]); });
+  const value=MAT_KEYS.reduce((s,[k])=>s+tot[k]*num((lib.prices||{})[k]),0); return {tot, warns, value}; }
+const mfmt = v => { const x=Math.round(num(v)*1000)/1000; return x ? x.toLocaleString("en-US",{maximumFractionDigits:3}) : "—"; };
+function matRows(){ const lib=matLib(), q=qNorm($("#matQ").value||""), pj=$("#matProj").value, co=$("#matCo").value;
+  return (state.matan||[]).map(a=>{ const v=state.invoices.find(x=>x.id===a.invoiceId), p=proj(v?.projectId||a.projectId)||{}, k=v?calc(v):null; return {a,v,p,k,...matTotals(a,lib)}; })
+    .filter(r=>(!pj||r.p.id===pj) && (!co||(r.k?.company||r.p.company||"غير محدد")===co) && (!q || qNorm(`${r.p.name||""} ${r.p.shortName||""} ${r.p.contractNo||""} ${r.v?certLabel(r.v):""} ${(r.a.items||[]).map(i=>i.desc+" "+i.type).join(" ")}`).includes(q)))
+    .sort((x,y)=>(pName(x.p,true)).localeCompare(pName(y.p,true),"ar") || num(x.v?.order)-num(y.v?.order)); }
+function renderMat(){
+  const lib=matLib(), all=state.matan||[], cur=`<small>${esc(state.cfg.currency||"")}</small>`;
+  { const ps=uniq(all.map(a=>(state.invoices.find(x=>x.id===a.invoiceId)||{}).projectId||a.projectId).filter(Boolean)), sel=$("#matProj"), cv=sel.value;
+    sel.innerHTML=`<option value="">الكل</option>`+ps.map(id=>`<option value="${esc(id)}" ${id===cv?"selected":""}>${esc(pName(proj(id)||{},true))}</option>`).join("");
+    const cs=uniq(all.map(a=>{ const v=state.invoices.find(x=>x.id===a.invoiceId); return v?calc(v).company:"غير محدد"; })), cs2=$("#matCo"), cv2=cs2.value;
+    cs2.innerHTML=`<option value="">الكل</option>`+cs.map(c=>`<option ${c===cv2?"selected":""}>${esc(c)}</option>`).join(""); }
+  const rows=matRows(), T=Object.fromEntries(MAT_KEYS.map(([k])=>[k,rows.reduce((s,r)=>s+r.tot[k],0)])), val=rows.reduce((s,r)=>s+r.value,0), warns=rows.reduce((s,r)=>s+r.warns,0);
+  $("#matKpis").innerHTML=`
+    <div class="kpi lead"><span class="lbl">${ico("money")}قيمة الخامات (بأسعار الجدول)</span><span class="val">${money(val)}${cur}</span><span class="sub">${rows.length} مستخلص محلل</span></div>
+    <div class="kpi"><span class="lbl">${ico("box")}الأسمنت</span><span class="val"><span class="num">${mfmt(T.cem)}</span> <small>طن</small></span><span class="sub">خرسانة جاهزة ${mfmt(T.rmx)} م³</span></div>
+    <div class="kpi"><span class="lbl">${ico("box")}حديد التسليح</span><span class="val"><span class="num">${mfmt(T.steel)}</span> <small>طن</small></span><span class="sub">مشغولات ${mfmt(T.wsteel)} طن</span></div>
+    <div class="kpi ${warns?"wn":""}"><span class="lbl">${ico("warn")}بنود محتاجة مراجعة</span><span class="val num">${warns}</span><span class="sub">نوع بند غلط أو كمية ناقصة</span></div>`;
+  $("#matCount").textContent = rows.length===all.length?`${rows.length} مستخلص`:`${rows.length} من ${all.length} مستخلص`;
+  if(!rows.length){ $("#matTable").innerHTML=`<tbody><tr><td><div class="empty">${ico("box")}<div>${all.length?"مفيش تحليلات بالفلاتر دي.":"لسه مفيش تحليل خامات. دوس «تحليل مستخلص» واختار المستخلص، أو كليك يمين على أي مستخلص ← «تحليل خامات البنود»."}</div></div></td></tr></tbody>`; return; }
+  const used=MAT_KEYS.filter(([k])=>T[k]>0); let lastP=null, out="";
+  rows.forEach(r=>{ if(r.p.id!==lastP){ lastP=r.p.id; const pr=rows.filter(x=>x.p.id===r.p.id);
+      out+=`<tr class="mat-grp"><td colspan="${3+used.length}"><b>${esc(pName(r.p,true))}</b><span>${realId(r.p.contractNo)?`عقد ${esc(r.p.contractNo)} · `:""}${pr.length} مستخلص · ${fmt(pr.reduce((s,x)=>s+x.value,0))}</span></td></tr>`; }
+    out+=`<tr class="cor" style="--cc:${coVar(r.k?.company||r.p.company)};cursor:pointer" data-matan="${esc(r.a.id)}"><td><span class="certp">${esc(r.v?certLabel(r.v):"مستخلص اتمسح")}</span><div class="sub2">${(r.a.items||[]).length} بند${r.warns?` · <b class="bad-t">${r.warns} محتاج مراجعة</b>`:""}</div></td>
+      ${used.map(([k])=>`<td class="n" data-label="${esc(MAT_KEYS.find(m=>m[0]===k)[1])}">${mfmt(r.tot[k])}</td>`).join("")}<td class="n"><b>${fmt(r.value)}</b></td><td class="faint small">${r.a.updatedAt?esc(ago(r.a.updatedAt)):""}</td></tr>`; });
+  $("#matTable").innerHTML=`<thead><tr><th>المستخلص</th>${used.map(([k,l,u])=>`<th class="n">${esc(l)} <small>(${esc(u)})</small></th>`).join("")}<th class="n">القيمة</th><th>آخر تعديل</th></tr></thead><tbody>${out}</tbody>
+    <tfoot><tr><td>الإجمالي</td>${used.map(([k])=>`<td class="n">${mfmt(T[k])}</td>`).join("")}<td class="n">${fmt(val)}</td><td></td></tr></tfoot>`;
+}
+/* نافذة تحليل مستخلص: البنود بند بند + الإجمالي + مقارنة بالخامات المخصومة */
+function matDialog(invId){
+  const v=state.invoices.find(x=>x.id===invId); if(!v){ toast("المستخلص مش موجود"); return; }
+  const p=proj(v.projectId)||{}, lib=matLib(), a0=(state.matan||[]).find(x=>x.invoiceId===invId||x.id===invId);
+  const d={items:(a0?.items||[]).map(x=>({...x}))}; if(!d.items.length) d.items.push({code:"",desc:"",qty:"",unit:"",type:"",rm:false,note:""});
+  const typeOpts=lib.types.map(t=>`<option value="${esc(t.name)}">${esc(t.unit)}</option>`).join("");
+  const rowHtml=(it,i)=>{ const c=matItemCalc(it,lib), parts=MAT_KEYS.filter(([k])=>c.out[k]).map(([k,l,u])=>`${l} <b class="num">${mfmt(c.out[k])}</b> ${u}`);
+    return `<div class="mi ${c.warn?"bad":""}" data-mi="${i}">
+      <div class="mi-g">
+        <input class="cell mi-code" data-f="code" value="${esc(it.code||"")}" placeholder="كود" aria-label="كود البند">
+        <input class="cell mi-desc" data-f="desc" value="${esc(it.desc||"")}" placeholder="وصف البند" aria-label="وصف البند">
+        <input class="cell mi-qty num" data-f="qty" value="${esc(it.qty??"")}" inputmode="decimal" placeholder="الكمية" aria-label="الكمية">
+        <input class="cell mi-unit" data-f="unit" value="${esc(it.unit||"")}" placeholder="الوحدة" aria-label="الوحدة">
+        <input class="cell mi-type" data-f="type" list="matTypes" value="${esc(it.type||"")}" placeholder="نوع البند (من الجدول)" aria-label="نوع البند">
+        <label class="chk mi-rm" title="خرسانة جاهزة: الأسمنت والرمل والسن ما بيتحسبوش"><input type="checkbox" data-f="rm" ${it.rm?"checked":""}> جاهزة</label>
+        <button type="button" class="ib mi-x" data-mdel="${i}" title="حذف البند" aria-label="حذف البند">${ico("x")}</button>
+      </div>
+      <div class="mi-out">${c.warn?`<span class="bad-t">${ico("warn")} ${esc(c.warn)}</span>`:parts.length?parts.join(" · "):`<span class="faint">بدون خامات محسوبة</span>`}${c.t?.note?` <span class="faint">— ${esc(c.t.note)}</span>`:""}</div></div>`; };
+  const totHtml=()=>{ const t=matTotals(d,lib), used=MAT_KEYS.filter(([k])=>t.tot[k]>0);
+    return used.length ? `<table class="dt mat-tot"><thead><tr><th>الخامة</th><th class="n">الكمية</th><th>الوحدة</th><th class="n">سعر الوحدة</th><th class="n">القيمة</th></tr></thead><tbody>${used.map(([k,l,u])=>{ const pr=num((lib.prices||{})[k]);
+      return `<tr><td>${esc(l)}</td><td class="n"><b class="num">${mfmt(t.tot[k])}</b></td><td>${esc(u)}</td><td class="n">${pr?fmt(pr):"—"}</td><td class="n">${pr?fmt(t.tot[k]*pr):"—"}</td></tr>`; }).join("")}</tbody>
+      <tfoot><tr><td colspan="4">إجمالي قيمة الخامات</td><td class="n">${fmt(t.value)}</td></tr></tfoot></table>${t.warns?`<p class="hint bad-t">${t.warns} بند محتاج مراجعة — مش داخل في الحساب صح.</p>`:""}` : `<p class="hint">اكتب البنود وأنواعها عشان الخامات تتحسب.</p>`; };
+  openDlg({ title:`تحليل خامات — ${esc(certLabel(v))}`, sub:`${esc(pName(p,true))}${realId(p.contractNo)?` · عقد <span class="code">${esc(p.contractNo)}</span>`:""}`, key:"mat:"+invId,
+    body:`<datalist id="matTypes">${typeOpts}</datalist>
+      <section class="sec"><h3>${ico("list")}البنود <span class="r"><button type="button" class="btn sm" id="miPaste">${ico("doc")}لصق من Excel</button><button type="button" class="btn sm" id="miImport">${ico("dl")}استيراد شيت</button></span></h3>
+        <div id="miBox" class="mi-l"></div>
+        <div class="mi-add"><button type="button" class="btn sm" id="miAdd">${ico("plus")}بند جديد</button><span class="faint small">نوع البند لازم يبقى من «جدول المعدلات» — ابدأ تكتب وهتطلعلك الاختيارات.</span></div></section>
+      <section class="sec"><h3>${ico("box")}إجمالي خامات المستخلص</h3><div id="miTot"></div></section>`,
+    foot: footBtns("حفظ التحليل", a0&&state.canWrite?"miDel":""),
+    onSubmit: async()=>{ const items=d.items.filter(it=>it.desc||it.type||num(it.qty)); const id=a0?.id||invId;
+      if(await save(db.collection("matan").doc(id), {invoiceId:invId, projectId:v.projectId, items, updatedAt:new Date().toISOString(), updatedBy:myId||""})){ dlg.close(); toast("اتحفظ تحليل الخامات"); logAct(`حفظ تحليل خامات ${certLabel(v)} · ${pName(p,true)} (${items.length} بند)`, v.id, v.projectId); } },
+    onMount:()=>{ const box=form.querySelector("#miBox"), tot=form.querySelector("#miTot");
+      const draw=()=>{ box.innerHTML=d.items.map(rowHtml).join(""); tot.innerHTML=totHtml(); };
+      const upd=i=>{ const el=box.querySelector(`[data-mi="${i}"]`); if(!el) return; const c=matItemCalc(d.items[i],lib), parts=MAT_KEYS.filter(([k])=>c.out[k]).map(([k,l,u])=>`${l} <b class="num">${mfmt(c.out[k])}</b> ${u}`);
+        el.classList.toggle("bad",!!c.warn); el.querySelector(".mi-out").innerHTML=c.warn?`<span class="bad-t">${ico("warn")} ${esc(c.warn)}</span>`:parts.length?parts.join(" · "):`<span class="faint">بدون خامات محسوبة</span>`; tot.innerHTML=totHtml(); };
+      box.addEventListener("input", e=>{ const r=e.target.closest("[data-mi]"), f=e.target.dataset.f; if(!r||!f) return; const i=+r.dataset.mi; d.items[i][f]= f==="rm" ? e.target.checked : e.target.value;
+        if(f==="type"){ const t=lib.types.find(x=>matNorm(x.name)===matNorm(e.target.value)); if(t && !d.items[i].unit){ d.items[i].unit=t.unit; r.querySelector('[data-f="unit"]').value=t.unit; } } upd(i); });
+      box.addEventListener("change", e=>{ if(e.target.dataset.f==="rm"){ const i=+e.target.closest("[data-mi]").dataset.mi; d.items[i].rm=e.target.checked; upd(i); } });
+      box.addEventListener("click", e=>{ const x=e.target.closest("[data-mdel]"); if(!x) return; d.items.splice(+x.dataset.mdel,1); if(!d.items.length) d.items.push({code:"",desc:"",qty:"",unit:"",type:"",rm:false,note:""}); draw(); });
+      box.addEventListener("keydown", e=>{ if(e.key==="Enter" && e.target.matches(".cell")){ e.preventDefault(); const r=e.target.closest("[data-mi]"), i=+r.dataset.mi; if(i===d.items.length-1){ d.items.push({code:"",desc:"",qty:"",unit:"",type:"",rm:false,note:""}); draw(); } box.querySelector(`[data-mi="${i+1}"] .mi-code`)?.focus(); } });
+      form.querySelector("#miAdd").onclick=()=>{ d.items.push({code:"",desc:"",qty:"",unit:"",type:"",rm:false,note:""}); draw(); box.querySelector(`[data-mi="${d.items.length-1}"] .mi-code`)?.focus(); };
+      const addRows=rows=>{ const clean=rows.filter(r=>r.desc||r.type||num(r.qty)); if(!clean.length){ toast("مفيش بنود اتقرت"); return; } d.items=d.items.filter(it=>it.desc||it.type||num(it.qty)).concat(clean); draw(); toast(`اتضاف ${clean.length} بند`); };
+      form.querySelector("#miPaste").onclick=()=>{ const ta=document.createElement("div"); ta.className="mi-paste"; ta.innerHTML=`<p class="hint">انسخ الصفوف من الإكسيل (كود · وصف · كمية · وحدة · نوع البند · خرسانة جاهزة نعم/لا) والصقها هنا:</p><textarea class="cell" rows="5" placeholder="الصق هنا…"></textarea><div class="mi-add"><button type="button" class="btn sm primary">${ico("check")}إضافة البنود</button><button type="button" class="btn sm ghost">إلغاء</button></div>`;
+        box.before(ta); const t=ta.querySelector("textarea"); t.focus(); const [ok,no]=ta.querySelectorAll("button");
+        no.onclick=()=>ta.remove(); ok.onclick=()=>{ addRows(t.value.split(/\r?\n/).map(l=>l.split("\t")).filter(c=>c.some(x=>x.trim())).map(c=>({code:(c[0]||"").trim(),desc:(c[1]||"").trim(),qty:String(c[2]||"").replace(/[^\d.\-]/g,""),unit:(c[3]||"").trim(),type:(c[4]||"").trim(),rm:/نعم/.test(c[5]||""),note:""}))); ta.remove(); }; };
+      form.querySelector("#miImport").onclick=()=>{ const fi=document.createElement("input"); fi.type="file"; fi.accept=".xlsx,.xls"; fi.onchange=async()=>{ const f=fi.files[0]; if(!f) return;
+          try{ const X=await loadXLSX(), wb=X.read(await f.arrayBuffer(),{type:"array"}), names=wb.SheetNames.filter(n=>!/الإجماليات|المعدلات|طريقة|ملخص|نموذج/.test(n));
+            const pick=document.createElement("div"); pick.className="mi-paste"; pick.innerHTML=`<p class="hint">اختار الشيت اللي فيه بنود المستخلص ده:</p><select class="cell">${names.map(n=>`<option>${esc(n)}</option>`).join("")}</select><div class="mi-add"><button type="button" class="btn sm primary">${ico("check")}استيراد</button><button type="button" class="btn sm ghost">إلغاء</button></div>`;
+            box.before(pick); const [ok,no]=pick.querySelectorAll("button"); no.onclick=()=>pick.remove();
+            ok.onclick=()=>{ const ws=wb.Sheets[pick.querySelector("select").value], A=X.utils.sheet_to_json(ws,{header:1,defval:""}); const hi=A.findIndex(r=>r.some(c=>/نوع البند/.test(String(c)))); if(hi<0){ toast("مش لاقي عمود «نوع البند» في الشيت ده"); return; }
+              const H=A[hi].map(String), col=re=>H.findIndex(h=>re.test(h)); const ci={code:col(/كود/),desc:col(/وصف/),qty:col(/الكمية/),unit:col(/الوحدة/),type:col(/نوع البند/),rm:col(/جاهزة؟|جاهزة\?/)};
+              const rows=[]; for(let r=hi+1;r<A.length;r++){ const R=A[r]; if(/الإجمالي/.test(String(R[ci.code]??R[0]))) continue; const it={code:String(R[ci.code]??"").trim(),desc:String(R[ci.desc]??"").trim(),qty:ci.qty>=0?R[ci.qty]:"",unit:String(R[ci.unit]??"").trim(),type:String(R[ci.type]??"").trim(),rm:ci.rm>=0&&/نعم/.test(String(R[ci.rm])),note:""}; if(it.desc||it.type) rows.push(it); }
+              pick.remove(); addRows(rows); }; }catch(e){ toast("تعذر قراية ملف الإكسيل"); } }; fi.click(); };
+      form.querySelector("#miDel")?.addEventListener("click", e=>confirmBtn(e.currentTarget,"اضغط تاني للحذف",async()=>{ await delRef(db.collection("matan").doc(a0.id)); dlg.close(); toast("اتمسح تحليل الخامات"); logAct(`مسح تحليل خامات ${certLabel(v)}`, v.id, v.projectId); }));
+      draw(); }
+  });
+}
+/* جدول المعدلات والأسعار */
+function matRatesDialog(){
+  const L=matLib(), d={prices:{...(L.prices||{})}, types:L.types.map(t=>({...t, r:{...t.r}}))};
+  const tRow=(t,i)=>`<tr data-ti="${i}"><td><input class="cell" data-tf="name" value="${esc(t.name)}" aria-label="نوع البند"></td><td><input class="cell mr-u" data-tf="unit" value="${esc(t.unit)}" aria-label="الوحدة"></td>${MAT_KEYS.map(([k])=>`<td><input class="cell mr-n num" data-tk="${k}" value="${t.r[k]||""}" inputmode="decimal" aria-label="${k}"></td>`).join("")}<td><input class="cell" data-tf="note" value="${esc(t.note||"")}" aria-label="ملاحظات"></td><td><button type="button" class="ib" data-tdel="${i}" aria-label="حذف">${ico("x")}</button></td></tr>`;
+  openDlg({ title:"جدول المعدلات والأسعار", sub:"معدل كل خامة لكل وحدة واحدة من البند — أي تعديل بيتطبق على كل التحليلات", key:"matrates",
+    body:`<section class="sec"><h3>${ico("money")}سعر وحدة الخامة</h3><div class="fields">${MAT_KEYS.map(([k,l,u])=>`<div class="f"><label for="mp_${k}">${esc(l)} <small>(ج.م / ${esc(u)})</small></label><input id="mp_${k}" data-pk="${k}" inputmode="decimal" value="${d.prices[k]||""}"></div>`).join("")}</div></section>
+      <section class="sec"><h3>${ico("list")}أنواع البنود (${d.types.length}) <span class="r"><button type="button" class="btn sm" id="mrAdd">${ico("plus")}نوع جديد</button></span></h3>
+        <div class="tscroll"><table class="dt mr-t"><thead><tr><th>نوع البند</th><th>الوحدة</th>${MAT_KEYS.map(([k,l,u])=>`<th>${esc(l)}<br><small>${esc(u)}</small></th>`).join("")}<th>ملاحظات</th><th></th></tr></thead><tbody id="mrBody">${d.types.map(tRow).join("")}</tbody></table></div></section>`,
+    foot: footBtns("حفظ الجدول"),
+    onSubmit: async()=>{ const types=d.types.filter(t=>matNorm(t.name)).map(t=>({...t,name:matNorm(t.name)})); const dup=types.find((t,i)=>types.findIndex(x=>x.name===t.name)!==i); if(dup){ toast(`النوع «${dup.name}» متكرر`); return; }
+      if(await save(db.collection("matlib").doc("main"), {prices:Object.fromEntries(MAT_KEYS.map(([k])=>[k,num(d.prices[k])])), types, updatedAt:new Date().toISOString(), updatedBy:myId||""})){ dlg.close(); toast("اتحفظ جدول المعدلات"); logAct(`عدّل جدول معدلات الخامات (${types.length} نوع)`, "", ""); } },
+    onMount:()=>{ const body=form.querySelector("#mrBody");
+      form.addEventListener("input", e=>{ const pk=e.target.dataset.pk; if(pk){ d.prices[pk]=e.target.value; return; } const r=e.target.closest("[data-ti]"); if(!r) return; const t=d.types[+r.dataset.ti]; if(e.target.dataset.tf) t[e.target.dataset.tf]=e.target.value; if(e.target.dataset.tk) t.r[e.target.dataset.tk]=num(e.target.value); });
+      body.addEventListener("click", e=>{ const x=e.target.closest("[data-tdel]"); if(!x) return; d.types.splice(+x.dataset.tdel,1); body.innerHTML=d.types.map(tRow).join(""); });
+      form.querySelector("#mrAdd").onclick=()=>{ d.types.unshift({name:"",unit:"",r:Object.fromEntries(MAT_KEYS.map(([k])=>[k,0])),note:""}); body.innerHTML=d.types.map(tRow).join(""); body.querySelector("input")?.focus(); }; }
+  });
+}
+function matPickDialog(){
+  const done=new Set((state.matan||[]).map(a=>a.invoiceId)), list=state.invoices.filter(v=>!done.has(v.id)).map(v=>[v,proj(v.projectId)||{}]).sort((a,b)=>pName(a[1],true).localeCompare(pName(b[1],true),"ar")||num(a[0].order)-num(b[0].order));
+  openDlg({ title:"تحليل خامات لمستخلص", sub:"اختار المستخلص اللي هتحلل بنوده", body:`<section class="sec"><div class="fields"><div class="f wide"><label for="mpk">المستخلص</label><input id="mpk" list="mpkL" placeholder="اكتب اسم المشروع أو رقم العقد أو «جاري 1»…" autocomplete="off"><datalist id="mpkL">${list.map(([v,p])=>`<option value="${esc(pName(p,true))} — ${esc(certLabel(v))}${realId(p.contractNo)?` — عقد ${esc(p.contractNo)}`:""}"></option>`).join("")}</datalist></div></div></section>`,
+    foot: footBtns("ابدأ التحليل"),
+    onSubmit: async()=>{ const t=val("mpk"), hit=list.find(([v,p])=>t===`${pName(p,true)} — ${certLabel(v)}${realId(p.contractNo)?` — عقد ${p.contractNo}`:""}`); if(!hit){ toast("اختار مستخلص من القايمة"); return; } dlg.close(); setTimeout(()=>matDialog(hit[0].id),50); } });
+}
+["#matQ","#matProj","#matCo"].forEach(x=>$(x).addEventListener("input",()=>{ memo.clear(); renderMat(); }));
+$("#matNew").onclick=()=>{ if(state.canWrite) matPickDialog(); };
+$("#matRates").onclick=matRatesDialog;
+$("#matTable").addEventListener("click", e=>{ const r=e.target.closest("[data-matan]"); if(!r) return; const a=(state.matan||[]).find(x=>x.id===r.dataset.matan); if(a) matDialog(a.invoiceId); });
+$("#matXlsx").addEventListener("click", async()=>{ try{ const X=await loadXLSX(), lib=matLib(), rows=matRows(); if(!rows.length){ toast("مفيش بيانات للتنزيل"); return; }
+  const wb=X.utils.book_new(); wb.Workbook={Views:[{RTL:true}]};
+  const sum=[["المشروع","رقم العقد","المستخلص",...MAT_KEYS.map(([k,l,u])=>`${l} (${u})`),"قيمة الخامات (ج.م)"], ...rows.map(r=>[pName(r.p,false),r.p.contractNo||"",r.v?certLabel(r.v):"",...MAT_KEYS.map(([k])=>r2(r.tot[k])),r2(r.value)])];
+  X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(sum), "الإجماليات");
+  rows.forEach((r,i)=>{ const aoa=[["كود البند","وصف البند","الكمية","الوحدة","نوع البند","خرسانة جاهزة",...MAT_KEYS.map(([k,l,u])=>`${l} (${u})`)], ...(r.a.items||[]).map(it=>{ const c=matItemCalc(it,lib); return [it.code||"",it.desc||"",num(it.qty),it.unit||"",it.type||"",it.rm?"نعم":"لا",...MAT_KEYS.map(([k])=>r2(c.out[k]))]; })];
+    X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(aoa), `${(r.v?certLabel(r.v):"مستخلص")} ${(r.p.contractNo||"")}`.replace(/[\\\/\?\*\[\]:]/g," ").slice(0,28)+` ${i+1}`); });
+  X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([["نوع البند","الوحدة",...MAT_KEYS.map(([k,l,u])=>`${l} (${u})`),"ملاحظات"], ...lib.types.map(t=>[t.name,t.unit,...MAT_KEYS.map(([k])=>t.r[k]||0),t.note||""]), [], ["سعر الوحدة (ج.م)","",...MAT_KEYS.map(([k])=>num((lib.prices||{})[k]))]]), "المعدلات");
+  await offer(`تحليل الخامات ${today()}.xlsx`, new Uint8Array(X.write(wb,{bookType:"xlsx",type:"array"}))); }catch(e){ toast("تعذر تجهيز ملف Excel. تحقق من الاتصال وحاول مرة أخرى."); } });
+
 /* رجوع من الأرشيف للجارية: الحالة والوضع الحالي بيرجعوا زي ما كانوا قبل القفل التلقائي */
 async function unarchiveIns(r){
   const v=state.invoices.find(x=>x.id===r.invoiceId), cap={list:[]}; undoCap=cap;
@@ -6314,6 +6496,7 @@ document.addEventListener("click", e=>{
     const ins=t.closest("tr[data-ins]"); if(ins) return {kind:"ins", id:ins.dataset.ins};
     const mpr=t.closest("tr[data-mp]"); if(mpr) return {kind:"mp", id:mpr.dataset.mp};
     const iv=t.closest("[data-inv],[data-plinv]"); if(iv) return {kind:"inv", id:iv.dataset.inv||iv.dataset.plinv};
+    const ma=t.closest("[data-matan]"); if(ma){ const a=(state.matan||[]).find(x=>x.id===ma.dataset.matan); if(a) return {kind:"inv", id:a.invoiceId}; }
     const row=t.closest("tr, .pc2"); const sb=row?.querySelector("input[data-sel]"); if(sb) return {kind:"inv", id:sb.dataset.sel};
     const pj=t.closest("[data-proj]"); if(pj) return {kind:"proj", id:pj.dataset.proj};
     const pb=row?.querySelector("input[data-psel]"); if(pb) return {kind:"proj", id:pb.dataset.psel};
@@ -6339,6 +6522,7 @@ document.addEventListener("click", e=>{
         + (w?sep + item("move","route","تسجيل حركة / نقل لمكان")
           + (v.paid!=="نعم"?item("paid","check","تسجيل صرف",`data-paid="${esc(v.id)}"`):"")
           + (v.paid!=="نعم"?(v.showSat?item("satOff","x","إزالة من كشف المتابعة"):item("satOn","plus","إضافة لكشف المتابعة")):""):"")
+        + item("matAn","box",(state.matan||[]).some(x=>x.invoiceId===v.id)?"تحليل الخامات":"تحليل خامات البنود")
         + sep + item("copyProj","doc","نسخ اسم المشروع") + (realId(p.contractNo)?item("copyNo","doc","نسخ رقم العقد"):"")
         + item("copyLine","doc","نسخ سطر (المشروع · المستخلص · الصافي)")
         + (box?sep+item("sel","list",box.checked?"إلغاء التحديد":"تحديد"):""); }
@@ -6392,6 +6576,7 @@ document.addEventListener("click", e=>{
       try{ okS = await save(ref, {...stripId(r), ...ch, updatedAt:new Date().toISOString(), updatedBy:myId||""}); } finally { undoCap=null; }
       if(okS){ if(!cap.bad&&cap.list.length) undoNext={list:cap.list,at:Date.now()}; toast(`${txt}${a==="insSt"&&/تم استخراج/.test(b.dataset.v)?" — اتنقل للأرشيف":""}`); logAct(`${txt} · ${pName(p||{},true)}`, r.invoiceId||"", r.projectId); } }
     else if(a==="insClaim") claimDialog("ins",[r],true);
+    else if(a==="matAn") matDialog(v.id);
     else if(a==="unarchIns") unarchiveIns(r);
     else if(a==="unarchMp") unarchiveMp(v);
     else if(a==="satOn"||a==="satOff"){ const on=a==="satOn"; if(await save(db.collection("invoices").doc(v.id), {...stripId(v), showSat:on, updatedAt:new Date().toISOString(), updatedBy:myId||""})){ toast(on?`اتضاف ${certLabel(v)} لكشف المتابعة`:`اتشال ${certLabel(v)} من كشف المتابعة`); logAct(`${on?"أضاف":"شال"} ${certLabel(v)} ${on?"لـ":"من"} كشف المتابعة`, v.id, v.projectId); } }
@@ -6563,7 +6748,7 @@ document.addEventListener("click",e=>{
   const pr=e.target.closest("[data-proj]"); if(pr){ const p=proj(pr.dataset.proj); if(p) projDialog(p); }
 });
 form.addEventListener("keydown",e=>{ if(e.key==="Enter" && e.target.matches("input")) e.preventDefault(); });
-try{ const t=localStorage.getItem("tab"); if(["home","sat","act","dq","moves","paylog","inv","proj","ins","co","mp"].includes(t)) state.tab=t; const f=JSON.parse(localStorage.getItem("satFilter2")||"null"); state.dense=localStorage.getItem("dense")==="1"; state.sideMini=localStorage.getItem("sideMini")==="1"; const pv=localStorage.getItem("pView"); if(pv==="table"||pv==="cards") state.pView=pv; if(f) Object.assign(state.satFilter,f); }catch{}
+try{ const t=localStorage.getItem("tab"); if(["home","sat","act","dq","moves","paylog","inv","proj","ins","co","mp","mat"].includes(t)) state.tab=t; const f=JSON.parse(localStorage.getItem("satFilter2")||"null"); state.dense=localStorage.getItem("dense")==="1"; state.sideMini=localStorage.getItem("sideMini")==="1"; const pv=localStorage.getItem("pView"); if(pv==="table"||pv==="cards") state.pView=pv; if(f) Object.assign(state.satFilter,f); }catch{}
 applySide();
 render();
 
@@ -6586,6 +6771,8 @@ render();
     const nm=new Map(state.invoices.map(v=>[v.id,v.updatedAt||""])); if(prevUpd && !s.metadata.hasPendingWrites){ nm.forEach((u,id)=>{ if(prevUpd.get(id)!==u) flashIds.add(id); }); } if(!s.metadata.hasPendingWrites) prevUpd=nm; if(!s.metadata.fromCache) state.loaded.i=true; done(); }, fail);
   db.doc("config/main").onSnapshot(s=>{ if(s.exists) state.cfg={...DEF_CFG,...s.data()}; render(); }, ()=>{});
   db.collection("insurance").onSnapshot(s=>{ state.ins=s.docs.map(x=>({id:x.id,...x.data()})); memo.clear(); render(); }, ()=>{});
+  db.collection("matan").onSnapshot(s=>{ state.matan=s.docs.map(x=>({id:x.id,...x.data()})); memo.clear(); if(state.tab==="mat") renderMat(); { const c=$("#cMat"); if(c) c.textContent=state.matan.length; } }, ()=>{});
+  db.collection("matlib").onSnapshot(s=>{ const d=s.docs.find(x=>x.id==="main"); state.matlib = d ? d.data() : null; memo.clear(); if(state.tab==="mat") renderMat(); }, ()=>{});
   db.collection("closeout").onSnapshot(s=>{ state.closeout=s.docs.map(x=>({id:x.id,...x.data()})); memo.clear(); render(); }, ()=>{});
   db.collection("activity").orderBy("at","desc").limit(5000).onSnapshot(async s=>{ state.activity=s.docs.map(x=>({id:x.id,...x.data()})); await resolveNames(); memo.clear(); if(state.tab==="home") renderHome(); renderAct(); }, ()=>{});
 })();
