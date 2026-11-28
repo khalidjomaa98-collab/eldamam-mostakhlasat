@@ -4625,7 +4625,7 @@ function invDialog(v, projectId){
         <div id="vProjCard"></div>
         <div class="calcs" id="vCalc"></div>
       </section>
-      <section class="sec" data-tab="data"><h3>${ico("box")}الخامات المخصومة <span class="r qadd">${["حديد","أسمنت","سولار"].map(n=>`<button type="button" class="btn sm" data-quickmat="${n}">+ ${n}</button>`).join("")}<button type="button" class="btn sm" id="addMat">+ أخرى</button>${v?`<button type="button" class="btn sm" id="vMatAn">${ico("box")}تحليل خامات البنود</button>`:""}</span></h3>
+      <section class="sec" data-tab="data"><h3>${ico("box")}الخامات المخصومة <span class="r qadd">${["حديد","أسمنت","سولار"].map(n=>`<button type="button" class="btn sm" data-quickmat="${n}">+ ${n}</button>`).join("")}<button type="button" class="btn sm" id="addMat">+ أخرى</button></span></h3>
         <div id="matBox" style="display:flex;flex-direction:column;gap:8px">${matHtml()}</div>
         <div class="mattot" id="matTot"></div>
       </section>
@@ -4786,7 +4786,6 @@ function invDialog(v, projectId){
         Object.entries(tabSt).forEach(([key,v2])=>{ const b=form.querySelector(`.dtabs [data-dtab="${key}"] .dt-n`); if(!b) return; b.className="dt-n st-"+v2; b.innerHTML=v2==="y"?ico("check"):v2==="na"?ico("minus"):""; b.title=v2==="y"?"تم":v2==="na"?"لا حاجة":v2==="cur"?"المرحلة الحالية":"لسه"; }); };
       form.querySelector("#vfAddNote")?.addEventListener("click", ()=>{ const t=val("vfNote").trim(); if(!t) return; insF.log.push({date:today(), by:myId||"", text:t}); form.querySelector("#vfNote").value=""; form.querySelector("#vfLogBox").innerHTML=vfLogHtml(); form.dispatchEvent(new Event("input",{bubbles:true})); toast("أُضيفت المتابعة على ملف التأمينات. اضغط «حفظ المستخلص» لتسجيلها"); });
       form.querySelector("#vfOpen")?.addEventListener("click", ()=>insDialog(insF0));
-      form.querySelector("#vMatAn")?.addEventListener("click", ()=>matDialog(v.id));
       form.querySelector("#vClaimMp")?.addEventListener("click", ()=>claimDialog("mp", [v]));
       form.querySelector("#vClaimIns")?.addEventListener("click", ()=>claimDialog("ins", [insF0], true));
       form.querySelector("#vfNew")?.addEventListener("click", ()=>insDialog(null, v.id));
@@ -6755,7 +6754,7 @@ function renderMat(){
     <div class="kpi"><span class="lbl">${ico("box")}حديد التسليح</span><span class="val"><span class="num">${mfmt(T.steel)}</span> <small>طن</small></span><span class="sub">مشغولات ${mfmt(T.wsteel)} طن</span></div>
     <div class="kpi ${warns?"wn":""}"><span class="lbl">${ico("warn")}بنود محتاجة مراجعة</span><span class="val num">${warns}</span><span class="sub">نوع بند غلط أو كمية ناقصة</span></div>`;
   $("#matCount").textContent = rows.length===all.length?`${rows.length} مستخلص`:`${rows.length} من ${all.length} مستخلص`;
-  if(!rows.length){ $("#matTable").innerHTML=`<tbody><tr><td><div class="empty">${ico("box")}<div>${all.length?"مفيش تحليلات بالفلاتر دي.":"لسه مفيش تحليل خامات. دوس «تحليل مستخلص» واختار المستخلص، أو افتح أي مستخلص ← البيانات ← «تحليل خامات البنود»."}</div></div></td></tr></tbody>`; return; }
+  if(!rows.length){ $("#matTable").innerHTML=`<tbody><tr><td><div class="empty">${ico("box")}<div>${all.length?"مفيش تحليلات بالفلاتر دي.":"لسه مفيش تحليل خامات. دوس «تحليل مستخلص» واختار المستخلص، أو كليك يمين على أي مستخلص ← «تحليل خامات البنود»."}</div></div></td></tr></tbody>`; return; }
   const used=MAT_KEYS.filter(([k])=>T[k]>0); let lastP=null, out="";
   rows.forEach(r=>{ if(r.p.id!==lastP){ lastP=r.p.id; const pr=rows.filter(x=>x.p.id===r.p.id);
       out+=`<tr class="mat-grp"><td colspan="${3+used.length}"><b>${esc(pName(r.p,true))}</b><span>${realId(r.p.contractNo)?`عقد ${esc(r.p.contractNo)} · `:""}${pr.length} مستخلص · ${fmt(pr.reduce((s,x)=>s+x.value,0))}</span></td></tr>`; }
@@ -6783,10 +6782,9 @@ function matDialog(invId){
       </div>
       <div class="mi-out">${c.warn?`<span class="bad-t">${ico("warn")} ${esc(c.warn)}</span>`:parts.length?parts.join(" · "):`<span class="faint">بدون خامات محسوبة</span>`}${c.t?.note?` <span class="faint">— ${esc(c.t.note)}</span>`:""}</div></div>`; };
   const totHtml=()=>{ const t=matTotals(d,lib), used=MAT_KEYS.filter(([k])=>t.tot[k]>0);
-    const dm=(v.materials||[]).filter(m=>m.name), ded=k=>{ const re={cem:/أسمنت|اسمنت/,steel:/حديد/,diesel:/سولار/}[k]; if(!re) return null; const ms=dm.filter(m=>re.test(m.name)); return ms.length?ms.reduce((s,m)=>s+num(m.qty),0):null; };
-    return used.length ? `<table class="dt mat-tot"><thead><tr><th>الخامة</th><th class="n">الكمية</th><th>الوحدة</th><th class="n">سعر الوحدة</th><th class="n">القيمة</th>${dm.length?`<th class="n">المخصوم في المستخلص</th>`:""}</tr></thead><tbody>${used.map(([k,l,u])=>{ const pr=num((lib.prices||{})[k]), x=ded(k);
-      return `<tr><td>${esc(l)}</td><td class="n"><b class="num">${mfmt(t.tot[k])}</b></td><td>${esc(u)}</td><td class="n">${pr?fmt(pr):"—"}</td><td class="n">${pr?fmt(t.tot[k]*pr):"—"}</td>${dm.length?`<td class="n">${x==null?"—":`<span class="num">${mfmt(x)}</span>${t.tot[k]?` <small class="${x>t.tot[k]*1.05?"bad-t":"faint"}">(${Math.round(x/t.tot[k]*100)}%)</small>`:""}`}</td>`:""}</tr>`; }).join("")}</tbody>
-      <tfoot><tr><td colspan="4">إجمالي قيمة الخامات</td><td class="n">${fmt(t.value)}</td>${dm.length?"<td></td>":""}</tr></tfoot></table>${t.warns?`<p class="hint bad-t">${t.warns} بند محتاج مراجعة — مش داخل في الحساب صح.</p>`:""}` : `<p class="hint">اكتب البنود وأنواعها عشان الخامات تتحسب.</p>`; };
+    return used.length ? `<table class="dt mat-tot"><thead><tr><th>الخامة</th><th class="n">الكمية</th><th>الوحدة</th><th class="n">سعر الوحدة</th><th class="n">القيمة</th></tr></thead><tbody>${used.map(([k,l,u])=>{ const pr=num((lib.prices||{})[k]);
+      return `<tr><td>${esc(l)}</td><td class="n"><b class="num">${mfmt(t.tot[k])}</b></td><td>${esc(u)}</td><td class="n">${pr?fmt(pr):"—"}</td><td class="n">${pr?fmt(t.tot[k]*pr):"—"}</td></tr>`; }).join("")}</tbody>
+      <tfoot><tr><td colspan="4">إجمالي قيمة الخامات</td><td class="n">${fmt(t.value)}</td></tr></tfoot></table>${t.warns?`<p class="hint bad-t">${t.warns} بند محتاج مراجعة — مش داخل في الحساب صح.</p>`:""}` : `<p class="hint">اكتب البنود وأنواعها عشان الخامات تتحسب.</p>`; };
   openDlg({ title:`تحليل خامات — ${esc(certLabel(v))}`, sub:`${esc(pName(p,true))}${realId(p.contractNo)?` · عقد <span class="code">${esc(p.contractNo)}</span>`:""}`, key:"mat:"+invId,
     body:`<datalist id="matTypes">${typeOpts}</datalist>
       <section class="sec"><h3>${ico("list")}البنود <span class="r"><button type="button" class="btn sm" id="miPaste">${ico("doc")}لصق من Excel</button><button type="button" class="btn sm" id="miImport">${ico("dl")}استيراد شيت</button></span></h3>
