@@ -2674,6 +2674,11 @@ td.sel{cursor:pointer}
 .ctx-st.on{background:var(--accent);color:var(--accent-ink,#fff);border-color:var(--accent)}
 .ctx{max-width:330px}
 @media (max-width:700px){ .arch-seg{width:100%} .arch-seg button{flex:1;justify-content:center} }
+/* القلم و✓/✕ دايماً ظاهرين في آخر سطر عنوان الخانة، حتى لو العنوان طويل (العنوان بيتقص بـ «…» بدل القلم) */
+.dw .fields>.f.lkf>label,.dw .fields>.f.unl>label{position:relative;padding-inline-end:38px;text-overflow:ellipsis}
+.dw .fields>.f.unl>label:has(.pen-acts:not([hidden])){padding-inline-end:80px}
+.dw .fields>.f>label>.pen,.dw .fields>.f>label>.pen-acts{position:absolute;inset-inline-end:0;top:50%;transform:translateY(-50%);margin:0}
+@media (pointer:coarse){ .dw .fields>.f.lkf>label,.dw .fields>.f.unl>label{padding-inline-end:42px;min-height:34px} .dw .fields>.f.unl>label:has(.pen-acts:not([hidden])){padding-inline-end:84px} }
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -4433,7 +4438,7 @@ function projDialog(p){
         <div id="plBox"></div></section>`:""}
       <section class="sec lk"><h3>${ico("bld")}بيانات المشروع${p&&state.canWrite?`<span class="r"><button type="button" class="btn sm ghost" data-unlockall>${ico("pen")}تعديل الكل</button></span>`:""}</h3>
       <div class="fields">
-        ${fld("jNo","رقم العقد (اختياري لو لسه ما طلعش)",d.contractNo)}
+        ${fld("jNo","رقم العقد (اختياري)",d.contractNo)}
         ${fld("jShort","اسم مختصر للعرض",d.shortName)}
         <div class="f wide"><label for="jName">اسم المشروع</label><textarea id="jName" style="min-height:52px">${esc(d.name||"")}</textarea></div>
         <div class="f"><label for="jLoc">موقع المشروع</label><input id="jLoc" list="dlLoc" value="${esc(d.location||"")}"><datalist id="dlLoc">${uniq(state.projects.map(x=>x.location)).map(x=>`<option value="${esc(x)}">`).join("")}</datalist></div>
